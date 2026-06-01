@@ -1,0 +1,806 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: Calorie Tracker API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: foods
+    description: Food items management
+  - name: meals
+    description: Meal entries (food log)
+  - name: goals
+    description: Daily calorie goals
+  - name: dashboard
+    description: Dashboard and stats
+  - name: ai
+    description: AI-powered food analysis
+  - name: wellness
+    description: Daily wellness journal
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /analyze-food-image:
+    post:
+      operationId: analyzeFoodImage
+      tags: [ai]
+      summary: Analyze a food photo and estimate nutrition
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnalyzeFoodImageBody"
+      responses:
+        "200":
+          description: Estimated nutrition information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FoodAnalysisResult"
+        "400":
+          description: Invalid image or analysis failed
+
+  /foods:
+    get:
+      operationId: listFoods
+      tags: [foods]
+      summary: List all food items
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Search foods by name
+      responses:
+        "200":
+          description: List of foods
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Food"
+    post:
+      operationId: createFood
+      tags: [foods]
+      summary: Create a new food item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateFoodBody"
+      responses:
+        "201":
+          description: Created food
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Food"
+
+  /foods/{id}:
+    get:
+      operationId: getFood
+      tags: [foods]
+      summary: Get a food item by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Food item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Food"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateFood
+      tags: [foods]
+      summary: Update a food item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateFoodBody"
+      responses:
+        "200":
+          description: Updated food
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Food"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteFood
+      tags: [foods]
+      summary: Delete a food item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+
+  /meals:
+    get:
+      operationId: listMeals
+      tags: [meals]
+      summary: List meal entries for a date
+      parameters:
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Date in YYYY-MM-DD format
+      responses:
+        "200":
+          description: Meal entries for the date
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Meal"
+    post:
+      operationId: createMeal
+      tags: [meals]
+      summary: Add a meal entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMealBody"
+      responses:
+        "201":
+          description: Created meal entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Meal"
+
+  /meals/{id}:
+    get:
+      operationId: getMeal
+      tags: [meals]
+      summary: Get a meal entry by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Meal entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Meal"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateMeal
+      tags: [meals]
+      summary: Update a meal entry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateMealBody"
+      responses:
+        "200":
+          description: Updated meal entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Meal"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteMeal
+      tags: [meals]
+      summary: Delete a meal entry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+
+  /goals:
+    get:
+      operationId: getGoal
+      tags: [goals]
+      summary: Get the current calorie goal
+      responses:
+        "200":
+          description: Current goal
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Goal"
+    put:
+      operationId: setGoal
+      tags: [goals]
+      summary: Set or update calorie goal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetGoalBody"
+      responses:
+        "200":
+          description: Updated goal
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Goal"
+
+  /dashboard/daily-summary:
+    get:
+      operationId: getDailySummary
+      tags: [dashboard]
+      summary: Get daily nutrition summary
+      parameters:
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Date in YYYY-MM-DD format
+      responses:
+        "200":
+          description: Daily nutrition summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DailySummary"
+
+  /dashboard/weekly-stats:
+    get:
+      operationId: getWeeklyStats
+      tags: [dashboard]
+      summary: Get weekly calorie stats
+      parameters:
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Any date within the desired week (YYYY-MM-DD)
+      responses:
+        "200":
+          description: Weekly stats
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DayStats"
+
+  /dashboard/recent-meals:
+    get:
+      operationId: getRecentMeals
+      tags: [dashboard]
+      summary: Get recent meal entries
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 5
+      responses:
+        "200":
+          description: Recent meals
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Meal"
+
+  /dashboard/meal-type-breakdown:
+    get:
+      operationId: getMealTypeBreakdown
+      tags: [dashboard]
+      summary: Get calorie breakdown by meal type for a date
+      parameters:
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Breakdown by meal type
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MealTypeBreakdown"
+
+  /wellness:
+    get:
+      operationId: getWellnessEntry
+      tags: [wellness]
+      summary: Get wellness journal entry for a specific date
+      parameters:
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Date in YYYY-MM-DD format
+      responses:
+        "200":
+          description: Wellness entry for the date (null if none)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WellnessEntry"
+        "404":
+          description: No entry for this date
+    put:
+      operationId: upsertWellnessEntry
+      tags: [wellness]
+      summary: Create or update wellness journal entry for a date
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpsertWellnessBody"
+      responses:
+        "200":
+          description: Saved wellness entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WellnessEntry"
+
+  /wellness/history:
+    get:
+      operationId: getWellnessHistory
+      tags: [wellness]
+      summary: Get wellness journal entries for a date range
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Start date YYYY-MM-DD
+        - name: to
+          in: query
+          required: true
+          schema:
+            type: string
+          description: End date YYYY-MM-DD
+      responses:
+        "200":
+          description: List of wellness entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WellnessEntry"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    Food:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        calories:
+          type: number
+        protein:
+          type: number
+        carbs:
+          type: number
+        fat:
+          type: number
+        servingSize:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - calories
+        - protein
+        - carbs
+        - fat
+        - servingSize
+        - createdAt
+
+    CreateFoodBody:
+      type: object
+      properties:
+        name:
+          type: string
+        calories:
+          type: number
+        protein:
+          type: number
+        carbs:
+          type: number
+        fat:
+          type: number
+        servingSize:
+          type: string
+      required:
+        - name
+        - calories
+        - protein
+        - carbs
+        - fat
+        - servingSize
+
+    UpdateFoodBody:
+      type: object
+      properties:
+        name:
+          type: string
+        calories:
+          type: number
+        protein:
+          type: number
+        carbs:
+          type: number
+        fat:
+          type: number
+        servingSize:
+          type: string
+
+    Meal:
+      type: object
+      properties:
+        id:
+          type: integer
+        foodId:
+          type: integer
+        foodName:
+          type: string
+        mealType:
+          type: string
+          enum: [breakfast, lunch, dinner, snack]
+        servings:
+          type: number
+        calories:
+          type: number
+        protein:
+          type: number
+        carbs:
+          type: number
+        fat:
+          type: number
+        date:
+          type: string
+          format: date
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - foodId
+        - foodName
+        - mealType
+        - servings
+        - calories
+        - protein
+        - carbs
+        - fat
+        - date
+        - createdAt
+
+    CreateMealBody:
+      type: object
+      properties:
+        foodId:
+          type: integer
+        mealType:
+          type: string
+          enum: [breakfast, lunch, dinner, snack]
+        servings:
+          type: number
+        date:
+          type: string
+          format: date
+      required:
+        - foodId
+        - mealType
+        - servings
+        - date
+
+    UpdateMealBody:
+      type: object
+      properties:
+        mealType:
+          type: string
+          enum: [breakfast, lunch, dinner, snack]
+        servings:
+          type: number
+
+    Goal:
+      type: object
+      properties:
+        id:
+          type: integer
+        dailyCalories:
+          type: integer
+        dailyProtein:
+          type: integer
+        dailyCarbs:
+          type: integer
+        dailyFat:
+          type: integer
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - dailyCalories
+        - dailyProtein
+        - dailyCarbs
+        - dailyFat
+        - updatedAt
+
+    SetGoalBody:
+      type: object
+      properties:
+        dailyCalories:
+          type: integer
+        dailyProtein:
+          type: integer
+        dailyCarbs:
+          type: integer
+        dailyFat:
+          type: integer
+      required:
+        - dailyCalories
+        - dailyProtein
+        - dailyCarbs
+        - dailyFat
+
+    DailySummary:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        totalCalories:
+          type: number
+        totalProtein:
+          type: number
+        totalCarbs:
+          type: number
+        totalFat:
+          type: number
+        goalCalories:
+          type: integer
+        goalProtein:
+          type: integer
+        goalCarbs:
+          type: integer
+        goalFat:
+          type: integer
+        mealCount:
+          type: integer
+      required:
+        - date
+        - totalCalories
+        - totalProtein
+        - totalCarbs
+        - totalFat
+        - goalCalories
+        - goalProtein
+        - goalCarbs
+        - goalFat
+        - mealCount
+
+    DayStats:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        totalCalories:
+          type: number
+        goalCalories:
+          type: integer
+      required:
+        - date
+        - totalCalories
+        - goalCalories
+
+    MealTypeBreakdown:
+      type: object
+      properties:
+        mealType:
+          type: string
+        totalCalories:
+          type: number
+        count:
+          type: integer
+      required:
+        - mealType
+        - totalCalories
+        - count
+
+    AnalyzeFoodImageBody:
+      type: object
+      properties:
+        imageBase64:
+          type: string
+          description: Base64-encoded image (without data URL prefix)
+        mimeType:
+          type: string
+          description: MIME type of the image (e.g. image/jpeg)
+      required:
+        - imageBase64
+        - mimeType
+
+    FoodAnalysisResult:
+      type: object
+      properties:
+        foodName:
+          type: string
+        servingSize:
+          type: string
+        calories:
+          type: number
+        protein:
+          type: number
+        carbs:
+          type: number
+        fat:
+          type: number
+        confidence:
+          type: string
+          enum: [high, medium, low]
+        notes:
+          type: string
+      required:
+        - foodName
+        - servingSize
+        - calories
+        - protein
+        - carbs
+        - fat
+        - confidence
+        - notes
+
+    WellnessEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+        caloriesBurned:
+          type: integer
+          nullable: true
+        mood:
+          type: string
+          nullable: true
+        stressLevel:
+          type: integer
+          nullable: true
+        bedtime:
+          type: string
+          nullable: true
+        wakeTime:
+          type: string
+          nullable: true
+        supplements:
+          type: string
+          nullable: true
+        medications:
+          type: string
+          nullable: true
+        recordedAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - date
+        - recordedAt
+        - updatedAt
+
+    UpsertWellnessBody:
+      type: object
+      properties:
+        date:
+          type: string
+          description: Date in YYYY-MM-DD format
+        caloriesBurned:
+          type: integer
+          nullable: true
+        mood:
+          type: string
+          nullable: true
+        stressLevel:
+          type: integer
+          nullable: true
+        bedtime:
+          type: string
+          nullable: true
+        wakeTime:
+          type: string
+          nullable: true
+        supplements:
+          type: string
+          nullable: true
+        medications:
+          type: string
+          nullable: true
+      required:
+        - date
