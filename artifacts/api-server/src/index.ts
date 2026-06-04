@@ -1,48 +1,59 @@
-import app from "./app";
+import express, { type Express } from "express";
+import cors from "cors";
+import pinoHttp from "pino-http";
+// import { clerkMiddleware, getAuth } from "@clerk/express"; // Временно отключено
+import { CLERK_PROXY_PATH, clerkProxyMiddleware } from "./middlewares/clerkProxyMiddleware";
+import router from "./routes";
 import { logger } from "./lib/logger";
-import { seedFoodsIfEmpty } from "./lib/seed";
+import "./types/express.d";
 
-const rawPort = process.env["PORT"];
+const app: Express = express();
 
-if (!rawPort) {
-  throw new Error(
-    "PORT environment variable is required but was not provided.",
-  );
-}
+app.use(
+  pinoHttp({
+    logger,
+    serializers: {
+      req(req) {
+        return { id: req.id, method: req.method, url: req.url?.split("?")[0] };
+      },
+      res(res) {
+        return { statusCode: res.statusCode };
+      },
+    },
+  }),
+);
 
-const port = Number(rawPort);
+app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
+app.use(cors({ credentials: true, origin: true }));
+app.use(express.json({ limit: "20mb" }));
+app.use(express.urlencoded({ extended: true, limit: "20mb" }));
+// app.use(clerkMiddleware()); // Временно отключено
 
-if (Number.isNaN(port) || port <= 0) {
-  throw new Error(`Invalid PORT value: "${rawPort}"`);
-}
-
-// ➕ ДОБАВЛЯЕМ КОРНЕВОЙ МАРШРУТ
-app.get('/', (req, res) => {
-  res.json({
-    status: 'ok',
-    message: 'Calorie Tracker API is running! 🚀',
-    timestamp: new Date().toISOString(),
-    endpoints: {
-      health: '/health',
-      analyze: '/analyze-food',
-      dashboard: '/dashboard',
-      foods: '/foods',
-      meals: '/meals',
-      goals: '/goals',
-      wellness: '/wellness'
-    }
-  });
+// Временная заглушка для авторизации
+app.use((req, res, next) => {
+  (req as any).userId = 'test-user-id';
+  next();
 });
 
-app.listen(port, (err) => {
-  if (err) {
-    logger.error({ err }, "Error listening on port");
-    process.exit(1);
-  }
+// Старый код с Clerk временно отключён
+// app.use((req, res, next) => {
+//   const isPublicFoods = req.method === "GET" && /^\/api\/foods\/?$/.test(req.path);
+//   const isTokenValidate = req.method === "GET" && /^\/api\/tokens\/[^/]+\/validate$/.test(req.path);
+//   const isAdminTokens = /^\/api\/admin\/tokens/.test(req.path);
+//   if (isPublicFoods || isTokenValidate || isAdminTokens) {
+//     next();
+//     return;
+//   }
+//   const auth = getAuth(req);
+//   const userId = auth?.sessionClaims?.userId as string | undefined || auth?.userId;
+//   if (!userId) {
+//     res.status(401).json({ error: "Unauthorized" });
+//     return;
+//   }
+//   req.userId = userId;
+//   next();
+// });
 
-  logger.info({ port }, "Server listening");
+app.use("/api", router);
 
-  seedFoodsIfEmpty().catch((e) => {
-    logger.error({ err: e }, "Failed to seed foods");
-  });
-});
+export default app;
