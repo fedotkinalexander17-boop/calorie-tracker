@@ -1,59 +1,44 @@
-import express, { type Express } from "express";
-import cors from "cors";
-import pinoHttp from "pino-http";
-// import { clerkMiddleware, getAuth } from "@clerk/express"; // Временно отключено
-import { CLERK_PROXY_PATH, clerkProxyMiddleware } from "./middlewares/clerkProxyMiddleware";
-import router from "./routes";
+console.log("=== STARTING SERVER ===");
+
+import app from "./app";
 import { logger } from "./lib/logger";
-import "./types/express.d";
+import { seedFoodsIfEmpty } from "./lib/seed";
 
-const app: Express = express();
+console.log("=== IMPORTS DONE ===");
 
-app.use(
-  pinoHttp({
-    logger,
-    serializers: {
-      req(req) {
-        return { id: req.id, method: req.method, url: req.url?.split("?")[0] };
-      },
-      res(res) {
-        return { statusCode: res.statusCode };
-      },
-    },
-  }),
-);
+const rawPort = process.env["PORT"];
+console.log("PORT from env:", rawPort);
 
-app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
-app.use(cors({ credentials: true, origin: true }));
-app.use(express.json({ limit: "20mb" }));
-app.use(express.urlencoded({ extended: true, limit: "20mb" }));
-// app.use(clerkMiddleware()); // Временно отключено
+if (!rawPort) {
+  console.error("PORT environment variable is missing!");
+  throw new Error(
+    "PORT environment variable is required but was not provided.",
+  );
+}
 
-// Временная заглушка для авторизации
-app.use((req, res, next) => {
-  (req as any).userId = 'test-user-id';
-  next();
+const port = Number(rawPort);
+console.log("Parsed port:", port);
+
+if (Number.isNaN(port) || port <= 0) {
+  console.error("Invalid PORT value:", rawPort);
+  throw new Error(`Invalid PORT value: "${rawPort}"`);
+}
+
+console.log("=== BEFORE app.listen ===");
+
+app.listen(port, (err) => {
+  if (err) {
+    console.error("Error in app.listen:", err);
+    logger.error({ err }, "Error listening on port");
+    process.exit(1);
+  }
+
+  console.log(`✅ Server is running on port ${port}`);
+  logger.info({ port }, "Server listening");
+
+  seedFoodsIfEmpty().catch((e) => {
+    logger.error({ err: e }, "Failed to seed foods");
+  });
 });
 
-// Старый код с Clerk временно отключён
-// app.use((req, res, next) => {
-//   const isPublicFoods = req.method === "GET" && /^\/api\/foods\/?$/.test(req.path);
-//   const isTokenValidate = req.method === "GET" && /^\/api\/tokens\/[^/]+\/validate$/.test(req.path);
-//   const isAdminTokens = /^\/api\/admin\/tokens/.test(req.path);
-//   if (isPublicFoods || isTokenValidate || isAdminTokens) {
-//     next();
-//     return;
-//   }
-//   const auth = getAuth(req);
-//   const userId = auth?.sessionClaims?.userId as string | undefined || auth?.userId;
-//   if (!userId) {
-//     res.status(401).json({ error: "Unauthorized" });
-//     return;
-//   }
-//   req.userId = userId;
-//   next();
-// });
-
-app.use("/api", router);
-
-export default app;
+console.log("=== AFTER app.listen (this may appear before server starts) ===");
