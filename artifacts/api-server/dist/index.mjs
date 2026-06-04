@@ -70521,6 +70521,22 @@ if (Number.isNaN(port) || port <= 0) {
   console.error("Invalid PORT value:", rawPort);
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
+app_default.get("/", (req, res) => {
+  res.json({
+    status: "ok",
+    message: "Calorie Tracker API is running! \u{1F680}",
+    timestamp: (/* @__PURE__ */ new Date()).toISOString(),
+    endpoints: {
+      health: "/health",
+      analyze: "/analyze-food",
+      dashboard: "/dashboard",
+      foods: "/foods",
+      meals: "/meals",
+      goals: "/goals",
+      wellness: "/wellness"
+    }
+  });
+});
 console.log("=== BEFORE app.listen ===");
 app_default.listen(port, (err) => {
   if (err) {

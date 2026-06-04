@@ -24,6 +24,26 @@ if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
+// ============================================
+// КОРНЕВОЙ МАРШРУТ (ОБЯЗАТЕЛЬНО ДОБАВИТЬ)
+// ============================================
+app.get('/', (req, res) => {
+  res.json({
+    status: 'ok',
+    message: 'Calorie Tracker API is running! 🚀',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      health: '/health',
+      analyze: '/analyze-food',
+      dashboard: '/dashboard',
+      foods: '/foods',
+      meals: '/meals',
+      goals: '/goals',
+      wellness: '/wellness'
+    }
+  });
+});
+
 console.log("=== BEFORE app.listen ===");
 
 app.listen(port, (err) => {
