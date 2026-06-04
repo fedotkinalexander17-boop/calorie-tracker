@@ -25,7 +25,7 @@ if (Number.isNaN(port) || port <= 0) {
 }
 
 // ============================================
-// КОРНЕВОЙ МАРШРУТ (ОБЯЗАТЕЛЬНО ДОБАВИТЬ)
+// КОРНЕВОЙ МАРШРУТ
 // ============================================
 app.get('/', (req, res) => {
   res.json({
@@ -41,6 +41,17 @@ app.get('/', (req, res) => {
       goals: '/goals',
       wellness: '/wellness'
     }
+  });
+});
+
+// ============================================
+// HEALTH CHECK ENDPOINT
+// ============================================
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
   });
 });
 

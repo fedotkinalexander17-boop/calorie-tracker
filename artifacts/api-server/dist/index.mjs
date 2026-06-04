@@ -70537,6 +70537,13 @@ app_default.get("/", (req, res) => {
     }
   });
 });
+app_default.get("/health", (req, res) => {
+  res.json({
+    status: "healthy",
+    timestamp: (/* @__PURE__ */ new Date()).toISOString(),
+    uptime: process.uptime()
+  });
+});
 console.log("=== BEFORE app.listen ===");
 app_default.listen(port, (err) => {
   if (err) {
