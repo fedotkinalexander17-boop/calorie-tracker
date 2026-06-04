@@ -1,0 +1,122 @@
+import { z } from "zod/v4";
+export declare const goalsTable: import("drizzle-orm/pg-core").PgTableWithColumns<{
+    name: "goals";
+    schema: undefined;
+    columns: {
+        id: import("drizzle-orm/pg-core").PgColumn<{
+            name: "id";
+            tableName: "goals";
+            dataType: "number";
+            columnType: "PgSerial";
+            data: number;
+            driverParam: number;
+            notNull: true;
+            hasDefault: true;
+            isPrimaryKey: true;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        dailyCalories: import("drizzle-orm/pg-core").PgColumn<{
+            name: "daily_calories";
+            tableName: "goals";
+            dataType: "number";
+            columnType: "PgInteger";
+            data: number;
+            driverParam: string | number;
+            notNull: true;
+            hasDefault: true;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        dailyProtein: import("drizzle-orm/pg-core").PgColumn<{
+            name: "daily_protein";
+            tableName: "goals";
+            dataType: "number";
+            columnType: "PgInteger";
+            data: number;
+            driverParam: string | number;
+            notNull: true;
+            hasDefault: true;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        dailyCarbs: import("drizzle-orm/pg-core").PgColumn<{
+            name: "daily_carbs";
+            tableName: "goals";
+            dataType: "number";
+            columnType: "PgInteger";
+            data: number;
+            driverParam: string | number;
+            notNull: true;
+            hasDefault: true;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        dailyFat: import("drizzle-orm/pg-core").PgColumn<{
+            name: "daily_fat";
+            tableName: "goals";
+            dataType: "number";
+            columnType: "PgInteger";
+            data: number;
+            driverParam: string | number;
+            notNull: true;
+            hasDefault: true;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        updatedAt: import("drizzle-orm/pg-core").PgColumn<{
+            name: "updated_at";
+            tableName: "goals";
+            dataType: "date";
+            columnType: "PgTimestamp";
+            data: Date;
+            driverParam: string;
+            notNull: true;
+            hasDefault: true;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+    };
+    dialect: "pg";
+}>;
+export declare const insertGoalSchema: z.ZodObject<{
+    dailyCalories: z.ZodOptional<z.ZodInt>;
+    dailyProtein: z.ZodOptional<z.ZodInt>;
+    dailyCarbs: z.ZodOptional<z.ZodInt>;
+    dailyFat: z.ZodOptional<z.ZodInt>;
+}, {
+    out: {};
+    in: {};
+}>;
+export type InsertGoal = z.infer<typeof insertGoalSchema>;
+export type Goal = typeof goalsTable.$inferSelect;
+//# sourceMappingURL=goals.d.ts.map
