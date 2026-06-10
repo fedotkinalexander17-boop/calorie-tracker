@@ -75,6 +75,7 @@
     "zod": "catalog:"
   },
   "dependencies": {
+    "@clerk/clerk-react": "^5.61.3",
     "@clerk/react": "^6.3.0",
     "@zxing/browser": "^0.1.5",
     "@zxing/library": "^0.21.3",

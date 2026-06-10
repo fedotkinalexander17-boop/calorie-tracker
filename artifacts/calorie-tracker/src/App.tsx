@@ -1,145 +1,53 @@
-import { useEffect, useRef } from "react";
-import { Switch, Route, Router as WouterRouter, Redirect, useLocation } from "wouter";
-import { ClerkProvider, SignIn, SignUp, Show, useClerk } from "@clerk/react";
-import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { Layout } from "@/components/layout";
-import { LanguageProvider } from "@/lib/i18n";
-import { ProAccessProvider } from "@/lib/pro-access";
-import Dashboard from "@/pages/dashboard";
-import Foods from "@/pages/foods";
-import Log from "@/pages/log";
-import Goals from "@/pages/goals";
-import Wellness from "@/pages/wellness";
-import Landing from "@/pages/landing";
-import NotFound from "@/pages/not-found";
-import AdminTokensPage from "@/pages/admin-tokens";
-
-const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
-const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
-
-if (!clerkPubKey) {
-  throw new Error("Missing VITE_CLERK_PUBLISHABLE_KEY");
-}
-
-function stripBase(path: string): string {
-  return basePath && path.startsWith(basePath)
-    ? path.slice(basePath.length) || "/"
-    : path;
-}
-
-const queryClient = new QueryClient();
-
-function SignInPage() {
-  // To update login providers, app branding, or OAuth settings use the Auth
-  // pane in the workspace toolbar. More information can be found in the Replit docs.
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} />
-    </div>
-  );
-}
-
-function SignUpPage() {
-  // To update login providers, app branding, or OAuth settings use the Auth
-  // pane in the workspace toolbar. More information can be found in the Replit docs.
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} />
-    </div>
-  );
-}
-
-function HomeRedirect() {
-  return (
-    <>
-      <Show when="signed-in">
-        <Redirect to="/dashboard" />
-      </Show>
-      <Show when="signed-out">
-        <Landing />
-      </Show>
-    </>
-  );
-}
-
-function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
-  return (
-    <>
-      <Show when="signed-in">
-        <Layout>
-          <Component />
-        </Layout>
-      </Show>
-      <Show when="signed-out">
-        <Redirect to="/" />
-      </Show>
-    </>
-  );
-}
-
-function ClerkQueryClientCacheInvalidator() {
-  const { addListener } = useClerk();
-  const qc = useQueryClient();
-  const prevUserIdRef = useRef<string | null | undefined>(undefined);
-
-  useEffect(() => {
-    const unsubscribe = addListener(({ user }) => {
-      const userId = user?.id ?? null;
-      if (prevUserIdRef.current !== undefined && prevUserIdRef.current !== userId) {
-        qc.clear();
-      }
-      prevUserIdRef.current = userId;
-    });
-    return unsubscribe;
-  }, [addListener, qc]);
-
-  return null;
-}
-
-function AppRouter() {
-  const [, setLocation] = useLocation();
-
-  return (
-    <ClerkProvider
-      publishableKey={clerkPubKey}
-      proxyUrl={clerkProxyUrl}
-      routerPush={(to) => setLocation(stripBase(to))}
-      routerReplace={(to) => setLocation(stripBase(to), { replace: true })}
-    >
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <ClerkQueryClientCacheInvalidator />
-          <Switch>
-            <Route path="/admin" component={AdminTokensPage} />
-            <Route path="/" component={HomeRedirect} />
-            <Route path="/sign-in/*?" component={SignInPage} />
-            <Route path="/sign-up/*?" component={SignUpPage} />
-            <Route path="/dashboard" component={() => <ProtectedRoute component={Dashboard} />} />
-            <Route path="/log" component={() => <ProtectedRoute component={Log} />} />
-            <Route path="/wellness" component={() => <ProtectedRoute component={Wellness} />} />
-            <Route path="/foods" component={() => <ProtectedRoute component={Foods} />} />
-            <Route path="/goals" component={() => <ProtectedRoute component={Goals} />} />
-            <Route component={NotFound} />
-          </Switch>
-          <Toaster />
-        </TooltipProvider>
-      </QueryClientProvider>
-    </ClerkProvider>
-  );
-}
+import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/clerk-react';
 
 function App() {
   return (
-    <LanguageProvider>
-      <WouterRouter base={basePath}>
-        <ProAccessProvider>
-          <AppRouter />
-        </ProAccessProvider>
-      </WouterRouter>
-    </LanguageProvider>
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-gray-900">Трекер здоровья 360</h1>
+          <SignedIn>
+            <UserButton afterSignOutUrl="/" />
+          </SignedIn>
+          <SignedOut>
+            <SignInButton mode="modal">
+              <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                Войти
+              </button>
+            </SignInButton>
+          </SignedOut>
+        </div>
+      </header>
+      
+      <main className="max-w-7xl mx-auto px-4 py-8">
+        <SignedIn>
+          <div className="text-center py-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Добро пожаловать в Трекер здоровья 360!
+            </h2>
+            <p className="text-gray-600">
+              Здесь будут отображаться ваши ежедневные логи, аналитика и рекомендации.
+            </p>
+          </div>
+        </SignedIn>
+        
+        <SignedOut>
+          <div className="text-center py-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Ваш персональный трекер здоровья
+            </h2>
+            <p className="text-gray-600 mb-8">
+              Войдите или зарегистрируйтесь, чтобы начать отслеживать своё здоровье.
+            </p>
+            <SignInButton mode="modal">
+              <button className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-lg">
+                Начать
+              </button>
+            </SignInButton>
+          </div>
+        </SignedOut>
+      </main>
+    </div>
   );
 }
 
