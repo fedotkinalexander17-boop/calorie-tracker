@@ -6,10 +6,21 @@ import { seedFoodsIfEmpty } from "./lib/seed";
 
 console.log("=== STARTING SERVER ===");
 
-// Инициализация Supabase (после импортов)
+// Инициализация Supabase
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+  console.error("Missing Supabase environment variables!");
+  console.error("SUPABASE_URL:", supabaseUrl ? "set" : "missing");
+  console.error("SUPABASE_SERVICE_ROLE_KEY:", supabaseKey ? "set" : "missing");
+} else {
+  console.log("Supabase initialized with URL:", supabaseUrl);
+}
+
 const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  supabaseUrl || '',
+  supabaseKey || ''
 );
 
 console.log("=== IMPORTS DONE ===");
@@ -71,13 +82,24 @@ app.post('/api/webhooks/clerk', express.raw({ type: 'application/json' }), async
     const payload = req.body;
     const eventType = payload.type;
     
+    console.log('Webhook received:', eventType);
+    
     // Только события создания/обновления пользователя
     if (eventType === 'user.created' || eventType === 'user.updated') {
       const userData = payload.data;
       
       const userId = userData.id;
       const email = userData.email_addresses?.[0]?.email_address;
-      const name = `${userData.first_name || ''} ${userData.last_name || ''}`.trim() || email?.split('@')[0];
+      const firstName = userData.first_name || '';
+      const lastName = userData.last_name || '';
+      const name = `${firstName} ${lastName}`.trim() || email?.split('@')[0] || 'User';
+      
+      console.log('Saving user to Supabase:', { userId, email, name });
+      
+      if (!userId || !email) {
+        console.error('Missing userId or email:', { userId, email });
+        return res.status(400).json({ error: 'Missing required user data' });
+      }
       
       // Сохраняем в Supabase
       const { error } = await supabase
@@ -91,14 +113,14 @@ app.post('/api/webhooks/clerk', express.raw({ type: 'application/json' }), async
       
       if (error) {
         console.error('Supabase error:', error);
-        return res.status(500).json({ error: 'Database error' });
+        return res.status(500).json({ error: 'Database error', details: error.message });
       }
       
-      console.log(`User ${eventType}: ${userId}`);
-      return res.status(200).json({ success: true });
+      console.log(`User ${eventType} successful: ${userId}`);
+      return res.status(200).json({ success: true, userId });
     }
     
-    res.status(200).json({ received: true });
+    res.status(200).json({ received: true, eventType });
   } catch (err) {
     console.error('Webhook error:', err);
     res.status(500).json({ error: 'Webhook processing failed' });

@@ -60620,10 +60620,10 @@ function matchStringTarget(hostname2, target) {
   }
   return false;
 }
-function getDefaultPropagationTargets(supabaseUrl) {
+function getDefaultPropagationTargets(supabaseUrl2) {
   const targets = [];
   try {
-    const url2 = new URL(supabaseUrl);
+    const url2 = new URL(supabaseUrl2);
     targets.push(url2.hostname);
   } catch (error40) {
   }
@@ -60689,17 +60689,17 @@ var resolveFetch2 = (customFetch) => {
 var resolveHeadersConstructor = () => {
   return Headers;
 };
-var fetchWithAuth = (supabaseKey, supabaseUrl, getAccessToken, customFetch, tracePropagationOptions) => {
+var fetchWithAuth = (supabaseKey2, supabaseUrl2, getAccessToken, customFetch, tracePropagationOptions) => {
   const fetch$1 = resolveFetch2(customFetch);
   const HeadersConstructor = resolveHeadersConstructor();
   const traceEnabled = (tracePropagationOptions === null || tracePropagationOptions === void 0 ? void 0 : tracePropagationOptions.enabled) === true;
   const respectSampling = (tracePropagationOptions === null || tracePropagationOptions === void 0 ? void 0 : tracePropagationOptions.respectSamplingDecision) !== false;
-  const traceTargets = traceEnabled ? getDefaultPropagationTargets(supabaseUrl) : null;
+  const traceTargets = traceEnabled ? getDefaultPropagationTargets(supabaseUrl2) : null;
   return async (input, init) => {
     var _await$getAccessToken;
-    const accessToken = (_await$getAccessToken = await getAccessToken()) !== null && _await$getAccessToken !== void 0 ? _await$getAccessToken : supabaseKey;
+    const accessToken = (_await$getAccessToken = await getAccessToken()) !== null && _await$getAccessToken !== void 0 ? _await$getAccessToken : supabaseKey2;
     let headers = new HeadersConstructor(init === null || init === void 0 ? void 0 : init.headers);
-    if (!headers.has("apikey")) headers.set("apikey", supabaseKey);
+    if (!headers.has("apikey")) headers.set("apikey", supabaseKey2);
     if (!headers.has("Authorization")) headers.set("Authorization", `Bearer ${accessToken}`);
     if (traceTargets) {
       const traceHeaders = await getTraceHeaders(input, traceTargets, respectSampling);
@@ -60750,8 +60750,8 @@ function applySettingDefaults(options, defaults3) {
   else delete result.accessToken;
   return result;
 }
-function validateSupabaseUrl(supabaseUrl) {
-  const trimmedUrl = supabaseUrl === null || supabaseUrl === void 0 ? void 0 : supabaseUrl.trim();
+function validateSupabaseUrl(supabaseUrl2) {
+  const trimmedUrl = supabaseUrl2 === null || supabaseUrl2 === void 0 ? void 0 : supabaseUrl2.trim();
   if (!trimmedUrl) throw new Error("supabaseUrl is required.");
   if (!trimmedUrl.match(/^https?:\/\//i)) throw new Error("Invalid supabaseUrl: Must be a valid HTTP or HTTPS URL.");
   try {
@@ -60977,12 +60977,12 @@ var SupabaseClient = class {
   * })
   * ```
   */
-  constructor(supabaseUrl, supabaseKey, options) {
+  constructor(supabaseUrl2, supabaseKey2, options) {
     var _settings$auth$storag, _settings$global$head;
-    this.supabaseUrl = supabaseUrl;
-    this.supabaseKey = supabaseKey;
-    const baseUrl = validateSupabaseUrl(supabaseUrl);
-    if (!supabaseKey) throw new Error("supabaseKey is required.");
+    this.supabaseUrl = supabaseUrl2;
+    this.supabaseKey = supabaseKey2;
+    const baseUrl = validateSupabaseUrl(supabaseUrl2);
+    if (!supabaseKey2) throw new Error("supabaseKey is required.");
     this.realtimeUrl = new URL("realtime/v1", baseUrl);
     this.realtimeUrl.protocol = this.realtimeUrl.protocol.replace("http", "ws");
     this.authUrl = new URL("auth/v1", baseUrl);
@@ -61009,7 +61009,7 @@ var SupabaseClient = class {
         throw new Error(`@supabase/supabase-js: Supabase Client is configured with the accessToken option, accessing supabase.auth.${String(prop)} is not possible`);
       } });
     }
-    this.fetch = fetchWithAuth(supabaseKey, supabaseUrl, this._getAccessToken.bind(this), settings.global.fetch, settings.tracePropagation);
+    this.fetch = fetchWithAuth(supabaseKey2, supabaseUrl2, this._getAccessToken.bind(this), settings.global.fetch, settings.tracePropagation);
     this.realtime = this._initRealtimeClient(_objectSpread23({
       headers: this.headers,
       accessToken: this._getAccessToken.bind(this),
@@ -61193,8 +61193,8 @@ var SupabaseClient = class {
     }
   }
 };
-var createClient = (supabaseUrl, supabaseKey, options) => {
-  return new SupabaseClient(supabaseUrl, supabaseKey, options);
+var createClient = (supabaseUrl2, supabaseKey2, options) => {
+  return new SupabaseClient(supabaseUrl2, supabaseKey2, options);
 };
 function shouldShowDeprecationWarning() {
   if (typeof window !== "undefined") return false;
@@ -100702,9 +100702,18 @@ async function seedFoodsIfEmpty() {
 
 // src/index.ts
 console.log("=== STARTING SERVER ===");
+var supabaseUrl = process.env.SUPABASE_URL;
+var supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+if (!supabaseUrl || !supabaseKey) {
+  console.error("Missing Supabase environment variables!");
+  console.error("SUPABASE_URL:", supabaseUrl ? "set" : "missing");
+  console.error("SUPABASE_SERVICE_ROLE_KEY:", supabaseKey ? "set" : "missing");
+} else {
+  console.log("Supabase initialized with URL:", supabaseUrl);
+}
 var supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
+  supabaseUrl || "",
+  supabaseKey || ""
 );
 console.log("=== IMPORTS DONE ===");
 var rawPort = process.env["PORT"];
@@ -100748,11 +100757,19 @@ app_default.post("/api/webhooks/clerk", import_express16.default.raw({ type: "ap
   try {
     const payload = req.body;
     const eventType = payload.type;
+    console.log("Webhook received:", eventType);
     if (eventType === "user.created" || eventType === "user.updated") {
       const userData = payload.data;
       const userId = userData.id;
       const email3 = userData.email_addresses?.[0]?.email_address;
-      const name = `${userData.first_name || ""} ${userData.last_name || ""}`.trim() || email3?.split("@")[0];
+      const firstName = userData.first_name || "";
+      const lastName = userData.last_name || "";
+      const name = `${firstName} ${lastName}`.trim() || email3?.split("@")[0] || "User";
+      console.log("Saving user to Supabase:", { userId, email: email3, name });
+      if (!userId || !email3) {
+        console.error("Missing userId or email:", { userId, email: email3 });
+        return res.status(400).json({ error: "Missing required user data" });
+      }
       const { error: error40 } = await supabase.from("users").upsert({
         id: userId,
         email: email3,
@@ -100761,12 +100778,12 @@ app_default.post("/api/webhooks/clerk", import_express16.default.raw({ type: "ap
       }, { onConflict: "id" });
       if (error40) {
         console.error("Supabase error:", error40);
-        return res.status(500).json({ error: "Database error" });
+        return res.status(500).json({ error: "Database error", details: error40.message });
       }
-      console.log(`User ${eventType}: ${userId}`);
-      return res.status(200).json({ success: true });
+      console.log(`User ${eventType} successful: ${userId}`);
+      return res.status(200).json({ success: true, userId });
     }
-    res.status(200).json({ received: true });
+    res.status(200).json({ received: true, eventType });
   } catch (err) {
     console.error("Webhook error:", err);
     res.status(500).json({ error: "Webhook processing failed" });
