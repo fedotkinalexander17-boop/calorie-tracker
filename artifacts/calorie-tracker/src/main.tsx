@@ -1,13 +1,17 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { ClerkProvider } from '@clerk/clerk-react';
 import App from './App';
 import './index.css';
 
-// Временно без Clerk для проверки
-console.log('main.tsx loaded');
+const PUBLISHABLE_KEY = 'pk_test_c6x1YXNhbQtc25ha2UtNjIuY2x1cmuYjNj3bVudHMuZGV2Y3A';
+
+console.log('main.tsx loaded, key exists:', !!PUBLISHABLE_KEY);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <App />
+    <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+      <App />
+    </ClerkProvider>
   </React.StrictMode>
 );
