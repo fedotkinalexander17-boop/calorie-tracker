@@ -1,7 +1,9 @@
+console.log('=== App.tsx loaded ===');
+
 import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/clerk-react';
 
 function App() {
-  console.log('App rendered');
+  console.log('App component rendering');
   return (
     <div style={{ textAlign: 'center', padding: '50px' }}>
       <h1>Трекер здоровья 360</h1>
