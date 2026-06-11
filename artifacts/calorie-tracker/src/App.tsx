@@ -1,10 +1,10 @@
 function App() {
+  console.log('App rendered');
   return (
     <div style={{ textAlign: 'center', padding: '50px' }}>
       <h1>Трекер здоровья 360</h1>
-      <p>Приложение работает! Clerk пока отключён для теста.</p>
-      <button style={{ margin: '10px', padding: '10px 20px' }}>Войти (тест)</button>
-      <button style={{ padding: '10px 20px' }}>Регистрация (тест)</button>
+      <p>React работает!</p>
+      <button onClick={() => alert('Клик!')}>Тестовая кнопка</button>
     </div>
   );
 }
