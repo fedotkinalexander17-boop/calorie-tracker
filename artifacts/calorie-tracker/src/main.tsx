@@ -6,7 +6,7 @@ import { ClerkProvider } from '@clerk/clerk-react';
 import App from './App';
 import './index.css';
 
-const PUBLISHABLE_KEY = 'pk_test_c6x1YXNhbQtc25ha2UtNjIuY2x1cmuYjNj3bVudHMuZGV2Y3A';
+const PUBLISHABLE_KEY = 'pk_test_cGxlYXNhbnQtc25ha2UtNjUuY2xlcmsuYWNjb3VudHMuZGV2JA';
 
 console.log('PUBLISHABLE_KEY exists:', !!PUBLISHABLE_KEY);
 
