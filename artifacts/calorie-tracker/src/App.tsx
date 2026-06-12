@@ -13,11 +13,8 @@ import Wellness from "@/pages/wellness";
 import Landing from "@/pages/landing";
 import NotFound from "@/pages/not-found";
 
-const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+const clerkPubKey = 'pk_test_cGxlYXNhbnQtc25ha2UtNjUuY2xlcmsuYWNjb3VudHMuZGV2JA';
 
-if (!clerkPubKey) {
-  throw new Error("Missing VITE_CLERK_PUBLISHABLE_KEY");
-}
 
 const queryClient = new QueryClient();
 
