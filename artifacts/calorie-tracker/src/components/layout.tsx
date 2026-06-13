@@ -18,14 +18,13 @@ import { ProStatusBadge } from "@/components/pro-status-badge";
 import { Button } from "@/components/ui/button";
 import { type PropsWithChildren } from "react";
 import { useT } from "@/lib/i18n";
-import { useUser, useClerk } from "@clerk/react";
+import { useClerk } from "@clerk/clerk-react";
 import { cn } from "@/lib/utils";
 
 export function Layout({ children }: PropsWithChildren) {
   const [location] = useLocation();
   const { t, toggleLang } = useT();
-  const { user } = useUser();
-  const { signOut } = useClerk();
+  const { user, signOut } = useClerk(); // ← исправлено: используем useClerk вместо useUser
 
   const bottomNavItems = [
     { href: "/dashboard", icon: LayoutDashboard, label: t.nav.dashboard },
@@ -142,7 +141,6 @@ export function Layout({ children }: PropsWithChildren) {
         </Sidebar>
 
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          {/* Mobile top header */}
           <header className="md:hidden flex items-center gap-3 px-4 h-14 border-b border-border/40 bg-background/95 backdrop-blur sticky top-0 z-20 shrink-0">
             <SidebarTrigger className="text-muted-foreground" />
             <div className="flex items-center gap-2">
@@ -157,7 +155,6 @@ export function Layout({ children }: PropsWithChildren) {
             <div className="max-w-6xl mx-auto w-full">{children}</div>
           </div>
 
-          {/* Mobile bottom navigation */}
           <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur border-t border-border/40 z-20">
             <div className="flex items-stretch justify-around h-16 safe-area-pb">
               {bottomNavItems.map(({ href, icon: Icon, label }) => {
