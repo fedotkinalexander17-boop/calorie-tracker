@@ -39,6 +39,13 @@ export default function Dashboard() {
   const mealTypeLabel = (type: string) =>
     d.mealTypes[type as keyof typeof d.mealTypes] ?? type;
 
+  // Проверка, что weeklyStats - массив
+  const weeklyStatsArray = Array.isArray(weeklyStats) ? weeklyStats : [];
+  // Проверка, что breakdown - массив
+  const breakdownArray = Array.isArray(breakdown) ? breakdown : [];
+  // Проверка, что recentMeals - массив
+  const recentMealsArray = Array.isArray(recentMeals) ? recentMeals : [];
+
   return (
     <div className="space-y-6">
       <div>
@@ -132,9 +139,9 @@ export default function Dashboard() {
           <CardContent>
             {weeklyLoading ? (
               <Skeleton className="h-64 w-full" />
-            ) : weeklyStats && weeklyStats.length > 0 ? (
+            ) : weeklyStatsArray.length > 0 ? (
               <ResponsiveContainer width="100%" height={260}>
-                <BarChart data={weeklyStats}>
+                <BarChart data={weeklyStatsArray}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis
                     dataKey="date"
@@ -162,7 +169,7 @@ export default function Dashboard() {
                     formatter={(value: number) => [`${Math.round(value)} ${d.cal}`, d.calories]}
                   />
                   <Bar dataKey="totalCalories" name={d.calories} radius={[4, 4, 0, 0]}>
-                    {weeklyStats.map((entry, index) => (
+                    {weeklyStatsArray.map((entry, index) => (
                       <Cell
                         key={index}
                         fill={entry.totalCalories > entry.goalCalories ? "hsl(var(--destructive))" : "hsl(var(--primary))"}
@@ -186,12 +193,12 @@ export default function Dashboard() {
           <CardContent>
             {breakdownLoading ? (
               <Skeleton className="h-64 w-full" />
-            ) : breakdown && breakdown.length > 0 ? (
+            ) : breakdownArray.length > 0 ? (
               <div className="space-y-4">
                 <ResponsiveContainer width="100%" height={180}>
                   <PieChart>
                     <Pie
-                      data={breakdown}
+                      data={breakdownArray}
                       dataKey="totalCalories"
                       nameKey="mealType"
                       cx="50%"
@@ -200,7 +207,7 @@ export default function Dashboard() {
                       outerRadius={70}
                       paddingAngle={4}
                     >
-                      {breakdown.map((entry, index) => (
+                      {breakdownArray.map((entry, index) => (
                         <Cell key={index} fill={MEAL_TYPE_COLORS[entry.mealType] ?? "hsl(var(--chart-5))"} />
                       ))}
                     </Pie>
@@ -219,7 +226,7 @@ export default function Dashboard() {
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="space-y-2">
-                  {breakdown.map((item) => (
+                  {breakdownArray.map((item) => (
                     <div key={item.mealType} className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-2">
                         <div
@@ -256,9 +263,9 @@ export default function Dashboard() {
                 <Skeleton key={i} className="h-12 w-full" />
               ))}
             </div>
-          ) : recentMeals && recentMeals.length > 0 ? (
+          ) : recentMealsArray.length > 0 ? (
             <div className="space-y-3">
-              {recentMeals.map((meal) => (
+              {recentMealsArray.map((meal) => (
                 <div
                   key={meal.id}
                   className="flex items-center justify-between p-3 rounded-lg bg-muted/40"
