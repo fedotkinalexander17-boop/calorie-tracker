@@ -24,7 +24,7 @@ import { cn } from "@/lib/utils";
 export function Layout({ children }: PropsWithChildren) {
   const [location] = useLocation();
   const { t, toggleLang } = useT();
-  const { user, signOut } = useClerk(); // ← исправлено: используем useClerk вместо useUser
+  const { user, signOut } = useClerk();
 
   const bottomNavItems = [
     { href: "/dashboard", icon: LayoutDashboard, label: t.nav.dashboard },
