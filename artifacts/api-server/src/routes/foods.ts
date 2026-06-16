@@ -15,94 +15,124 @@ import {
 
 const router: IRouter = Router();
 
+// GET /api/foods - получить список продуктов
 router.get("/foods", async (req, res): Promise<void> => {
-  const params = ListFoodsQueryParams.safeParse(req.query);
-  if (!params.success) {
-    res.status(400).json({ error: params.error.message });
-    return;
-  }
+  try {
+    const params = ListFoodsQueryParams.safeParse(req.query);
+    if (!params.success) {
+      res.status(400).json({ error: params.error.message });
+      return;
+    }
 
-  let query = db.select().from(foodsTable);
-  if (params.data.search) {
-    query = query.where(ilike(foodsTable.name, `%${params.data.search}%`)) as typeof query;
-  }
+    let query = db.select().from(foodsTable);
+    if (params.data.search) {
+      query = query.where(ilike(foodsTable.name, `%${params.data.search}%`)) as typeof query;
+    }
 
-  const foods = await query.orderBy(foodsTable.name);
-  res.json(ListFoodsResponse.parse(foods));
+    const foods = await query.orderBy(foodsTable.name);
+    res.json(ListFoodsResponse.parse(foods));
+  } catch (error) {
+    console.error("Error in GET /api/foods:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
-router.post("/foods", async (req, res): Promise<void> => {
-  const parsed = CreateFoodBody.safeParse(req.body);
-  if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
-    return;
-  }
+// POST /api/foods - создать новый продукт
+router.post("/api/foods", async (req, res): Promise<void> => {
+  try {
+    const parsed = CreateFoodBody.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: parsed.error.message });
+      return;
+    }
 
-  const [food] = await db.insert(foodsTable).values(parsed.data).returning();
-  res.status(201).json(GetFoodResponse.parse(food));
+    const [food] = await db.insert(foodsTable).values(parsed.data).returning();
+    res.status(201).json(GetFoodResponse.parse(food));
+  } catch (error) {
+    console.error("Error in POST /api/foods:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
-router.get("/foods/:id", async (req, res): Promise<void> => {
-  const params = GetFoodParams.safeParse(req.params);
-  if (!params.success) {
-    res.status(400).json({ error: params.error.message });
-    return;
-  }
+// GET /api/foods/:id - получить продукт по ID
+router.get("/api/foods/:id", async (req, res): Promise<void> => {
+  try {
+    const params = GetFoodParams.safeParse(req.params);
+    if (!params.success) {
+      res.status(400).json({ error: params.error.message });
+      return;
+    }
 
-  const [food] = await db.select().from(foodsTable).where(eq(foodsTable.id, params.data.id));
-  if (!food) {
-    res.status(404).json({ error: "Food not found" });
-    return;
-  }
+    const [food] = await db.select().from(foodsTable).where(eq(foodsTable.id, params.data.id));
+    if (!food) {
+      res.status(404).json({ error: "Food not found" });
+      return;
+    }
 
-  res.json(GetFoodResponse.parse(food));
+    res.json(GetFoodResponse.parse(food));
+  } catch (error) {
+    console.error("Error in GET /api/foods/:id:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
-router.patch("/foods/:id", async (req, res): Promise<void> => {
-  const params = UpdateFoodParams.safeParse(req.params);
-  if (!params.success) {
-    res.status(400).json({ error: params.error.message });
-    return;
+// PATCH /api/foods/:id - обновить продукт
+router.patch("/api/foods/:id", async (req, res): Promise<void> => {
+  try {
+    const params = UpdateFoodParams.safeParse(req.params);
+    if (!params.success) {
+      res.status(400).json({ error: params.error.message });
+      return;
+    }
+
+    const parsed = UpdateFoodBody.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: parsed.error.message });
+      return;
+    }
+
+    const [food] = await db
+      .update(foodsTable)
+      .set(parsed.data)
+      .where(eq(foodsTable.id, params.data.id))
+      .returning();
+
+    if (!food) {
+      res.status(404).json({ error: "Food not found" });
+      return;
+    }
+
+    res.json(UpdateFoodResponse.parse(food));
+  } catch (error) {
+    console.error("Error in PATCH /api/foods/:id:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
-
-  const parsed = UpdateFoodBody.safeParse(req.body);
-  if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
-    return;
-  }
-
-  const [food] = await db
-    .update(foodsTable)
-    .set(parsed.data)
-    .where(eq(foodsTable.id, params.data.id))
-    .returning();
-
-  if (!food) {
-    res.status(404).json({ error: "Food not found" });
-    return;
-  }
-
-  res.json(UpdateFoodResponse.parse(food));
 });
 
-router.delete("/foods/:id", async (req, res): Promise<void> => {
-  const params = DeleteFoodParams.safeParse(req.params);
-  if (!params.success) {
-    res.status(400).json({ error: params.error.message });
-    return;
+// DELETE /api/foods/:id - удалить продукт
+router.delete("/api/foods/:id", async (req, res): Promise<void> => {
+  try {
+    const params = DeleteFoodParams.safeParse(req.params);
+    if (!params.success) {
+      res.status(400).json({ error: params.error.message });
+      return;
+    }
+
+    const [food] = await db
+      .delete(foodsTable)
+      .where(eq(foodsTable.id, params.data.id))
+      .returning();
+
+    if (!food) {
+      res.status(404).json({ error: "Food not found" });
+      return;
+    }
+
+    res.sendStatus(204);
+  } catch (error) {
+    console.error("Error in DELETE /api/foods/:id:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
-
-  const [food] = await db
-    .delete(foodsTable)
-    .where(eq(foodsTable.id, params.data.id))
-    .returning();
-
-  if (!food) {
-    res.status(404).json({ error: "Food not found" });
-    return;
-  }
-
-  res.sendStatus(204);
 });
 
 export default router;

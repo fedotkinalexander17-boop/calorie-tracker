@@ -92768,70 +92768,95 @@ var db = drizzle(pool, { schema: schema_exports });
 // src/routes/foods.ts
 var router2 = (0, import_express2.Router)();
 router2.get("/foods", async (req, res) => {
-  const params = ListFoodsQueryParams.safeParse(req.query);
-  if (!params.success) {
-    res.status(400).json({ error: params.error.message });
-    return;
+  try {
+    const params = ListFoodsQueryParams.safeParse(req.query);
+    if (!params.success) {
+      res.status(400).json({ error: params.error.message });
+      return;
+    }
+    let query = db.select().from(foodsTable);
+    if (params.data.search) {
+      query = query.where(ilike(foodsTable.name, `%${params.data.search}%`));
+    }
+    const foods = await query.orderBy(foodsTable.name);
+    res.json(ListFoodsResponse.parse(foods));
+  } catch (error40) {
+    console.error("Error in GET /api/foods:", error40);
+    res.status(500).json({ error: "Internal server error" });
   }
-  let query = db.select().from(foodsTable);
-  if (params.data.search) {
-    query = query.where(ilike(foodsTable.name, `%${params.data.search}%`));
-  }
-  const foods = await query.orderBy(foodsTable.name);
-  res.json(ListFoodsResponse.parse(foods));
 });
-router2.post("/foods", async (req, res) => {
-  const parsed = CreateFoodBody.safeParse(req.body);
-  if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
-    return;
+router2.post("/api/foods", async (req, res) => {
+  try {
+    const parsed = CreateFoodBody.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: parsed.error.message });
+      return;
+    }
+    const [food] = await db.insert(foodsTable).values(parsed.data).returning();
+    res.status(201).json(GetFoodResponse.parse(food));
+  } catch (error40) {
+    console.error("Error in POST /api/foods:", error40);
+    res.status(500).json({ error: "Internal server error" });
   }
-  const [food] = await db.insert(foodsTable).values(parsed.data).returning();
-  res.status(201).json(GetFoodResponse.parse(food));
 });
-router2.get("/foods/:id", async (req, res) => {
-  const params = GetFoodParams.safeParse(req.params);
-  if (!params.success) {
-    res.status(400).json({ error: params.error.message });
-    return;
+router2.get("/api/foods/:id", async (req, res) => {
+  try {
+    const params = GetFoodParams.safeParse(req.params);
+    if (!params.success) {
+      res.status(400).json({ error: params.error.message });
+      return;
+    }
+    const [food] = await db.select().from(foodsTable).where(eq(foodsTable.id, params.data.id));
+    if (!food) {
+      res.status(404).json({ error: "Food not found" });
+      return;
+    }
+    res.json(GetFoodResponse.parse(food));
+  } catch (error40) {
+    console.error("Error in GET /api/foods/:id:", error40);
+    res.status(500).json({ error: "Internal server error" });
   }
-  const [food] = await db.select().from(foodsTable).where(eq(foodsTable.id, params.data.id));
-  if (!food) {
-    res.status(404).json({ error: "Food not found" });
-    return;
-  }
-  res.json(GetFoodResponse.parse(food));
 });
-router2.patch("/foods/:id", async (req, res) => {
-  const params = UpdateFoodParams.safeParse(req.params);
-  if (!params.success) {
-    res.status(400).json({ error: params.error.message });
-    return;
+router2.patch("/api/foods/:id", async (req, res) => {
+  try {
+    const params = UpdateFoodParams.safeParse(req.params);
+    if (!params.success) {
+      res.status(400).json({ error: params.error.message });
+      return;
+    }
+    const parsed = UpdateFoodBody.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: parsed.error.message });
+      return;
+    }
+    const [food] = await db.update(foodsTable).set(parsed.data).where(eq(foodsTable.id, params.data.id)).returning();
+    if (!food) {
+      res.status(404).json({ error: "Food not found" });
+      return;
+    }
+    res.json(UpdateFoodResponse.parse(food));
+  } catch (error40) {
+    console.error("Error in PATCH /api/foods/:id:", error40);
+    res.status(500).json({ error: "Internal server error" });
   }
-  const parsed = UpdateFoodBody.safeParse(req.body);
-  if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
-    return;
-  }
-  const [food] = await db.update(foodsTable).set(parsed.data).where(eq(foodsTable.id, params.data.id)).returning();
-  if (!food) {
-    res.status(404).json({ error: "Food not found" });
-    return;
-  }
-  res.json(UpdateFoodResponse.parse(food));
 });
-router2.delete("/foods/:id", async (req, res) => {
-  const params = DeleteFoodParams.safeParse(req.params);
-  if (!params.success) {
-    res.status(400).json({ error: params.error.message });
-    return;
+router2.delete("/api/foods/:id", async (req, res) => {
+  try {
+    const params = DeleteFoodParams.safeParse(req.params);
+    if (!params.success) {
+      res.status(400).json({ error: params.error.message });
+      return;
+    }
+    const [food] = await db.delete(foodsTable).where(eq(foodsTable.id, params.data.id)).returning();
+    if (!food) {
+      res.status(404).json({ error: "Food not found" });
+      return;
+    }
+    res.sendStatus(204);
+  } catch (error40) {
+    console.error("Error in DELETE /api/foods/:id:", error40);
+    res.status(500).json({ error: "Internal server error" });
   }
-  const [food] = await db.delete(foodsTable).where(eq(foodsTable.id, params.data.id)).returning();
-  if (!food) {
-    res.status(404).json({ error: "Food not found" });
-    return;
-  }
-  res.sendStatus(204);
 });
 var foods_default = router2;
 
