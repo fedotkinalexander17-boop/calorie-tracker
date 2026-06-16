@@ -62,11 +62,28 @@ export default function Log() {
   const { data: foods, isLoading: foodsLoading } = useQuery({
     queryKey: ["foods", searchQuery],
     queryFn: async () => {
-      const res = await fetch(`/api/foods?search=${encodeURIComponent(searchQuery)}`, {
+      console.log("🔍 Fetching foods with search:", searchQuery);
+      const url = `/api/foods?search=${encodeURIComponent(searchQuery)}`;
+      console.log("📡 Request URL:", url);
+      
+      const res = await fetch(url, {
         credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
-      if (!res.ok) throw new Error("Failed to fetch foods");
-      return res.json() as Promise<Food[]>;
+      
+      console.log("📊 Response status:", res.status);
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("❌ Error response:", errorText);
+        throw new Error(`Failed to fetch foods: ${res.status}`);
+      }
+      
+      const data = await res.json();
+      console.log("✅ Foods data:", data);
+      return data as Food[];
     },
     enabled: searchQuery.length > 1,
   });
@@ -75,11 +92,13 @@ export default function Log() {
   const { data: existingMeal, isLoading: mealLoading } = useQuery({
     queryKey: ["meal", selectedDate, activeTab],
     queryFn: async () => {
+      console.log("🔍 Fetching meal for:", { date: selectedDate, mealType: activeTab });
       const res = await fetch(`/api/meals?date=${selectedDate}&mealType=${activeTab}`, {
         credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to fetch meal");
       const data = await res.json();
+      console.log("✅ Meal data:", data);
       if (data && data.foods) {
         setSelectedFoods(data.foods);
       }
@@ -91,6 +110,7 @@ export default function Log() {
   // Мутация для сохранения приёма пищи
   const saveMealMutation = useMutation({
     mutationFn: async (meal: Meal) => {
+      console.log("💾 Saving meal:", meal);
       const res = await fetch("/api/meals", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -98,26 +118,30 @@ export default function Log() {
         credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to save meal");
-      return res.json();
+      const data = await res.json();
+      console.log("✅ Meal saved:", data);
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["meal", selectedDate, activeTab] });
       queryClient.invalidateQueries({ queryKey: ["dailySummary", selectedDate] });
       toast({ title: "Приём пищи сохранён", variant: "default" });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error("❌ Save meal error:", error);
       toast({ title: "Ошибка сохранения", variant: "destructive" });
     },
   });
 
   // Добавление продукта в список
   const addFoodToMeal = (food: Food) => {
+    console.log("➕ Adding food to meal:", food);
     setSelectedFoods((prev) => {
       const existing = prev.find((f) => f.food_id === food.id);
       if (existing) {
         return prev.map((f) =>
           f.food_id === food.id
-            ? { ...f, servings: f.servings + food.default_servings }
+            ? { ...f, servings: f.servings + (food.default_servings || 1) }
             : f
         );
       }
@@ -127,10 +151,10 @@ export default function Log() {
           food_id: food.id,
           food_name: food.name,
           servings: food.default_servings || 1,
-          calories: food.calories,
-          protein: food.protein,
-          carbs: food.carbs,
-          fat: food.fat,
+          calories: food.calories || 0,
+          protein: food.protein || 0,
+          carbs: food.carbs || 0,
+          fat: food.fat || 0,
         },
       ];
     });
@@ -139,11 +163,13 @@ export default function Log() {
 
   // Удаление продукта из списка
   const removeFoodFromMeal = (foodId: string) => {
+    console.log("🗑️ Removing food:", foodId);
     setSelectedFoods((prev) => prev.filter((f) => f.food_id !== foodId));
   };
 
   // Обновление порции
   const updateServings = (foodId: string, servings: number) => {
+    console.log("🔄 Updating servings:", { foodId, servings });
     setSelectedFoods((prev) =>
       prev.map((f) =>
         f.food_id === foodId
@@ -173,6 +199,7 @@ export default function Log() {
       date: selectedDate,
     };
 
+    console.log("📤 Submitting meal:", meal);
     saveMealMutation.mutate(meal);
   };
 
@@ -230,7 +257,10 @@ export default function Log() {
                   <Input
                     placeholder="Поиск продуктов..."
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      console.log("🔍 Search query changed:", e.target.value);
+                    }}
                     className="pl-9"
                   />
                 </div>
@@ -246,7 +276,7 @@ export default function Log() {
                         <div>
                           <p className="font-medium text-sm">{food.name}</p>
                           <p className="text-xs text-muted-foreground">
-                            {food.calories} ккал | Б: {food.protein}г | Ж: {food.fat}г | У: {food.carbs}г
+                            {food.calories || 0} ккал | Б: {food.protein || 0}г | Ж: {food.fat || 0}г | У: {food.carbs || 0}г
                           </p>
                         </div>
                         <Button size="sm" variant="ghost">
@@ -255,6 +285,9 @@ export default function Log() {
                       </div>
                     ))}
                   </div>
+                )}
+                {foods && foods.length === 0 && searchQuery.length > 1 && (
+                  <p className="text-sm text-muted-foreground mt-2">Ничего не найдено</p>
                 )}
               </CardContent>
             </Card>
@@ -288,9 +321,9 @@ export default function Log() {
                           </div>
                         </div>
                         <div className="text-right mr-4">
-                          <p className="text-sm font-semibold">{Math.round(food.calories)} ккал</p>
+                          <p className="text-sm font-semibold">{Math.round(food.calories || 0)} ккал</p>
                           <p className="text-xs text-muted-foreground">
-                            Б: {Math.round(food.protein)}г Ж: {Math.round(food.fat)}г У: {Math.round(food.carbs)}г
+                            Б: {Math.round(food.protein || 0)}г Ж: {Math.round(food.fat || 0)}г У: {Math.round(food.carbs || 0)}г
                           </p>
                         </div>
                         <Button size="sm" variant="ghost" onClick={() => removeFoodFromMeal(food.food_id)}>
@@ -304,9 +337,9 @@ export default function Log() {
                       <div className="flex justify-between items-center">
                         <p className="font-semibold">Итого:</p>
                         <div className="text-right">
-                          <p className="font-bold text-lg">{Math.round(totals.calories)} ккал</p>
+                          <p className="font-bold text-lg">{Math.round(totals.calories || 0)} ккал</p>
                           <p className="text-xs text-muted-foreground">
-                            Б: {Math.round(totals.protein)}г | Ж: {Math.round(totals.fat)}г | У: {Math.round(totals.carbs)}г
+                            Б: {Math.round(totals.protein || 0)}г | Ж: {Math.round(totals.fat || 0)}г | У: {Math.round(totals.carbs || 0)}г
                           </p>
                         </div>
                       </div>
