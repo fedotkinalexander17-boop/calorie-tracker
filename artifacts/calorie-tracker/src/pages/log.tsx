@@ -1,11 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useT } from "@/lib/i18n";
 import { Plus, Trash2, Search } from "lucide-react";
@@ -83,7 +82,9 @@ export default function Log() {
       
       const data = await res.json();
       console.log("✅ Foods data:", data);
-      return data as Food[];
+      
+      // Гарантируем, что возвращаем массив
+      return Array.isArray(data) ? data : [];
     },
     enabled: searchQuery.length > 1,
   });
@@ -265,7 +266,7 @@ export default function Log() {
                   />
                 </div>
                 {foodsLoading && <p className="text-sm text-muted-foreground mt-2">Поиск...</p>}
-                {foods && foods.length > 0 && (
+                {Array.isArray(foods) && foods.length > 0 && (
                   <div className="mt-3 space-y-1 max-h-60 overflow-y-auto">
                     {foods.map((food) => (
                       <div
@@ -286,7 +287,7 @@ export default function Log() {
                     ))}
                   </div>
                 )}
-                {foods && foods.length === 0 && searchQuery.length > 1 && (
+                {Array.isArray(foods) && foods.length === 0 && searchQuery.length > 1 && (
                   <p className="text-sm text-muted-foreground mt-2">Ничего не найдено</p>
                 )}
               </CardContent>
