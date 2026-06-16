@@ -12,7 +12,7 @@ import {
   SidebarFooter,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Link, useLocation } from "wouter";
+import { Link, useLocation } from "react-router-dom"; // ← ИЗМЕНЕНО
 import { Utensils, LayoutDashboard, Database, Target, Apple, Globe, LogOut, HeartPulse } from "lucide-react";
 import { ProStatusBadge } from "@/components/pro-status-badge";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,7 @@ import { useClerk } from "@clerk/clerk-react";
 import { cn } from "@/lib/utils";
 
 export function Layout({ children }: PropsWithChildren) {
-  const [location] = useLocation();
+  const location = useLocation().pathname; // ← ИЗМЕНЕНО
   const { t, toggleLang } = useT();
   const { user, signOut } = useClerk();
 
@@ -54,7 +54,7 @@ export function Layout({ children }: PropsWithChildren) {
                 <SidebarMenu>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild isActive={location === "/dashboard"}>
-                      <Link href="/dashboard">
+                      <Link to="/dashboard"> {/* ← ИЗМЕНЕНО */}
                         <LayoutDashboard className="w-4 h-4 mr-2" />
                         <span>{t.nav.dashboard}</span>
                       </Link>
@@ -62,7 +62,7 @@ export function Layout({ children }: PropsWithChildren) {
                   </SidebarMenuItem>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild isActive={location === "/log"}>
-                      <Link href="/log">
+                      <Link to="/log"> {/* ← ИЗМЕНЕНО */}
                         <Utensils className="w-4 h-4 mr-2" />
                         <span>{t.nav.dailyLog}</span>
                       </Link>
@@ -70,7 +70,7 @@ export function Layout({ children }: PropsWithChildren) {
                   </SidebarMenuItem>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild isActive={location === "/wellness"}>
-                      <Link href="/wellness">
+                      <Link to="/wellness"> {/* ← ИЗМЕНЕНО */}
                         <HeartPulse className="w-4 h-4 mr-2" />
                         <span>{t.nav.wellness}</span>
                       </Link>
@@ -88,7 +88,7 @@ export function Layout({ children }: PropsWithChildren) {
                 <SidebarMenu>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild isActive={location === "/foods"}>
-                      <Link href="/foods">
+                      <Link to="/foods"> {/* ← ИЗМЕНЕНО */}
                         <Database className="w-4 h-4 mr-2" />
                         <span>{t.nav.foodLibrary}</span>
                       </Link>
@@ -96,7 +96,7 @@ export function Layout({ children }: PropsWithChildren) {
                   </SidebarMenuItem>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild isActive={location === "/goals"}>
-                      <Link href="/goals">
+                      <Link to="/goals"> {/* ← ИЗМЕНЕНО */}
                         <Target className="w-4 h-4 mr-2" />
                         <span>{t.nav.myGoals}</span>
                       </Link>
@@ -160,7 +160,7 @@ export function Layout({ children }: PropsWithChildren) {
               {bottomNavItems.map(({ href, icon: Icon, label }) => {
                 const active = location === href;
                 return (
-                  <Link href={href} key={href} className="flex-1">
+                  <Link to={href} key={href} className="flex-1"> {/* ← ИЗМЕНЕНО */}
                     <div className={cn(
                       "flex flex-col items-center justify-center gap-1 h-full transition-colors",
                       active ? "text-primary" : "text-muted-foreground"
