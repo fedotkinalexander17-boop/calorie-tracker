@@ -5644,106 +5644,133 @@ var require_on_finished = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/content-type@1.0.5/node_modules/content-type/index.js
-var require_content_type = __commonJS({
-  "../../node_modules/.pnpm/content-type@1.0.5/node_modules/content-type/index.js"(exports) {
+// ../../node_modules/.pnpm/content-type@2.0.0/node_modules/content-type/dist/index.js
+var require_dist = __commonJS({
+  "../../node_modules/.pnpm/content-type@2.0.0/node_modules/content-type/dist/index.js"(exports) {
     "use strict";
-    var PARAM_REGEXP = /; *([!#$%&'*+.^_`|~0-9A-Za-z-]+) *= *("(?:[\u000b\u0020\u0021\u0023-\u005b\u005d-\u007e\u0080-\u00ff]|\\[\u000b\u0020-\u00ff])*"|[!#$%&'*+.^_`|~0-9A-Za-z-]+) */g;
-    var TEXT_REGEXP = /^[\u000b\u0020-\u007e\u0080-\u00ff]+$/;
-    var TOKEN_REGEXP = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
-    var QESC_REGEXP = /\\([\u000b\u0020-\u00ff])/g;
-    var QUOTE_REGEXP = /([\\"])/g;
-    var TYPE_REGEXP = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+\/[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
+    Object.defineProperty(exports, "__esModule", { value: true });
     exports.format = format;
     exports.parse = parse4;
+    var TEXT_REGEXP = /^[\u0009\u0020-\u007e\u0080-\u00ff]*$/;
+    var TOKEN_REGEXP = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
+    var QUOTE_REGEXP = /[\\"]/g;
+    var TYPE_REGEXP = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+\/[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
+    var NullObject = /* @__PURE__ */ (() => {
+      const C = function() {
+      };
+      C.prototype = /* @__PURE__ */ Object.create(null);
+      return C;
+    })();
     function format(obj) {
-      if (!obj || typeof obj !== "object") {
-        throw new TypeError("argument obj is required");
-      }
-      var parameters = obj.parameters;
-      var type = obj.type;
+      const { type, parameters } = obj;
       if (!type || !TYPE_REGEXP.test(type)) {
-        throw new TypeError("invalid type");
+        throw new TypeError(`Invalid type: ${type}`);
       }
-      var string4 = type;
-      if (parameters && typeof parameters === "object") {
-        var param;
-        var params = Object.keys(parameters).sort();
-        for (var i = 0; i < params.length; i++) {
-          param = params[i];
+      let result = type;
+      if (parameters) {
+        for (const param of Object.keys(parameters)) {
           if (!TOKEN_REGEXP.test(param)) {
-            throw new TypeError("invalid parameter name");
+            throw new TypeError(`Invalid parameter name: ${param}`);
           }
-          string4 += "; " + param + "=" + qstring(parameters[param]);
+          result += `; ${param}=${qstring(parameters[param])}`;
         }
       }
-      return string4;
+      return result;
     }
-    function parse4(string4) {
-      if (!string4) {
-        throw new TypeError("argument string is required");
-      }
-      var header = typeof string4 === "object" ? getcontenttype(string4) : string4;
-      if (typeof header !== "string") {
-        throw new TypeError("argument string is required to be a string");
-      }
-      var index = header.indexOf(";");
-      var type = index !== -1 ? header.slice(0, index).trim() : header.trim();
-      if (!TYPE_REGEXP.test(type)) {
-        throw new TypeError("invalid media type");
-      }
-      var obj = new ContentType(type.toLowerCase());
-      if (index !== -1) {
-        var key;
-        var match2;
-        var value;
-        PARAM_REGEXP.lastIndex = index;
-        while (match2 = PARAM_REGEXP.exec(header)) {
-          if (match2.index !== index) {
-            throw new TypeError("invalid parameter format");
-          }
-          index += match2[0].length;
-          key = match2[1].toLowerCase();
-          value = match2[2];
-          if (value.charCodeAt(0) === 34) {
-            value = value.slice(1, -1);
-            if (value.indexOf("\\") !== -1) {
-              value = value.replace(QESC_REGEXP, "$1");
+    function parse4(header, options) {
+      const len = header.length;
+      let index = skipOWS(header, 0, len);
+      const valueStart = index;
+      index = skipValue(header, index, len);
+      const valueEnd = trailingOWS(header, valueStart, index);
+      const type = header.slice(valueStart, valueEnd).toLowerCase();
+      const parameters = options?.parameters === false ? new NullObject() : parseParameters(header, index, len);
+      return { type, parameters };
+    }
+    var SP = 32;
+    var HTAB = 9;
+    var SEMI = 59;
+    var EQ = 61;
+    var DQUOTE = 34;
+    var BSLASH = 92;
+    function parseParameters(header, index, len) {
+      const parameters = new NullObject();
+      parameter: while (index < len) {
+        index = skipOWS(header, index + 1, len);
+        const keyStart = index;
+        while (index < len) {
+          const code = header.charCodeAt(index);
+          if (code === SEMI)
+            continue parameter;
+          if (code === EQ) {
+            const keyEnd = trailingOWS(header, keyStart, index);
+            const key = header.slice(keyStart, keyEnd).toLowerCase();
+            index = skipOWS(header, index + 1, len);
+            if (index < len && header.charCodeAt(index) === DQUOTE) {
+              index++;
+              let value = "";
+              while (index < len) {
+                const code2 = header.charCodeAt(index++);
+                if (code2 === DQUOTE) {
+                  index = skipValue(header, index, len);
+                  if (parameters[key] === void 0)
+                    parameters[key] = value;
+                  break;
+                }
+                if (code2 === BSLASH && index < len) {
+                  value += header[index++];
+                  continue;
+                }
+                value += String.fromCharCode(code2);
+              }
+              continue parameter;
             }
+            const valueStart = index;
+            index = skipValue(header, index, len);
+            if (parameters[key] === void 0) {
+              const valueEnd = trailingOWS(header, valueStart, index);
+              parameters[key] = header.slice(valueStart, valueEnd);
+            }
+            continue parameter;
           }
-          obj.parameters[key] = value;
-        }
-        if (index !== header.length) {
-          throw new TypeError("invalid parameter format");
+          index++;
         }
       }
-      return obj;
+      return parameters;
     }
-    function getcontenttype(obj) {
-      var header;
-      if (typeof obj.getHeader === "function") {
-        header = obj.getHeader("content-type");
-      } else if (typeof obj.headers === "object") {
-        header = obj.headers && obj.headers["content-type"];
+    function skipValue(str2, index, len) {
+      while (index < len) {
+        const char2 = str2.charCodeAt(index);
+        if (char2 === SEMI)
+          break;
+        index++;
       }
-      if (typeof header !== "string") {
-        throw new TypeError("content-type header is missing from object");
-      }
-      return header;
+      return index;
     }
-    function qstring(val) {
-      var str2 = String(val);
-      if (TOKEN_REGEXP.test(str2)) {
+    function skipOWS(header, index, len) {
+      while (index < len) {
+        const char2 = header.charCodeAt(index);
+        if (char2 !== SP && char2 !== HTAB)
+          break;
+        index++;
+      }
+      return index;
+    }
+    function trailingOWS(header, start, end) {
+      while (end > start) {
+        const char2 = header.charCodeAt(end - 1);
+        if (char2 !== SP && char2 !== HTAB)
+          break;
+        end--;
+      }
+      return end;
+    }
+    function qstring(str2) {
+      if (TOKEN_REGEXP.test(str2))
         return str2;
-      }
-      if (str2.length > 0 && !TEXT_REGEXP.test(str2)) {
-        throw new TypeError("invalid parameter value");
-      }
-      return '"' + str2.replace(QUOTE_REGEXP, "\\$1") + '"';
-    }
-    function ContentType(type) {
-      this.parameters = /* @__PURE__ */ Object.create(null);
-      this.type = type;
+      if (TEXT_REGEXP.test(str2))
+        return `"${str2.replace(QUOTE_REGEXP, "\\$&")}"`;
+      throw new TypeError(`Invalid parameter value: ${str2}`);
     }
   }
 });
@@ -15323,11 +15350,11 @@ var require_media_typer = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/type-is@2.0.1/node_modules/type-is/index.js
+// ../../node_modules/.pnpm/type-is@2.1.0/node_modules/type-is/index.js
 var require_type_is = __commonJS({
-  "../../node_modules/.pnpm/type-is@2.0.1/node_modules/type-is/index.js"(exports, module) {
+  "../../node_modules/.pnpm/type-is@2.1.0/node_modules/type-is/index.js"(exports, module) {
     "use strict";
-    var contentType = require_content_type();
+    var contentType = require_dist();
     var mime = require_mime_types();
     var typer = require_media_typer();
     module.exports = typeofrequest;
@@ -15336,9 +15363,12 @@ var require_type_is = __commonJS({
     module.exports.normalize = normalize;
     module.exports.match = mimeMatch;
     function typeis(value, types_) {
+      if (value && typeof value === "object") {
+        value = value.headers["content-type"];
+      }
       var i;
       var types3 = types_;
-      var val = tryNormalizeType(value);
+      var val = normalizeType(value);
       if (!val) {
         return false;
       }
@@ -15404,15 +15434,113 @@ var require_type_is = __commonJS({
       return true;
     }
     function normalizeType(value) {
-      var type = contentType.parse(value).type;
+      if (!value) return null;
+      var type = contentType.parse(value, { parameters: false }).type;
       return typer.test(type) ? type : null;
     }
-    function tryNormalizeType(value) {
-      try {
-        return value ? normalizeType(value) : null;
-      } catch (err) {
-        return null;
+  }
+});
+
+// ../../node_modules/.pnpm/content-type@1.0.5/node_modules/content-type/index.js
+var require_content_type = __commonJS({
+  "../../node_modules/.pnpm/content-type@1.0.5/node_modules/content-type/index.js"(exports) {
+    "use strict";
+    var PARAM_REGEXP = /; *([!#$%&'*+.^_`|~0-9A-Za-z-]+) *= *("(?:[\u000b\u0020\u0021\u0023-\u005b\u005d-\u007e\u0080-\u00ff]|\\[\u000b\u0020-\u00ff])*"|[!#$%&'*+.^_`|~0-9A-Za-z-]+) */g;
+    var TEXT_REGEXP = /^[\u000b\u0020-\u007e\u0080-\u00ff]+$/;
+    var TOKEN_REGEXP = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
+    var QESC_REGEXP = /\\([\u000b\u0020-\u00ff])/g;
+    var QUOTE_REGEXP = /([\\"])/g;
+    var TYPE_REGEXP = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+\/[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
+    exports.format = format;
+    exports.parse = parse4;
+    function format(obj) {
+      if (!obj || typeof obj !== "object") {
+        throw new TypeError("argument obj is required");
       }
+      var parameters = obj.parameters;
+      var type = obj.type;
+      if (!type || !TYPE_REGEXP.test(type)) {
+        throw new TypeError("invalid type");
+      }
+      var string4 = type;
+      if (parameters && typeof parameters === "object") {
+        var param;
+        var params = Object.keys(parameters).sort();
+        for (var i = 0; i < params.length; i++) {
+          param = params[i];
+          if (!TOKEN_REGEXP.test(param)) {
+            throw new TypeError("invalid parameter name");
+          }
+          string4 += "; " + param + "=" + qstring(parameters[param]);
+        }
+      }
+      return string4;
+    }
+    function parse4(string4) {
+      if (!string4) {
+        throw new TypeError("argument string is required");
+      }
+      var header = typeof string4 === "object" ? getcontenttype(string4) : string4;
+      if (typeof header !== "string") {
+        throw new TypeError("argument string is required to be a string");
+      }
+      var index = header.indexOf(";");
+      var type = index !== -1 ? header.slice(0, index).trim() : header.trim();
+      if (!TYPE_REGEXP.test(type)) {
+        throw new TypeError("invalid media type");
+      }
+      var obj = new ContentType(type.toLowerCase());
+      if (index !== -1) {
+        var key;
+        var match2;
+        var value;
+        PARAM_REGEXP.lastIndex = index;
+        while (match2 = PARAM_REGEXP.exec(header)) {
+          if (match2.index !== index) {
+            throw new TypeError("invalid parameter format");
+          }
+          index += match2[0].length;
+          key = match2[1].toLowerCase();
+          value = match2[2];
+          if (value.charCodeAt(0) === 34) {
+            value = value.slice(1, -1);
+            if (value.indexOf("\\") !== -1) {
+              value = value.replace(QESC_REGEXP, "$1");
+            }
+          }
+          obj.parameters[key] = value;
+        }
+        if (index !== header.length) {
+          throw new TypeError("invalid parameter format");
+        }
+      }
+      return obj;
+    }
+    function getcontenttype(obj) {
+      var header;
+      if (typeof obj.getHeader === "function") {
+        header = obj.getHeader("content-type");
+      } else if (typeof obj.headers === "object") {
+        header = obj.headers && obj.headers["content-type"];
+      }
+      if (typeof header !== "string") {
+        throw new TypeError("content-type header is missing from object");
+      }
+      return header;
+    }
+    function qstring(val) {
+      var str2 = String(val);
+      if (TOKEN_REGEXP.test(str2)) {
+        return str2;
+      }
+      if (str2.length > 0 && !TEXT_REGEXP.test(str2)) {
+        throw new TypeError("invalid parameter value");
+      }
+      return '"' + str2.replace(QUOTE_REGEXP, "\\$1") + '"';
+    }
+    function ContentType(type) {
+      this.parameters = /* @__PURE__ */ Object.create(null);
+      this.type = type;
     }
   }
 });
@@ -16293,9 +16421,9 @@ var require_object_inspect = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/side-channel-list@1.0.0/node_modules/side-channel-list/index.js
+// ../../node_modules/.pnpm/side-channel-list@1.0.1/node_modules/side-channel-list/index.js
 var require_side_channel_list = __commonJS({
-  "../../node_modules/.pnpm/side-channel-list@1.0.0/node_modules/side-channel-list/index.js"(exports, module) {
+  "../../node_modules/.pnpm/side-channel-list@1.0.1/node_modules/side-channel-list/index.js"(exports, module) {
     "use strict";
     var inspect = require_object_inspect();
     var $TypeError = require_type();
@@ -16355,9 +16483,8 @@ var require_side_channel_list = __commonJS({
           }
         },
         "delete": function(key) {
-          var root = $o && $o.next;
           var deletedNode = listDelete($o, key);
-          if (deletedNode && root && root === deletedNode) {
+          if (deletedNode && $o && !$o.next) {
             $o = void 0;
           }
           return !!deletedNode;
@@ -16387,9 +16514,9 @@ var require_side_channel_list = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/es-object-atoms@1.1.1/node_modules/es-object-atoms/index.js
+// ../../node_modules/.pnpm/es-object-atoms@1.1.2/node_modules/es-object-atoms/index.js
 var require_es_object_atoms = __commonJS({
-  "../../node_modules/.pnpm/es-object-atoms@1.1.1/node_modules/es-object-atoms/index.js"(exports, module) {
+  "../../node_modules/.pnpm/es-object-atoms@1.1.2/node_modules/es-object-atoms/index.js"(exports, module) {
     "use strict";
     module.exports = Object;
   }
@@ -16840,9 +16967,9 @@ var require_get_proto = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/hasown@2.0.2/node_modules/hasown/index.js
+// ../../node_modules/.pnpm/hasown@2.0.4/node_modules/hasown/index.js
 var require_hasown = __commonJS({
-  "../../node_modules/.pnpm/hasown@2.0.2/node_modules/hasown/index.js"(exports, module) {
+  "../../node_modules/.pnpm/hasown@2.0.4/node_modules/hasown/index.js"(exports, module) {
     "use strict";
     var call = Function.prototype.call;
     var $hasOwn = Object.prototype.hasOwnProperty;
@@ -17334,9 +17461,9 @@ var require_side_channel_weakmap = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/side-channel@1.1.0/node_modules/side-channel/index.js
+// ../../node_modules/.pnpm/side-channel@1.1.1/node_modules/side-channel/index.js
 var require_side_channel = __commonJS({
-  "../../node_modules/.pnpm/side-channel@1.1.0/node_modules/side-channel/index.js"(exports, module) {
+  "../../node_modules/.pnpm/side-channel@1.1.1/node_modules/side-channel/index.js"(exports, module) {
     "use strict";
     var $TypeError = require_type();
     var inspect = require_object_inspect();
@@ -17349,7 +17476,8 @@ var require_side_channel = __commonJS({
       var channel = {
         assert: function(key) {
           if (!channel.has(key)) {
-            throw new $TypeError("Side channel does not contain " + inspect(key));
+            var keyDesc = key && Object(key) === key ? "the given object key" : inspect(key);
+            throw new $TypeError("Side channel does not contain " + keyDesc);
           }
         },
         "delete": function(key) {
@@ -17373,9 +17501,9 @@ var require_side_channel = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/qs@6.15.0/node_modules/qs/lib/formats.js
+// ../../node_modules/.pnpm/qs@6.15.2/node_modules/qs/lib/formats.js
 var require_formats = __commonJS({
-  "../../node_modules/.pnpm/qs@6.15.0/node_modules/qs/lib/formats.js"(exports, module) {
+  "../../node_modules/.pnpm/qs@6.15.2/node_modules/qs/lib/formats.js"(exports, module) {
     "use strict";
     var replace = String.prototype.replace;
     var percentTwenties = /%20/g;
@@ -17399,9 +17527,9 @@ var require_formats = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/qs@6.15.0/node_modules/qs/lib/utils.js
+// ../../node_modules/.pnpm/qs@6.15.2/node_modules/qs/lib/utils.js
 var require_utils2 = __commonJS({
-  "../../node_modules/.pnpm/qs@6.15.0/node_modules/qs/lib/utils.js"(exports, module) {
+  "../../node_modules/.pnpm/qs@6.15.2/node_modules/qs/lib/utils.js"(exports, module) {
     "use strict";
     var formats = require_formats();
     var getSideChannel = require_side_channel();
@@ -17623,7 +17751,7 @@ var require_utils2 = __commonJS({
       }
       return !!(obj.constructor && obj.constructor.isBuffer && obj.constructor.isBuffer(obj));
     };
-    var combine = function combine2(a, b, arrayLimit, plainObjects) {
+    var combine2 = function combine3(a, b, arrayLimit, plainObjects) {
       if (isOverflow(a)) {
         var newIndex = getMaxIndex(a) + 1;
         a[newIndex] = b;
@@ -17649,7 +17777,7 @@ var require_utils2 = __commonJS({
     module.exports = {
       arrayToObject,
       assign,
-      combine,
+      combine: combine2,
       compact,
       decode,
       encode: encode2,
@@ -17663,9 +17791,9 @@ var require_utils2 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/qs@6.15.0/node_modules/qs/lib/stringify.js
+// ../../node_modules/.pnpm/qs@6.15.2/node_modules/qs/lib/stringify.js
 var require_stringify = __commonJS({
-  "../../node_modules/.pnpm/qs@6.15.0/node_modules/qs/lib/stringify.js"(exports, module) {
+  "../../node_modules/.pnpm/qs@6.15.2/node_modules/qs/lib/stringify.js"(exports, module) {
     "use strict";
     var getSideChannel = require_side_channel();
     var utils = require_utils2();
@@ -17751,7 +17879,7 @@ var require_stringify = __commonJS({
       }
       if (obj === null) {
         if (strictNullHandling) {
-          return encoder && !encodeValuesOnly ? encoder(prefix, defaults3.encoder, charset, "key", format) : prefix;
+          return formatter(encoder && !encodeValuesOnly ? encoder(prefix, defaults3.encoder, charset, "key", format) : prefix);
         }
         obj = "";
       }
@@ -17769,7 +17897,9 @@ var require_stringify = __commonJS({
       var objKeys;
       if (generateArrayPrefix === "comma" && isArray2(obj)) {
         if (encodeValuesOnly && encoder) {
-          obj = utils.maybeMap(obj, encoder);
+          obj = utils.maybeMap(obj, function(v) {
+            return v == null ? v : encoder(v);
+          });
         }
         objKeys = [{ value: obj.length > 0 ? obj.join(",") || null : void 0 }];
       } else if (isArray2(filter)) {
@@ -17907,6 +18037,9 @@ var require_stringify = __commonJS({
       var sideChannel = getSideChannel();
       for (var i = 0; i < objKeys.length; ++i) {
         var key = objKeys[i];
+        if (typeof key === "undefined" || key === null) {
+          continue;
+        }
         var value = obj[key];
         if (options.skipNulls && value === null) {
           continue;
@@ -17936,9 +18069,9 @@ var require_stringify = __commonJS({
       var prefix = options.addQueryPrefix === true ? "?" : "";
       if (options.charsetSentinel) {
         if (options.charset === "iso-8859-1") {
-          prefix += "utf8=%26%2310003%3B&";
+          prefix += "utf8=%26%2310003%3B" + options.delimiter;
         } else {
-          prefix += "utf8=%E2%9C%93&";
+          prefix += "utf8=%E2%9C%93" + options.delimiter;
         }
       }
       return joined.length > 0 ? prefix + joined : "";
@@ -17946,9 +18079,9 @@ var require_stringify = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/qs@6.15.0/node_modules/qs/lib/parse.js
+// ../../node_modules/.pnpm/qs@6.15.2/node_modules/qs/lib/parse.js
 var require_parse = __commonJS({
-  "../../node_modules/.pnpm/qs@6.15.0/node_modules/qs/lib/parse.js"(exports, module) {
+  "../../node_modules/.pnpm/qs@6.15.2/node_modules/qs/lib/parse.js"(exports, module) {
     "use strict";
     var utils = require_utils2();
     var has2 = Object.prototype.hasOwnProperty;
@@ -18000,9 +18133,9 @@ var require_parse = __commonJS({
       var limit2 = options.parameterLimit === Infinity ? void 0 : options.parameterLimit;
       var parts = cleanStr.split(
         options.delimiter,
-        options.throwOnLimitExceeded ? limit2 + 1 : limit2
+        options.throwOnLimitExceeded && typeof limit2 !== "undefined" ? limit2 + 1 : limit2
       );
-      if (options.throwOnLimitExceeded && parts.length > limit2) {
+      if (options.throwOnLimitExceeded && typeof limit2 !== "undefined" && parts.length > limit2) {
         throw new RangeError("Parameter limit exceeded. Only " + limit2 + " parameter" + (limit2 === 1 ? "" : "s") + " allowed.");
       }
       var skipIndex = -1;
@@ -18121,8 +18254,8 @@ var require_parse = __commonJS({
       }
       return leaf;
     };
-    var splitKeyIntoSegments = function splitKeyIntoSegments2(givenKey, options) {
-      var key = options.allowDots ? givenKey.replace(/\.([^.[]+)/g, "[$1]") : givenKey;
+    var splitKeyIntoSegments = function splitKeyIntoSegments2(originalKey, options) {
+      var key = options.allowDots ? originalKey.replace(/\.([^.[]+)/g, "[$1]") : originalKey;
       if (options.depth <= 0) {
         if (!options.plainObjects && has2.call(Object.prototype, key)) {
           if (!options.allowPrototypes) {
@@ -18131,37 +18264,56 @@ var require_parse = __commonJS({
         }
         return [key];
       }
-      var brackets = /(\[[^[\]]*])/;
-      var child = /(\[[^[\]]*])/g;
-      var segment = brackets.exec(key);
-      var parent = segment ? key.slice(0, segment.index) : key;
-      var keys = [];
+      var segments = [];
+      var first = key.indexOf("[");
+      var parent = first >= 0 ? key.slice(0, first) : key;
       if (parent) {
         if (!options.plainObjects && has2.call(Object.prototype, parent)) {
           if (!options.allowPrototypes) {
             return;
           }
         }
-        keys[keys.length] = parent;
+        segments[segments.length] = parent;
       }
-      var i = 0;
-      while ((segment = child.exec(key)) !== null && i < options.depth) {
-        i += 1;
-        var segmentContent = segment[1].slice(1, -1);
-        if (!options.plainObjects && has2.call(Object.prototype, segmentContent)) {
-          if (!options.allowPrototypes) {
-            return;
+      var n = key.length;
+      var open = first;
+      var collected = 0;
+      while (open >= 0 && collected < options.depth) {
+        var level = 1;
+        var i = open + 1;
+        var close = -1;
+        while (i < n && close < 0) {
+          var cu = key.charCodeAt(i);
+          if (cu === 91) {
+            level += 1;
+          } else if (cu === 93) {
+            level -= 1;
+            if (level === 0) {
+              close = i;
+            }
           }
+          i += 1;
         }
-        keys[keys.length] = segment[1];
+        if (close < 0) {
+          segments[segments.length] = "[" + key.slice(open) + "]";
+          return segments;
+        }
+        var seg = key.slice(open, close + 1);
+        var content = seg.slice(1, -1);
+        if (!options.plainObjects && has2.call(Object.prototype, content) && !options.allowPrototypes) {
+          return;
+        }
+        segments[segments.length] = seg;
+        collected += 1;
+        open = key.indexOf("[", close + 1);
       }
-      if (segment) {
+      if (open >= 0) {
         if (options.strictDepth === true) {
           throw new RangeError("Input depth exceeded depth option of " + options.depth + " and strictDepth is true");
         }
-        keys[keys.length] = "[" + key.slice(segment.index) + "]";
+        segments[segments.length] = "[" + key.slice(open) + "]";
       }
-      return keys;
+      return segments;
     };
     var parseKeys = function parseQueryStringKeys(givenKey, val, options, valuesParsed) {
       if (!givenKey) {
@@ -18245,9 +18397,9 @@ var require_parse = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/qs@6.15.0/node_modules/qs/lib/index.js
+// ../../node_modules/.pnpm/qs@6.15.2/node_modules/qs/lib/index.js
 var require_lib2 = __commonJS({
-  "../../node_modules/.pnpm/qs@6.15.0/node_modules/qs/lib/index.js"(exports, module) {
+  "../../node_modules/.pnpm/qs@6.15.2/node_modules/qs/lib/index.js"(exports, module) {
     "use strict";
     var stringify3 = require_stringify();
     var parse4 = require_parse();
@@ -19851,9 +20003,9 @@ var require_is_promise = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/path-to-regexp@8.3.0/node_modules/path-to-regexp/dist/index.js
-var require_dist = __commonJS({
-  "../../node_modules/.pnpm/path-to-regexp@8.3.0/node_modules/path-to-regexp/dist/index.js"(exports) {
+// ../../node_modules/.pnpm/path-to-regexp@8.4.2/node_modules/path-to-regexp/dist/index.js
+var require_dist2 = __commonJS({
+  "../../node_modules/.pnpm/path-to-regexp@8.4.2/node_modules/path-to-regexp/dist/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.PathError = exports.TokenData = void 0;
@@ -19866,19 +20018,7 @@ var require_dist = __commonJS({
     var NOOP_VALUE = (value) => value;
     var ID_START = /^[$_\p{ID_Start}]$/u;
     var ID_CONTINUE = /^[$\u200c\u200d\p{ID_Continue}]$/u;
-    var SIMPLE_TOKENS = {
-      // Groups.
-      "{": "{",
-      "}": "}",
-      // Reserved.
-      "(": "(",
-      ")": ")",
-      "[": "[",
-      "]": "]",
-      "+": "+",
-      "?": "?",
-      "!": "!"
-    };
+    var ID = /^[$_\p{ID_Start}][$\u200c\u200d\p{ID_Continue}]*$/u;
     function escapeText(str2) {
       return str2.replace(/[{}()\[\]+?!:*\\]/g, "\\$&");
     }
@@ -19906,97 +20046,90 @@ var require_dist = __commonJS({
     function parse4(str2, options = {}) {
       const { encodePath = NOOP_VALUE } = options;
       const chars = [...str2];
-      const tokens = [];
       let index = 0;
-      let pos = 0;
-      function name() {
-        let value = "";
-        if (ID_START.test(chars[index])) {
-          do {
-            value += chars[index++];
-          } while (ID_CONTINUE.test(chars[index]));
-        } else if (chars[index] === '"') {
-          let quoteStart = index;
-          while (index++ < chars.length) {
-            if (chars[index] === '"') {
-              index++;
-              quoteStart = 0;
-              break;
-            }
-            if (chars[index] === "\\")
-              index++;
-            value += chars[index];
-          }
-          if (quoteStart) {
-            throw new PathError(`Unterminated quote at index ${quoteStart}`, str2);
-          }
-        }
-        if (!value) {
-          throw new PathError(`Missing parameter name at index ${index}`, str2);
-        }
-        return value;
-      }
-      while (index < chars.length) {
-        const value = chars[index];
-        const type = SIMPLE_TOKENS[value];
-        if (type) {
-          tokens.push({ type, index: index++, value });
-        } else if (value === "\\") {
-          tokens.push({ type: "escape", index: index++, value: chars[index++] });
-        } else if (value === ":") {
-          tokens.push({ type: "param", index: index++, value: name() });
-        } else if (value === "*") {
-          tokens.push({ type: "wildcard", index: index++, value: name() });
-        } else {
-          tokens.push({ type: "char", index: index++, value });
-        }
-      }
-      tokens.push({ type: "end", index, value: "" });
-      function consumeUntil(endType) {
+      function consumeUntil(end) {
         const output = [];
-        while (true) {
-          const token = tokens[pos++];
-          if (token.type === endType)
-            break;
-          if (token.type === "char" || token.type === "escape") {
-            let path2 = token.value;
-            let cur = tokens[pos];
-            while (cur.type === "char" || cur.type === "escape") {
-              path2 += cur.value;
-              cur = tokens[++pos];
+        let path2 = "";
+        function writePath() {
+          if (!path2)
+            return;
+          output.push({
+            type: "text",
+            value: encodePath(path2)
+          });
+          path2 = "";
+        }
+        while (index < chars.length) {
+          const value = chars[index++];
+          if (value === end) {
+            writePath();
+            return output;
+          }
+          if (value === "\\") {
+            if (index === chars.length) {
+              throw new PathError(`Unexpected end after \\ at index ${index}`, str2);
             }
-            output.push({
-              type: "text",
-              value: encodePath(path2)
-            });
+            path2 += chars[index++];
             continue;
           }
-          if (token.type === "param" || token.type === "wildcard") {
-            output.push({
-              type: token.type,
-              name: token.value
-            });
+          if (value === ":" || value === "*") {
+            const type = value === ":" ? "param" : "wildcard";
+            let name = "";
+            if (ID_START.test(chars[index])) {
+              do {
+                name += chars[index++];
+              } while (ID_CONTINUE.test(chars[index]));
+            } else if (chars[index] === '"') {
+              let quoteStart = index;
+              while (index < chars.length) {
+                if (chars[++index] === '"') {
+                  index++;
+                  quoteStart = 0;
+                  break;
+                }
+                if (chars[index] === "\\")
+                  index++;
+                name += chars[index];
+              }
+              if (quoteStart) {
+                throw new PathError(`Unterminated quote at index ${quoteStart}`, str2);
+              }
+            }
+            if (!name) {
+              throw new PathError(`Missing parameter name at index ${index}`, str2);
+            }
+            writePath();
+            output.push({ type, name });
             continue;
           }
-          if (token.type === "{") {
+          if (value === "{") {
+            writePath();
             output.push({
               type: "group",
               tokens: consumeUntil("}")
             });
             continue;
           }
-          throw new PathError(`Unexpected ${token.type} at index ${token.index}, expected ${endType}`, str2);
+          if (value === "}" || value === "(" || value === ")" || value === "[" || value === "]" || value === "+" || value === "?" || value === "!") {
+            throw new PathError(`Unexpected ${value} at index ${index - 1}`, str2);
+          }
+          path2 += value;
         }
+        if (end) {
+          throw new PathError(`Unexpected end at index ${index}, expected ${end}`, str2);
+        }
+        writePath();
         return output;
       }
-      return new TokenData(consumeUntil("end"), str2);
+      return new TokenData(consumeUntil(""), str2);
     }
     function compile(path2, options = {}) {
       const { encode: encode2 = encodeURIComponent, delimiter = DEFAULT_DELIMITER } = options;
       const data = typeof path2 === "object" ? path2 : parse4(path2, options);
       const fn = tokensToFunction(data.tokens, delimiter, encode2);
       return function path3(params = {}) {
-        const [path4, ...missing] = fn(params);
+        const missing = [];
+        const path4 = fn(params, missing);
         if (missing.length) {
           throw new TypeError(`Missing parameters: ${missing.join(", ")}`);
         }
@@ -20005,55 +20138,61 @@ var require_dist = __commonJS({
     }
     function tokensToFunction(tokens, delimiter, encode2) {
       const encoders = tokens.map((token) => tokenToFunction(token, delimiter, encode2));
-      return (data) => {
-        const result = [""];
+      return (data, missing) => {
+        let result = "";
         for (const encoder of encoders) {
-          const [value, ...extras] = encoder(data);
-          result[0] += value;
-          result.push(...extras);
+          result += encoder(data, missing);
         }
         return result;
       };
     }
     function tokenToFunction(token, delimiter, encode2) {
       if (token.type === "text")
-        return () => [token.value];
+        return () => token.value;
       if (token.type === "group") {
         const fn = tokensToFunction(token.tokens, delimiter, encode2);
-        return (data) => {
-          const [value, ...missing] = fn(data);
-          if (!missing.length)
-            return [value];
-          return [""];
+        return (data, missing) => {
+          const len = missing.length;
+          const value = fn(data, missing);
+          if (missing.length === len)
+            return value;
+          missing.length = len;
+          return "";
         };
       }
       const encodeValue = encode2 || NOOP_VALUE;
       if (token.type === "wildcard" && encode2 !== false) {
-        return (data) => {
+        return (data, missing) => {
           const value = data[token.name];
-          if (value == null)
-            return ["", token.name];
+          if (value == null) {
+            missing.push(token.name);
+            return "";
+          }
           if (!Array.isArray(value) || value.length === 0) {
             throw new TypeError(`Expected "${token.name}" to be a non-empty array`);
           }
-          return [
-            value.map((value2, index) => {
-              if (typeof value2 !== "string") {
-                throw new TypeError(`Expected "${token.name}/${index}" to be a string`);
-              }
-              return encodeValue(value2);
-            }).join(delimiter)
-          ];
+          let result = "";
+          for (let i = 0; i < value.length; i++) {
+            if (typeof value[i] !== "string") {
+              throw new TypeError(`Expected "${token.name}/${i}" to be a string`);
+            }
+            if (i > 0)
+              result += delimiter;
+            result += encodeValue(value[i]);
+          }
+          return result;
         };
       }
-      return (data) => {
+      return (data, missing) => {
         const value = data[token.name];
-        if (value == null)
-          return ["", token.name];
+        if (value == null) {
+          missing.push(token.name);
+          return "";
+        }
         if (typeof value !== "string") {
           throw new TypeError(`Expected "${token.name}" to be a string`);
         }
-        return [encodeValue(value)];
+        return encodeValue(value);
       };
     }
     function match2(path2, options = {}) {
@@ -20085,106 +20224,134 @@ var require_dist = __commonJS({
     function pathToRegexp2(path2, options = {}) {
       const { delimiter = DEFAULT_DELIMITER, end = true, sensitive = false, trailing = true } = options;
       const keys = [];
-      const flags = sensitive ? "" : "i";
-      const sources = [];
-      for (const input of pathsToArray(path2, [])) {
-        const data = typeof input === "object" ? input : parse4(input, options);
-        for (const tokens of flatten(data.tokens, 0, [])) {
-          sources.push(toRegExpSource(tokens, delimiter, keys, data.originalPath));
+      let source = "";
+      let combinations = 0;
+      function process2(path3) {
+        if (Array.isArray(path3)) {
+          for (const p of path3)
+            process2(p);
+          return;
         }
+        const data = typeof path3 === "object" ? path3 : parse4(path3, options);
+        flatten(data.tokens, 0, [], (tokens) => {
+          if (combinations >= 256) {
+            throw new PathError("Too many path combinations", data.originalPath);
+          }
+          if (combinations > 0)
+            source += "|";
+          source += toRegExpSource(tokens, delimiter, keys, data.originalPath);
+          combinations++;
+        });
       }
-      let pattern = `^(?:${sources.join("|")})`;
+      process2(path2);
+      let pattern = `^(?:${source})`;
       if (trailing)
-        pattern += `(?:${escape2(delimiter)}$)?`;
-      pattern += end ? "$" : `(?=${escape2(delimiter)}|$)`;
-      const regexp = new RegExp(pattern, flags);
-      return { regexp, keys };
+        pattern += "(?:" + escape2(delimiter) + "$)?";
+      pattern += end ? "$" : "(?=" + escape2(delimiter) + "|$)";
+      return { regexp: new RegExp(pattern, sensitive ? "" : "i"), keys };
     }
-    function pathsToArray(paths, init) {
-      if (Array.isArray(paths)) {
-        for (const p of paths)
-          pathsToArray(p, init);
-      } else {
-        init.push(paths);
-      }
-      return init;
-    }
-    function* flatten(tokens, index, init) {
-      if (index === tokens.length) {
-        return yield init;
-      }
-      const token = tokens[index];
-      if (token.type === "group") {
-        for (const seq of flatten(token.tokens, 0, init.slice())) {
-          yield* flatten(tokens, index + 1, seq);
+    function flatten(tokens, index, result, callback) {
+      while (index < tokens.length) {
+        const token = tokens[index++];
+        if (token.type === "group") {
+          const len = result.length;
+          flatten(token.tokens, 0, result, (seq) => flatten(tokens, index, seq, callback));
+          result.length = len;
+          continue;
         }
-      } else {
-        init.push(token);
+        result.push(token);
       }
-      yield* flatten(tokens, index + 1, init);
+      callback(result);
     }
     function toRegExpSource(tokens, delimiter, keys, originalPath) {
       let result = "";
       let backtrack = "";
-      let isSafeSegmentParam = true;
-      for (const token of tokens) {
+      let wildcardBacktrack = "";
+      let prevCaptureType = 0;
+      let hasSegmentCapture = 0;
+      let index = 0;
+      function hasInSegment(index2, type) {
+        while (index2 < tokens.length) {
+          const token = tokens[index2++];
+          if (token.type === type)
+            return true;
+          if (token.type === "text") {
+            if (token.value.includes(delimiter))
+              break;
+          }
+        }
+        return false;
+      }
+      function peekText(index2) {
+        let result2 = "";
+        while (index2 < tokens.length) {
+          const token = tokens[index2++];
+          if (token.type !== "text")
+            break;
+          result2 += token.value;
+        }
+        return result2;
+      }
+      while (index < tokens.length) {
+        const token = tokens[index++];
         if (token.type === "text") {
           result += escape2(token.value);
           backtrack += token.value;
-          isSafeSegmentParam || (isSafeSegmentParam = token.value.includes(delimiter));
+          if (prevCaptureType === 2)
+            wildcardBacktrack += token.value;
+          if (token.value.includes(delimiter))
+            hasSegmentCapture = 0;
           continue;
         }
         if (token.type === "param" || token.type === "wildcard") {
-          if (!isSafeSegmentParam && !backtrack) {
+          if (prevCaptureType && !backtrack) {
             throw new PathError(`Missing text before "${token.name}" ${token.type}`, originalPath);
           }
           if (token.type === "param") {
-            result += `(${negate(delimiter, isSafeSegmentParam ? "" : backtrack)}+)`;
+            result += hasSegmentCapture & 2 ? `(${negate(delimiter, backtrack)}+)` : hasInSegment(index, "wildcard") ? `(${negate(delimiter, peekText(index))}+)` : hasSegmentCapture & 1 ? `(${negate(delimiter, backtrack)}+|${escape2(backtrack)})` : `(${negate(delimiter, "")}+)`;
+            hasSegmentCapture |= prevCaptureType = 1;
           } else {
-            result += `([\\s\\S]+)`;
+            result += hasSegmentCapture & 2 ? `(${negate(backtrack, "")}+)` : wildcardBacktrack ? `(${negate(wildcardBacktrack, "")}+|${negate(delimiter, "")}+)` : `([^]+)`;
+            wildcardBacktrack = "";
+            hasSegmentCapture |= prevCaptureType = 2;
           }
           keys.push(token);
           backtrack = "";
-          isSafeSegmentParam = false;
           continue;
         }
+        throw new TypeError(`Unknown token type: ${token.type}`);
       }
       return result;
     }
-    function negate(delimiter, backtrack) {
-      if (backtrack.length < 2) {
-        if (delimiter.length < 2)
-          return `[^${escape2(delimiter + backtrack)}]`;
-        return `(?:(?!${escape2(delimiter)})[^${escape2(backtrack)}])`;
-      }
-      if (delimiter.length < 2) {
-        return `(?:(?!${escape2(backtrack)})[^${escape2(delimiter)}])`;
-      }
-      return `(?:(?!${escape2(backtrack)}|${escape2(delimiter)})[\\s\\S])`;
+    function negate(a, b) {
+      if (b.length > a.length)
+        return negate(b, a);
+      if (a === b)
+        b = "";
+      if (b.length > 1)
+        return `(?:(?!${escape2(a)}|${escape2(b)})[^])`;
+      if (a.length > 1)
+        return `(?:(?!${escape2(a)})[^${escape2(b)}])`;
+      return `[^${escape2(a + b)}]`;
     }
-    function stringifyTokens(tokens) {
+    function stringifyTokens(tokens, index) {
       let value = "";
-      let i = 0;
-      function name(value2) {
-        const isSafe = isNameSafe(value2) && isNextNameSafe(tokens[i]);
-        return isSafe ? value2 : JSON.stringify(value2);
-      }
-      while (i < tokens.length) {
-        const token = tokens[i++];
+      while (index < tokens.length) {
+        const token = tokens[index++];
         if (token.type === "text") {
           value += escapeText(token.value);
           continue;
         }
         if (token.type === "group") {
-          value += `{${stringifyTokens(token.tokens)}}`;
+          value += "{" + stringifyTokens(token.tokens, 0) + "}";
           continue;
         }
         if (token.type === "param") {
-          value += `:${name(token.name)}`;
+          value += ":" + stringifyName(token.name, tokens[index]);
           continue;
         }
         if (token.type === "wildcard") {
-          value += `*${name(token.name)}`;
+          value += "*" + stringifyName(token.name, tokens[index]);
           continue;
         }
         throw new TypeError(`Unknown token type: ${token.type}`);
@@ -20192,16 +20359,15 @@ var require_dist = __commonJS({
       return value;
     }
     function stringify3(data) {
-      return stringifyTokens(data.tokens);
+      return stringifyTokens(data.tokens, 0);
     }
-    function isNameSafe(name) {
-      const [first, ...rest] = name;
-      return ID_START.test(first) && rest.every((char2) => ID_CONTINUE.test(char2));
-    }
-    function isNextNameSafe(token) {
-      if (token && token.type === "text")
-        return !ID_CONTINUE.test(token.value[0]);
-      return true;
+    function stringifyName(name, next) {
+      if (!ID.test(name))
+        return JSON.stringify(name);
+      if ((next === null || next === void 0 ? void 0 : next.type) === "text" && ID_CONTINUE.test(next.value[0])) {
+        return JSON.stringify(name);
+      }
+      return name;
     }
   }
 });
@@ -20211,7 +20377,7 @@ var require_layer = __commonJS({
   "../../node_modules/.pnpm/router@2.2.0/node_modules/router/lib/layer.js"(exports, module) {
     "use strict";
     var isPromise = require_is_promise();
-    var pathRegexp = require_dist();
+    var pathRegexp = require_dist2();
     var debug = require_src()("router:layer");
     var deprecate = require_depd()("router");
     var TRAILING_SLASH_REGEXP = /\/+$/;
@@ -22030,16 +22196,14 @@ var require_request = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/content-disposition@1.0.1/node_modules/content-disposition/index.js
+// ../../node_modules/.pnpm/content-disposition@1.1.0/node_modules/content-disposition/index.js
 var require_content_disposition = __commonJS({
-  "../../node_modules/.pnpm/content-disposition@1.0.1/node_modules/content-disposition/index.js"(exports, module) {
+  "../../node_modules/.pnpm/content-disposition@1.1.0/node_modules/content-disposition/index.js"(exports, module) {
     "use strict";
     module.exports = contentDisposition;
     module.exports.parse = parse4;
-    var basename = __require("path").basename;
+    var utf8Decoder = new TextDecoder("utf-8");
     var ENCODE_URL_ATTR_CHAR_REGEXP = /[\x00-\x20"'()*,/:;<=>?@[\\\]{}\x7f]/g;
-    var HEX_ESCAPE_REGEXP = /%[0-9A-Fa-f]{2}/;
-    var HEX_ESCAPE_REPLACE_REGEXP = /%([0-9A-Fa-f]{2})/g;
     var NON_LATIN1_REGEXP = /[^\x20-\x7e\xa0-\xff]/g;
     var QESC_REGEXP = /\\([\u0000-\u007f])/g;
     var QUOTE_REGEXP = /([\\"])/g;
@@ -22075,7 +22239,7 @@ var require_content_disposition = __commonJS({
       var isQuotedString = TEXT_REGEXP.test(name);
       var fallbackName = typeof fallback !== "string" ? fallback && getlatin1(name) : basename(fallback);
       var hasFallback = typeof fallbackName === "string" && fallbackName !== name;
-      if (hasFallback || !isQuotedString || HEX_ESCAPE_REGEXP.test(name)) {
+      if (hasFallback || !isQuotedString || hasHexEscape(name)) {
         params["filename*"] = name;
       }
       if (isQuotedString || hasFallback) {
@@ -22102,26 +22266,32 @@ var require_content_disposition = __commonJS({
       return string4;
     }
     function decodefield(str2) {
-      var match2 = EXT_VALUE_REGEXP.exec(str2);
+      const match2 = EXT_VALUE_REGEXP.exec(str2);
       if (!match2) {
         throw new TypeError("invalid extended field value");
       }
-      var charset = match2[1].toLowerCase();
-      var encoded = match2[2];
-      var value;
-      var binary = encoded.replace(HEX_ESCAPE_REPLACE_REGEXP, pdecode);
+      const charset = match2[1].toLowerCase();
+      const encoded = match2[2];
       switch (charset) {
-        case "iso-8859-1":
-          value = getlatin1(binary);
-          break;
+        case "iso-8859-1": {
+          const binary = decodeHexEscapes(encoded);
+          return getlatin1(binary);
+        }
         case "utf-8":
-        case "utf8":
-          value = Buffer.from(binary, "binary").toString("utf8");
-          break;
-        default:
-          throw new TypeError("unsupported charset in extended field");
+        case "utf8": {
+          try {
+            return decodeURIComponent(encoded);
+          } catch {
+            const binary = decodeHexEscapes(encoded);
+            const bytes = new Uint8Array(binary.length);
+            for (let idx = 0; idx < binary.length; idx++) {
+              bytes[idx] = binary.charCodeAt(idx);
+            }
+            return utf8Decoder.decode(bytes);
+          }
+        }
       }
-      return value;
+      throw new TypeError("unsupported charset in extended field");
     }
     function getlatin1(val) {
       return String(val).replace(NON_LATIN1_REGEXP, "?");
@@ -22171,9 +22341,6 @@ var require_content_disposition = __commonJS({
       }
       return new ContentDisposition(type, params);
     }
-    function pdecode(str2, hex) {
-      return String.fromCharCode(parseInt(hex, 16));
-    }
     function pencode(char2) {
       return "%" + String(char2).charCodeAt(0).toString(16).toUpperCase();
     }
@@ -22189,6 +22356,51 @@ var require_content_disposition = __commonJS({
     function ContentDisposition(type, parameters) {
       this.type = type;
       this.parameters = parameters;
+    }
+    function basename(path2) {
+      const normalized = path2.replaceAll("\\", "/");
+      let end = normalized.length;
+      while (end > 0 && normalized[end - 1] === "/") {
+        end--;
+      }
+      if (end === 0) {
+        return "";
+      }
+      let start = end - 1;
+      while (start >= 0 && normalized[start] !== "/") {
+        start--;
+      }
+      return normalized.slice(start + 1, end);
+    }
+    function isHexDigit(char2) {
+      const code = char2.charCodeAt(0);
+      return code >= 48 && code <= 57 || // 0-9
+      code >= 65 && code <= 70 || // A-F
+      code >= 97 && code <= 102;
+    }
+    function hasHexEscape(str2) {
+      const maxIndex = str2.length - 3;
+      let lastIndex = -1;
+      while ((lastIndex = str2.indexOf("%", lastIndex + 1)) !== -1 && lastIndex <= maxIndex) {
+        if (isHexDigit(str2[lastIndex + 1]) && isHexDigit(str2[lastIndex + 2])) {
+          return true;
+        }
+      }
+      return false;
+    }
+    function decodeHexEscapes(str2) {
+      const firstEscape = str2.indexOf("%");
+      if (firstEscape === -1) return str2;
+      let result = str2.slice(0, firstEscape);
+      for (let idx = firstEscape; idx < str2.length; idx++) {
+        if (str2[idx] === "%" && idx + 2 < str2.length && isHexDigit(str2[idx + 1]) && isHexDigit(str2[idx + 2])) {
+          result += String.fromCharCode(Number.parseInt(str2[idx + 1] + str2[idx + 2], 16));
+          idx += 2;
+        } else {
+          result += str2[idx];
+        }
+      }
+      return result;
     }
   }
 });
@@ -41440,18 +41652,18 @@ var require_logger = __commonJS({
       delete opts.customErroredMessage;
       const quietReqLogger = !!opts.quietReqLogger;
       const quietResLogger = !!opts.quietResLogger;
-      const logger2 = wrapChild(opts, theStream);
-      const validLogLevels = Object.keys(logger2.levels.values).concat("silent");
+      const logger3 = wrapChild(opts, theStream);
+      const validLogLevels = Object.keys(logger3.levels.values).concat("silent");
       const useLevel = getValidLogLevel(opts.useLevel);
       delete opts.useLevel;
       const genReqId = reqIdGenFactory(opts.genReqId);
       const result = (req, res, next) => {
-        return loggingMiddleware(logger2, req, res, next);
+        return loggingMiddleware(logger3, req, res, next);
       };
-      result.logger = logger2;
+      result.logger = logger3;
       return result;
-      function onResFinished(res, logger3, err) {
-        let log = logger3;
+      function onResFinished(res, logger4, err) {
+        let log = logger4;
         const responseTime = Date.now() - res[startTime];
         const req = res[reqObject];
         const level = getLogLevelFromCustomLogLevel(customLogLevel, useLevel, res, err, req);
@@ -41460,10 +41672,10 @@ var require_logger = __commonJS({
         }
         const customPropBindings = typeof customProps === "function" ? customProps(req, res) : customProps;
         if (customPropBindings) {
-          const customPropBindingStr = logger3[stringifySym](customPropBindings).replace(/[{}]/g, "");
-          const customPropBindingsStr = logger3[chindingsSym];
+          const customPropBindingStr = logger4[stringifySym](customPropBindings).replace(/[{}]/g, "");
+          const customPropBindingsStr = logger4[chindingsSym];
           if (!customPropBindingsStr.includes(customPropBindingStr)) {
-            log = logger3.child(customPropBindings);
+            log = logger4.child(customPropBindings);
           }
         }
         if (err || res.err || res.statusCode >= 500) {
@@ -41486,10 +41698,10 @@ var require_logger = __commonJS({
           successMessage(req, res, responseTime)
         );
       }
-      function loggingMiddleware(logger3, req, res, next) {
+      function loggingMiddleware(logger4, req, res, next) {
         let shouldLogSuccess = true;
         req.id = req.id || genReqId(req, res);
-        const log = quietReqLogger ? logger3.child({ [requestIdKey]: req.id }) : logger3;
+        const log = quietReqLogger ? logger4.child({ [requestIdKey]: req.id }) : logger4;
         let fullReqLogger = log.child({ [reqKey]: req });
         const customPropBindings = typeof customProps === "function" ? customProps(req, res) : customProps;
         if (customPropBindings) {
@@ -41545,20 +41757,20 @@ var require_logger = __commonJS({
     function wrapChild(opts, stream) {
       const prevLogger = opts.logger;
       const prevGenReqId = opts.genReqId;
-      let logger2 = null;
+      let logger3 = null;
       if (prevLogger) {
         opts.logger = void 0;
         opts.genReqId = void 0;
-        logger2 = prevLogger.child({}, opts);
+        logger3 = prevLogger.child({}, opts);
         opts.logger = prevLogger;
         opts.genReqId = prevGenReqId;
       } else {
         if (opts.transport && !opts.transport.caller) {
           opts.transport.caller = getCallerFile();
         }
-        logger2 = pino2(opts, stream);
+        logger3 = pino2(opts, stream);
       }
-      return logger2;
+      return logger3;
     }
     function reqIdGenFactory(func) {
       if (typeof func === "function") return func;
@@ -42951,9 +43163,9 @@ var require_http_proxy3 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/errors.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/errors.js
 var require_errors2 = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/errors.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/errors.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.ERRORS = void 0;
@@ -42967,9 +43179,9 @@ var require_errors2 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/configuration.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/configuration.js
 var require_configuration = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/configuration.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/configuration.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.verifyConfig = verifyConfig;
@@ -42982,9 +43194,9 @@ var require_configuration = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/debug.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/debug.js
 var require_debug2 = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/debug.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/debug.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Debug = void 0;
@@ -42993,9 +43205,9 @@ var require_debug2 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/plugins/default/debug-proxy-errors-plugin.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/plugins/default/debug-proxy-errors-plugin.js
 var require_debug_proxy_errors_plugin = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/plugins/default/debug-proxy-errors-plugin.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/plugins/default/debug-proxy-errors-plugin.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.debugProxyErrorsPlugin = void 0;
@@ -43043,9 +43255,9 @@ var require_debug_proxy_errors_plugin = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/status-code.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/status-code.js
 var require_status_code = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/status-code.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/status-code.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.getStatusCode = getStatusCode;
@@ -43071,13 +43283,26 @@ var require_status_code = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/plugins/default/error-response-plugin.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/utils/sanitize.js
+var require_sanitize = __commonJS({
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/utils/sanitize.js"(exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.sanitize = sanitize;
+    function sanitize(input) {
+      return input?.replace(/[<>]/g, (i) => encodeURIComponent(i)) ?? "";
+    }
+  }
+});
+
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/plugins/default/error-response-plugin.js
 var require_error_response_plugin = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/plugins/default/error-response-plugin.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/plugins/default/error-response-plugin.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.errorResponsePlugin = void 0;
     var status_code_1 = require_status_code();
+    var sanitize_1 = require_sanitize();
     function isResponseLike2(obj) {
       return obj && typeof obj.writeHead === "function";
     }
@@ -43095,7 +43320,7 @@ var require_error_response_plugin = __commonJS({
             res.writeHead(statusCode);
           }
           const host = req.headers && req.headers.host;
-          res.end(`Error occurred while trying to proxy: ${host}${req.url}`);
+          res.end(`Error occurred while trying to proxy: ${(0, sanitize_1.sanitize)(host)}${(0, sanitize_1.sanitize)(req.url)}`);
         } else if (isSocketLike(res)) {
           res.destroy();
         }
@@ -43105,9 +43330,9 @@ var require_error_response_plugin = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/logger.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/logger.js
 var require_logger2 = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/logger.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/logger.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.getLogger = getLogger;
@@ -43125,9 +43350,9 @@ var require_logger2 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/utils/logger-plugin.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/utils/logger-plugin.js
 var require_logger_plugin = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/utils/logger-plugin.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/utils/logger-plugin.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.getPort = getPort;
@@ -43137,24 +43362,24 @@ var require_logger_plugin = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/plugins/default/logger-plugin.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/plugins/default/logger-plugin.js
 var require_logger_plugin2 = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/plugins/default/logger-plugin.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/plugins/default/logger-plugin.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.loggerPlugin = void 0;
-    var url_1 = __require("url");
+    var node_url_1 = __require("node:url");
     var logger_1 = require_logger2();
     var logger_plugin_1 = require_logger_plugin();
     var loggerPlugin = (proxyServer, options) => {
-      const logger2 = (0, logger_1.getLogger)(options);
+      const logger3 = (0, logger_1.getLogger)(options);
       proxyServer.on("error", (err, req, res, target) => {
         const hostname2 = req?.headers?.host;
         const requestHref = `${hostname2}${req?.url}`;
         const targetHref = `${target?.href}`;
         const errorMessage = "[HPM] Error occurred while proxying request %s to %s [%s] (%s)";
         const errReference = "https://nodejs.org/api/errors.html#errors_common_system_errors";
-        logger2.error(errorMessage, requestHref, targetHref, err.code || err, errReference);
+        logger3.error(errorMessage, requestHref, targetHref, err.code || err, errReference);
       });
       proxyServer.on("proxyRes", (proxyRes, req, res) => {
         const originalUrl = req.originalUrl ?? `${req.baseUrl || ""}${req.url}`;
@@ -43166,32 +43391,32 @@ var require_logger_plugin2 = __commonJS({
             host: proxyRes.req.host,
             pathname: proxyRes.req.path
           };
-          target = new url_1.URL(`${obj.protocol}//${obj.host}${obj.pathname}`);
+          target = new node_url_1.URL(`${obj.protocol}//${obj.host}${obj.pathname}`);
           if (port2) {
             target.port = port2;
           }
         } catch (err) {
-          target = new url_1.URL(options.target);
+          target = new node_url_1.URL(options.target);
           target.pathname = proxyRes.req.path;
         }
         const targetUrl = target.toString();
         const exchange = `[HPM] ${req.method} ${originalUrl} -> ${targetUrl} [${proxyRes.statusCode}]`;
-        logger2.info(exchange);
+        logger3.info(exchange);
       });
       proxyServer.on("open", (socket) => {
-        logger2.info("[HPM] Client connected: %o", socket.address());
+        logger3.info("[HPM] Client connected: %o", socket.address());
       });
       proxyServer.on("close", (req, proxySocket, proxyHead) => {
-        logger2.info("[HPM] Client disconnected: %o", proxySocket.address());
+        logger3.info("[HPM] Client disconnected: %o", proxySocket.address());
       });
     };
     exports.loggerPlugin = loggerPlugin;
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/utils/function.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/utils/function.js
 var require_function = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/utils/function.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/utils/function.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.getFunctionName = getFunctionName;
@@ -43201,9 +43426,9 @@ var require_function = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/plugins/default/proxy-events.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/plugins/default/proxy-events.js
 var require_proxy_events = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/plugins/default/proxy-events.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/plugins/default/proxy-events.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.proxyEventsPlugin = void 0;
@@ -43220,9 +43445,9 @@ var require_proxy_events = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/plugins/default/index.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/plugins/default/index.js
 var require_default = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/plugins/default/index.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/plugins/default/index.js"(exports) {
     "use strict";
     var __createBinding2 = exports && exports.__createBinding || (Object.create ? (function(o, m, k, k2) {
       if (k2 === void 0) k2 = k;
@@ -43248,9 +43473,9 @@ var require_default = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/get-plugins.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/get-plugins.js
 var require_get_plugins = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/get-plugins.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/get-plugins.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.getPlugins = getPlugins;
@@ -44494,13 +44719,14 @@ var require_braces = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/picomatch@2.3.1/node_modules/picomatch/lib/constants.js
+// ../../node_modules/.pnpm/picomatch@2.3.2/node_modules/picomatch/lib/constants.js
 var require_constants5 = __commonJS({
-  "../../node_modules/.pnpm/picomatch@2.3.1/node_modules/picomatch/lib/constants.js"(exports, module) {
+  "../../node_modules/.pnpm/picomatch@2.3.2/node_modules/picomatch/lib/constants.js"(exports, module) {
     "use strict";
     var path2 = __require("path");
     var WIN_SLASH = "\\\\/";
     var WIN_NO_SLASH = `[^${WIN_SLASH}]`;
+    var DEFAULT_MAX_EXTGLOB_RECURSION = 0;
     var DOT_LITERAL = "\\.";
     var PLUS_LITERAL = "\\+";
     var QMARK_LITERAL = "\\?";
@@ -44548,6 +44774,7 @@ var require_constants5 = __commonJS({
       END_ANCHOR: `(?:[${WIN_SLASH}]|$)`
     };
     var POSIX_REGEX_SOURCE = {
+      __proto__: null,
       alnum: "a-zA-Z0-9",
       alpha: "a-zA-Z",
       ascii: "\\x00-\\x7F",
@@ -44564,6 +44791,7 @@ var require_constants5 = __commonJS({
       xdigit: "A-Fa-f0-9"
     };
     module.exports = {
+      DEFAULT_MAX_EXTGLOB_RECURSION,
       MAX_LENGTH: 1024 * 64,
       POSIX_REGEX_SOURCE,
       // regular expressions
@@ -44575,6 +44803,7 @@ var require_constants5 = __commonJS({
       REGEX_REMOVE_BACKSLASH: /(?:\[.*?[^\\]\]|\\(?=.))/g,
       // Replace globs with equivalent patterns to reduce parsing time.
       REPLACEMENTS: {
+        __proto__: null,
         "***": "*",
         "**/**": "**",
         "**/**/**": "**"
@@ -44691,9 +44920,9 @@ var require_constants5 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/picomatch@2.3.1/node_modules/picomatch/lib/utils.js
+// ../../node_modules/.pnpm/picomatch@2.3.2/node_modules/picomatch/lib/utils.js
 var require_utils5 = __commonJS({
-  "../../node_modules/.pnpm/picomatch@2.3.1/node_modules/picomatch/lib/utils.js"(exports) {
+  "../../node_modules/.pnpm/picomatch@2.3.2/node_modules/picomatch/lib/utils.js"(exports) {
     "use strict";
     var path2 = __require("path");
     var win32 = process.platform === "win32";
@@ -44752,9 +44981,9 @@ var require_utils5 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/picomatch@2.3.1/node_modules/picomatch/lib/scan.js
+// ../../node_modules/.pnpm/picomatch@2.3.2/node_modules/picomatch/lib/scan.js
 var require_scan = __commonJS({
-  "../../node_modules/.pnpm/picomatch@2.3.1/node_modules/picomatch/lib/scan.js"(exports, module) {
+  "../../node_modules/.pnpm/picomatch@2.3.2/node_modules/picomatch/lib/scan.js"(exports, module) {
     "use strict";
     var utils = require_utils5();
     var {
@@ -45082,9 +45311,9 @@ var require_scan = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/picomatch@2.3.1/node_modules/picomatch/lib/parse.js
+// ../../node_modules/.pnpm/picomatch@2.3.2/node_modules/picomatch/lib/parse.js
 var require_parse3 = __commonJS({
-  "../../node_modules/.pnpm/picomatch@2.3.1/node_modules/picomatch/lib/parse.js"(exports, module) {
+  "../../node_modules/.pnpm/picomatch@2.3.2/node_modules/picomatch/lib/parse.js"(exports, module) {
     "use strict";
     var constants2 = require_constants5();
     var utils = require_utils5();
@@ -45110,6 +45339,213 @@ var require_parse3 = __commonJS({
     };
     var syntaxError = (type, char2) => {
       return `Missing ${type}: "${char2}" - use "\\\\${char2}" to match literal characters`;
+    };
+    var splitTopLevel = (input) => {
+      const parts = [];
+      let bracket = 0;
+      let paren = 0;
+      let quote = 0;
+      let value = "";
+      let escaped = false;
+      for (const ch of input) {
+        if (escaped === true) {
+          value += ch;
+          escaped = false;
+          continue;
+        }
+        if (ch === "\\") {
+          value += ch;
+          escaped = true;
+          continue;
+        }
+        if (ch === '"') {
+          quote = quote === 1 ? 0 : 1;
+          value += ch;
+          continue;
+        }
+        if (quote === 0) {
+          if (ch === "[") {
+            bracket++;
+          } else if (ch === "]" && bracket > 0) {
+            bracket--;
+          } else if (bracket === 0) {
+            if (ch === "(") {
+              paren++;
+            } else if (ch === ")" && paren > 0) {
+              paren--;
+            } else if (ch === "|" && paren === 0) {
+              parts.push(value);
+              value = "";
+              continue;
+            }
+          }
+        }
+        value += ch;
+      }
+      parts.push(value);
+      return parts;
+    };
+    var isPlainBranch = (branch) => {
+      let escaped = false;
+      for (const ch of branch) {
+        if (escaped === true) {
+          escaped = false;
+          continue;
+        }
+        if (ch === "\\") {
+          escaped = true;
+          continue;
+        }
+        if (/[?*+@!()[\]{}]/.test(ch)) {
+          return false;
+        }
+      }
+      return true;
+    };
+    var normalizeSimpleBranch = (branch) => {
+      let value = branch.trim();
+      let changed = true;
+      while (changed === true) {
+        changed = false;
+        if (/^@\([^\\()[\]{}|]+\)$/.test(value)) {
+          value = value.slice(2, -1);
+          changed = true;
+        }
+      }
+      if (!isPlainBranch(value)) {
+        return;
+      }
+      return value.replace(/\\(.)/g, "$1");
+    };
+    var hasRepeatedCharPrefixOverlap = (branches) => {
+      const values = branches.map(normalizeSimpleBranch).filter(Boolean);
+      for (let i = 0; i < values.length; i++) {
+        for (let j = i + 1; j < values.length; j++) {
+          const a = values[i];
+          const b = values[j];
+          const char2 = a[0];
+          if (!char2 || a !== char2.repeat(a.length) || b !== char2.repeat(b.length)) {
+            continue;
+          }
+          if (a === b || a.startsWith(b) || b.startsWith(a)) {
+            return true;
+          }
+        }
+      }
+      return false;
+    };
+    var parseRepeatedExtglob = (pattern, requireEnd = true) => {
+      if (pattern[0] !== "+" && pattern[0] !== "*" || pattern[1] !== "(") {
+        return;
+      }
+      let bracket = 0;
+      let paren = 0;
+      let quote = 0;
+      let escaped = false;
+      for (let i = 1; i < pattern.length; i++) {
+        const ch = pattern[i];
+        if (escaped === true) {
+          escaped = false;
+          continue;
+        }
+        if (ch === "\\") {
+          escaped = true;
+          continue;
+        }
+        if (ch === '"') {
+          quote = quote === 1 ? 0 : 1;
+          continue;
+        }
+        if (quote === 1) {
+          continue;
+        }
+        if (ch === "[") {
+          bracket++;
+          continue;
+        }
+        if (ch === "]" && bracket > 0) {
+          bracket--;
+          continue;
+        }
+        if (bracket > 0) {
+          continue;
+        }
+        if (ch === "(") {
+          paren++;
+          continue;
+        }
+        if (ch === ")") {
+          paren--;
+          if (paren === 0) {
+            if (requireEnd === true && i !== pattern.length - 1) {
+              return;
+            }
+            return {
+              type: pattern[0],
+              body: pattern.slice(2, i),
+              end: i
+            };
+          }
+        }
+      }
+    };
+    var getStarExtglobSequenceOutput = (pattern) => {
+      let index = 0;
+      const chars = [];
+      while (index < pattern.length) {
+        const match2 = parseRepeatedExtglob(pattern.slice(index), false);
+        if (!match2 || match2.type !== "*") {
+          return;
+        }
+        const branches = splitTopLevel(match2.body).map((branch2) => branch2.trim());
+        if (branches.length !== 1) {
+          return;
+        }
+        const branch = normalizeSimpleBranch(branches[0]);
+        if (!branch || branch.length !== 1) {
+          return;
+        }
+        chars.push(branch);
+        index += match2.end + 1;
+      }
+      if (chars.length < 1) {
+        return;
+      }
+      const source = chars.length === 1 ? utils.escapeRegex(chars[0]) : `[${chars.map((ch) => utils.escapeRegex(ch)).join("")}]`;
+      return `${source}*`;
+    };
+    var repeatedExtglobRecursion = (pattern) => {
+      let depth = 0;
+      let value = pattern.trim();
+      let match2 = parseRepeatedExtglob(value);
+      while (match2) {
+        depth++;
+        value = match2.body.trim();
+        match2 = parseRepeatedExtglob(value);
+      }
+      return depth;
+    };
+    var analyzeRepeatedExtglob = (body, options) => {
+      if (options.maxExtglobRecursion === false) {
+        return { risky: false };
+      }
+      const max = typeof options.maxExtglobRecursion === "number" ? options.maxExtglobRecursion : constants2.DEFAULT_MAX_EXTGLOB_RECURSION;
+      const branches = splitTopLevel(body).map((branch) => branch.trim());
+      if (branches.length > 1) {
+        if (branches.some((branch) => branch === "") || branches.some((branch) => /^[*?]+$/.test(branch)) || hasRepeatedCharPrefixOverlap(branches)) {
+          return { risky: true };
+        }
+      }
+      for (const branch of branches) {
+        const safeOutput = getStarExtglobSequenceOutput(branch);
+        if (safeOutput) {
+          return { risky: true, safeOutput };
+        }
+        if (repeatedExtglobRecursion(branch) > max) {
+          return { risky: true };
+        }
+      }
+      return { risky: false };
     };
     var parse4 = (input, options) => {
       if (typeof input !== "string") {
@@ -45242,6 +45678,8 @@ var require_parse3 = __commonJS({
         token.prev = prev;
         token.parens = state.parens;
         token.output = state.output;
+        token.startIndex = state.index;
+        token.tokensIndex = tokens.length;
         const output = (opts.capture ? "(" : "") + token.open;
         increment("parens");
         push({ type, value: value2, output: state.output ? "" : ONE_CHAR });
@@ -45249,6 +45687,26 @@ var require_parse3 = __commonJS({
         extglobs.push(token);
       };
       const extglobClose = (token) => {
+        const literal2 = input.slice(token.startIndex, state.index + 1);
+        const body = input.slice(token.startIndex + 2, state.index);
+        const analysis = analyzeRepeatedExtglob(body, opts);
+        if ((token.type === "plus" || token.type === "star") && analysis.risky) {
+          const safeOutput = analysis.safeOutput ? (token.output ? "" : ONE_CHAR) + (opts.capture ? `(${analysis.safeOutput})` : analysis.safeOutput) : void 0;
+          const open = tokens[token.tokensIndex];
+          open.type = "text";
+          open.value = literal2;
+          open.output = safeOutput || utils.escapeRegex(literal2);
+          for (let i = token.tokensIndex + 1; i < tokens.length; i++) {
+            tokens[i].value = "";
+            tokens[i].output = "";
+            delete tokens[i].suffix;
+          }
+          state.output = token.output + open.output;
+          state.backtrack = true;
+          push({ type: "paren", extglob: true, value, output: "" });
+          decrement("parens");
+          return;
+        }
         let output = token.close + (opts.capture ? ")" : "");
         let rest;
         if (token.type === "negate") {
@@ -45855,9 +46313,9 @@ var require_parse3 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/picomatch@2.3.1/node_modules/picomatch/lib/picomatch.js
+// ../../node_modules/.pnpm/picomatch@2.3.2/node_modules/picomatch/lib/picomatch.js
 var require_picomatch = __commonJS({
-  "../../node_modules/.pnpm/picomatch@2.3.1/node_modules/picomatch/lib/picomatch.js"(exports, module) {
+  "../../node_modules/.pnpm/picomatch@2.3.2/node_modules/picomatch/lib/picomatch.js"(exports, module) {
     "use strict";
     var path2 = __require("path");
     var scan = require_scan();
@@ -45996,9 +46454,9 @@ var require_picomatch = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/picomatch@2.3.1/node_modules/picomatch/index.js
+// ../../node_modules/.pnpm/picomatch@2.3.2/node_modules/picomatch/index.js
 var require_picomatch2 = __commonJS({
-  "../../node_modules/.pnpm/picomatch@2.3.1/node_modules/picomatch/index.js"(exports, module) {
+  "../../node_modules/.pnpm/picomatch@2.3.2/node_modules/picomatch/index.js"(exports, module) {
     "use strict";
     module.exports = require_picomatch();
   }
@@ -46165,15 +46623,15 @@ var require_micromatch = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/path-filter.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/path-filter.js
 var require_path_filter = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/path-filter.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/path-filter.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.matchPathFilter = matchPathFilter;
+    var url2 = __require("node:url");
     var isGlob = require_is_glob();
     var micromatch = require_micromatch();
-    var url2 = __require("url");
     var errors_1 = require_errors2();
     function matchPathFilter(pathFilter = "/", uri, req) {
       if (isStringPath(pathFilter)) {
@@ -46255,15 +46713,15 @@ var require_is_plain_object = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/path-rewriter.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/path-rewriter.js
 var require_path_rewriter = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/path-rewriter.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/path-rewriter.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.createPathRewriter = createPathRewriter;
     var is_plain_object_1 = require_is_plain_object();
-    var errors_1 = require_errors2();
     var debug_1 = require_debug2();
+    var errors_1 = require_errors2();
     var debug = debug_1.Debug.extend("path-rewriter");
     function createPathRewriter(rewriteConfig) {
       let rulesCache;
@@ -46316,9 +46774,9 @@ var require_path_rewriter = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/router.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/router.js
 var require_router2 = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/router.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/router.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.getTarget = getTarget;
@@ -46337,15 +46795,23 @@ var require_router2 = __commonJS({
     }
     function getTargetFromProxyTable(req, table) {
       let result;
-      const host = req.headers.host;
-      const path2 = req.url;
-      const hostAndPath = host + path2;
+      const host = req.headers.host || "";
+      const path2 = req.url || "";
       for (const [key, value] of Object.entries(table)) {
         if (containsPath(key)) {
-          if (hostAndPath.indexOf(key) > -1) {
-            result = value;
-            debug('match: "%s" -> "%s"', key, result);
-            break;
+          if (isHostAndPathKey(key)) {
+            const [keyHost, keyPath] = splitHostAndPathKey(key);
+            if (host === keyHost && path2.startsWith(keyPath)) {
+              result = value;
+              debug('match: "%s" -> "%s"', key, result);
+              break;
+            }
+          } else {
+            if (path2.startsWith(key)) {
+              result = value;
+              debug('match: "%s" -> "%s"', key, result);
+              break;
+            }
           }
         } else {
           if (key === host) {
@@ -46360,24 +46826,31 @@ var require_router2 = __commonJS({
     function containsPath(v) {
       return v.indexOf("/") > -1;
     }
+    function isHostAndPathKey(v) {
+      return containsPath(v) && !v.startsWith("/");
+    }
+    function splitHostAndPathKey(v) {
+      const firstSlash = v.indexOf("/");
+      return [v.slice(0, firstSlash), v.slice(firstSlash)];
+    }
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/http-proxy-middleware.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/http-proxy-middleware.js
 var require_http_proxy_middleware = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/http-proxy-middleware.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/http-proxy-middleware.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.HttpProxyMiddleware = void 0;
     var httpProxy = require_http_proxy3();
     var configuration_1 = require_configuration();
+    var debug_1 = require_debug2();
     var get_plugins_1 = require_get_plugins();
+    var logger_1 = require_logger2();
     var path_filter_1 = require_path_filter();
     var PathRewriter = require_path_rewriter();
     var Router13 = require_router2();
-    var debug_1 = require_debug2();
     var function_1 = require_function();
-    var logger_1 = require_logger2();
     var HttpProxyMiddleware = class {
       constructor(options) {
         this.wsInternalSubscribed = false;
@@ -46488,9 +46961,9 @@ var require_http_proxy_middleware = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/factory.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/factory.js
 var require_factory = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/factory.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/factory.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.createProxyMiddleware = createProxyMiddleware2;
@@ -46502,13 +46975,13 @@ var require_factory = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/handlers/response-interceptor.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/handlers/response-interceptor.js
 var require_response_interceptor = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/handlers/response-interceptor.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/handlers/response-interceptor.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.responseInterceptor = responseInterceptor;
-    var zlib = __require("zlib");
+    var zlib = __require("node:zlib");
     var debug_1 = require_debug2();
     var function_1 = require_function();
     var debug = debug_1.Debug.extend("response-interceptor");
@@ -46579,13 +47052,13 @@ var require_response_interceptor = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/handlers/fix-request-body.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/handlers/fix-request-body.js
 var require_fix_request_body = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/handlers/fix-request-body.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/handlers/fix-request-body.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.fixRequestBody = fixRequestBody;
-    var querystring = __require("querystring");
+    var querystring = __require("node:querystring");
     function fixRequestBody(proxyReq, req) {
       if (req.readableLength !== 0) {
         return;
@@ -46608,6 +47081,8 @@ var require_fix_request_body = __commonJS({
         writeBody(querystring.stringify(requestBody));
       } else if (contentType.includes("multipart/form-data")) {
         writeBody(handlerFormDataBodyData(contentType, requestBody));
+      } else if (contentType.includes("text/plain")) {
+        writeBody(requestBody);
       }
     }
     function handlerFormDataBodyData(contentType, data) {
@@ -46625,9 +47100,9 @@ ${value}\r
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/handlers/public.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/handlers/public.js
 var require_public = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/handlers/public.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/handlers/public.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.fixRequestBody = exports.responseInterceptor = void 0;
@@ -46642,9 +47117,9 @@ var require_public = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/handlers/index.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/handlers/index.js
 var require_handlers = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/handlers/index.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/handlers/index.js"(exports) {
     "use strict";
     var __createBinding2 = exports && exports.__createBinding || (Object.create ? (function(o, m, k, k2) {
       if (k2 === void 0) k2 = k;
@@ -46667,13 +47142,13 @@ var require_handlers = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/legacy/options-adapter.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/legacy/options-adapter.js
 var require_options_adapter = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/legacy/options-adapter.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/legacy/options-adapter.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.legacyOptionsAdapter = legacyOptionsAdapter;
-    var url2 = __require("url");
+    var url2 = __require("node:url");
     var debug_1 = require_debug2();
     var logger_1 = require_logger2();
     var debug = debug_1.Debug.extend("legacy-options-adapter");
@@ -46687,7 +47162,7 @@ var require_options_adapter = __commonJS({
     };
     function legacyOptionsAdapter(legacyContext, legacyOptions) {
       let options = {};
-      let logger2;
+      let logger3;
       if (typeof legacyContext === "string" && !!url2.parse(legacyContext).host) {
         throw new Error(`Shorthand syntax is removed from legacyCreateProxyMiddleware().
       Please use "legacyCreateProxyMiddleware({ target: 'http://www.example.org' })" instead.
@@ -46698,8 +47173,8 @@ var require_options_adapter = __commonJS({
       if (legacyContext && legacyOptions) {
         debug("map legacy context/filter to options.pathFilter");
         options = { ...legacyOptions, pathFilter: legacyContext };
-        logger2 = getLegacyLogger(options);
-        logger2.warn(`[http-proxy-middleware] Legacy "context" argument is deprecated. Migrate your "context" to "options.pathFilter":
+        logger3 = getLegacyLogger(options);
+        logger3.warn(`[http-proxy-middleware] Legacy "context" argument is deprecated. Migrate your "context" to "options.pathFilter":
 
       const options = {
         pathFilter: '${legacyContext}',
@@ -46709,16 +47184,16 @@ var require_options_adapter = __commonJS({
       `);
       } else if (legacyContext && !legacyOptions) {
         options = { ...legacyContext };
-        logger2 = getLegacyLogger(options);
+        logger3 = getLegacyLogger(options);
       } else {
-        logger2 = getLegacyLogger({});
+        logger3 = getLegacyLogger({});
       }
       Object.entries(proxyEventMap).forEach(([legacyEventName, proxyEventName]) => {
         if (options[legacyEventName]) {
           options.on = { ...options.on };
           options.on[proxyEventName] = options[legacyEventName];
           debug('map legacy event "%s" to "on.%s"', legacyEventName, proxyEventName);
-          logger2.warn(`[http-proxy-middleware] Legacy "${legacyEventName}" is deprecated. Migrate to "options.on.${proxyEventName}":
+          logger3.warn(`[http-proxy-middleware] Legacy "${legacyEventName}" is deprecated. Migrate to "options.on.${proxyEventName}":
 
         const options = {
           on: {
@@ -46736,7 +47211,7 @@ var require_options_adapter = __commonJS({
       debug("legacy logProvider: %O", logProvider);
       if (typeof logLevel === "string" && logLevel !== "silent") {
         debug('map "logProvider" to "logger"');
-        logger2.warn(`[http-proxy-middleware] Legacy "logLevel" and "logProvider" are deprecated. Migrate to "options.logger":
+        logger3.warn(`[http-proxy-middleware] Legacy "logLevel" and "logProvider" are deprecated. Migrate to "options.logger":
 
       const options = {
         logger: console,
@@ -46757,14 +47232,14 @@ var require_options_adapter = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/legacy/create-proxy-middleware.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/legacy/create-proxy-middleware.js
 var require_create_proxy_middleware = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/legacy/create-proxy-middleware.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/legacy/create-proxy-middleware.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.legacyCreateProxyMiddleware = legacyCreateProxyMiddleware;
-    var factory_1 = require_factory();
     var debug_1 = require_debug2();
+    var factory_1 = require_factory();
     var options_adapter_1 = require_options_adapter();
     var debug = debug_1.Debug.extend("legacy-create-proxy-middleware");
     function legacyCreateProxyMiddleware(legacyContext, legacyOptions) {
@@ -46778,9 +47253,9 @@ var require_create_proxy_middleware = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/legacy/public.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/legacy/public.js
 var require_public2 = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/legacy/public.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/legacy/public.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.legacyCreateProxyMiddleware = void 0;
@@ -46791,9 +47266,9 @@ var require_public2 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/legacy/index.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/legacy/index.js
 var require_legacy = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/legacy/index.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/legacy/index.js"(exports) {
     "use strict";
     var __createBinding2 = exports && exports.__createBinding || (Object.create ? (function(o, m, k, k2) {
       if (k2 === void 0) k2 = k;
@@ -46816,9 +47291,9 @@ var require_legacy = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/index.js
-var require_dist3 = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.5/node_modules/http-proxy-middleware/dist/index.js"(exports) {
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/index.js
+var require_dist4 = __commonJS({
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/index.js"(exports) {
     "use strict";
     var __createBinding2 = exports && exports.__createBinding || (Object.create ? (function(o, m, k, k2) {
       if (k2 === void 0) k2 = k;
@@ -47776,9 +48251,9 @@ var require_pg_types = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/defaults.js
+// ../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/lib/defaults.js
 var require_defaults = __commonJS({
-  "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/defaults.js"(exports, module) {
+  "../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/lib/defaults.js"(exports, module) {
     "use strict";
     var user;
     try {
@@ -47843,13 +48318,12 @@ var require_defaults = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/utils.js
+// ../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/lib/utils.js
 var require_utils6 = __commonJS({
-  "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/utils.js"(exports, module) {
+  "../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/lib/utils.js"(exports, module) {
     "use strict";
     var defaults3 = require_defaults();
-    var util2 = __require("util");
-    var { isDate } = util2.types || util2;
+    var { isDate } = __require("util/types");
     function escapeElement(elementRepresentation) {
       const escaped = elementRepresentation.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
       return '"' + escaped + '"';
@@ -47858,28 +48332,23 @@ var require_utils6 = __commonJS({
       let result = "{";
       for (let i = 0; i < val.length; i++) {
         if (i > 0) {
-          result = result + ",";
+          result += ",";
         }
-        if (val[i] === null || typeof val[i] === "undefined") {
-          result = result + "NULL";
-        } else if (Array.isArray(val[i])) {
-          result = result + arrayString(val[i]);
-        } else if (ArrayBuffer.isView(val[i])) {
-          let item = val[i];
+        let item = val[i];
+        if (item == null) {
+          result += "NULL";
+        } else if (Array.isArray(item)) {
+          result += arrayString(item);
+        } else if (ArrayBuffer.isView(item)) {
           if (!(item instanceof Buffer)) {
-            const buf = Buffer.from(item.buffer, item.byteOffset, item.byteLength);
-            if (buf.length === item.byteLength) {
-              item = buf;
-            } else {
-              item = buf.slice(item.byteOffset, item.byteOffset + item.byteLength);
-            }
+            item = Buffer.from(item.buffer, item.byteOffset, item.byteLength);
           }
           result += "\\\\x" + item.toString("hex");
         } else {
-          result += escapeElement(prepareValue(val[i]));
+          result += escapeElement(prepareValue(item));
         }
       }
-      result = result + "}";
+      result += "}";
       return result;
     }
     var prepareValue = function(val, seen) {
@@ -47891,11 +48360,7 @@ var require_utils6 = __commonJS({
           return val;
         }
         if (ArrayBuffer.isView(val)) {
-          const buf = Buffer.from(val.buffer, val.byteOffset, val.byteLength);
-          if (buf.length === val.byteLength) {
-            return buf;
-          }
-          return buf.slice(val.byteOffset, val.byteOffset + val.byteLength);
+          return Buffer.from(val.buffer, val.byteOffset, val.byteLength);
         }
         if (isDate(val)) {
           if (defaults3.parseInputDatesAsUTC) {
@@ -48001,47 +48466,9 @@ var require_utils6 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/crypto/utils-legacy.js
-var require_utils_legacy = __commonJS({
-  "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/crypto/utils-legacy.js"(exports, module) {
-    "use strict";
-    var nodeCrypto = __require("crypto");
-    function md5(string4) {
-      return nodeCrypto.createHash("md5").update(string4, "utf-8").digest("hex");
-    }
-    function postgresMd5PasswordHash(user, password, salt) {
-      const inner = md5(password + user);
-      const outer = md5(Buffer.concat([Buffer.from(inner), salt]));
-      return "md5" + outer;
-    }
-    function sha256(text2) {
-      return nodeCrypto.createHash("sha256").update(text2).digest();
-    }
-    function hashByName(hashName, text2) {
-      hashName = hashName.replace(/(\D)-/, "$1");
-      return nodeCrypto.createHash(hashName).update(text2).digest();
-    }
-    function hmacSha256(key, msg) {
-      return nodeCrypto.createHmac("sha256", key).update(msg).digest();
-    }
-    async function deriveKey(password, salt, iterations) {
-      return nodeCrypto.pbkdf2Sync(password, salt, iterations, 32, "sha256");
-    }
-    module.exports = {
-      postgresMd5PasswordHash,
-      randomBytes: nodeCrypto.randomBytes,
-      deriveKey,
-      sha256,
-      hashByName,
-      hmacSha256,
-      md5
-    };
-  }
-});
-
-// ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/crypto/utils-webcrypto.js
-var require_utils_webcrypto = __commonJS({
-  "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/crypto/utils-webcrypto.js"(exports, module) {
+// ../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/lib/crypto/utils.js
+var require_utils7 = __commonJS({
+  "../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/lib/crypto/utils.js"(exports, module) {
     var nodeCrypto = __require("crypto");
     module.exports = {
       postgresMd5PasswordHash,
@@ -48090,22 +48517,9 @@ var require_utils_webcrypto = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/crypto/utils.js
-var require_utils7 = __commonJS({
-  "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/crypto/utils.js"(exports, module) {
-    "use strict";
-    var useLegacyCrypto = parseInt(process.versions && process.versions.node && process.versions.node.split(".")[0]) < 15;
-    if (useLegacyCrypto) {
-      module.exports = require_utils_legacy();
-    } else {
-      module.exports = require_utils_webcrypto();
-    }
-  }
-});
-
-// ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/crypto/cert-signatures.js
+// ../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/lib/crypto/cert-signatures.js
 var require_cert_signatures = __commonJS({
-  "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/crypto/cert-signatures.js"(exports, module) {
+  "../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/lib/crypto/cert-signatures.js"(exports, module) {
     function x509Error(msg, cert) {
       return new Error("SASL channel binding: " + msg + " when parsing public certificate " + cert.toString("base64"));
     }
@@ -48216,13 +48630,19 @@ var require_cert_signatures = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/crypto/sasl.js
+// ../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/lib/crypto/sasl.js
 var require_sasl = __commonJS({
-  "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/crypto/sasl.js"(exports, module) {
+  "../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/lib/crypto/sasl.js"(exports, module) {
     "use strict";
     var crypto2 = require_utils7();
     var { signatureAlgorithmHashFromCertificate } = require_cert_signatures();
-    function startSession(mechanisms, stream) {
+    function saslprep(password) {
+      const nonAsciiSpace = /[\u00A0\u1680\u2000-\u200B\u202F\u205F\u3000]/g;
+      const mappedToNothing = /[\u00AD\u034F\u1806\u180B\u180C\u180D\u200C\u200D\u2060\uFE00-\uFE0F\uFEFF]/g;
+      return password.replace(nonAsciiSpace, " ").replace(mappedToNothing, "").normalize("NFKC");
+    }
+    var DEFAULT_MAX_SCRAM_ITERATIONS = 1e5;
+    function startSession(mechanisms, stream, scramMaxIterations = DEFAULT_MAX_SCRAM_ITERATIONS) {
       const candidates = ["SCRAM-SHA-256"];
       if (stream) candidates.unshift("SCRAM-SHA-256-PLUS");
       const mechanism = candidates.find((candidate) => mechanisms.includes(candidate));
@@ -48238,7 +48658,8 @@ var require_sasl = __commonJS({
         mechanism,
         clientNonce,
         response: gs2Header + ",,n=*,r=" + clientNonce,
-        message: "SASLInitialResponse"
+        message: "SASLInitialResponse",
+        scramMaxIterations
       };
     }
     async function continueSession(session, password, serverData, stream) {
@@ -48260,6 +48681,12 @@ var require_sasl = __commonJS({
       } else if (sv.nonce.length === session.clientNonce.length) {
         throw new Error("SASL: SCRAM-SERVER-FIRST-MESSAGE: server nonce is too short");
       }
+      const scramMaxIterations = typeof session.scramMaxIterations === "number" ? session.scramMaxIterations : DEFAULT_MAX_SCRAM_ITERATIONS;
+      if (scramMaxIterations !== 0 && sv.iteration > scramMaxIterations) {
+        throw new Error(
+          "SASL: SCRAM-SERVER-FIRST-MESSAGE: iteration count " + sv.iteration + " exceeds scramMaxIterations of " + scramMaxIterations
+        );
+      }
       const clientFirstMessageBare = "n=*,r=" + session.clientNonce;
       const serverFirstMessage = "r=" + sv.nonce + ",s=" + sv.salt + ",i=" + sv.iteration;
       let channelBinding = stream ? "eSws" : "biws";
@@ -48274,7 +48701,7 @@ var require_sasl = __commonJS({
       const clientFinalMessageWithoutProof = "c=" + channelBinding + ",r=" + sv.nonce;
       const authMessage = clientFirstMessageBare + "," + serverFirstMessage + "," + clientFinalMessageWithoutProof;
       const saltBytes = Buffer.from(sv.salt, "base64");
-      const saltedPassword = await crypto2.deriveKey(password, saltBytes, sv.iteration);
+      const saltedPassword = await crypto2.deriveKey(saslprep(password), saltBytes, sv.iteration);
       const clientKey = await crypto2.hmacSha256(saltedPassword, "Client Key");
       const storedKey = await crypto2.sha256(clientKey);
       const clientSignature = await crypto2.hmacSha256(storedKey, authMessage);
@@ -48350,7 +48777,11 @@ var require_sasl = __commonJS({
     }
     function parseServerFinalMessage(serverData) {
       const attrPairs = parseAttributePairs(serverData);
+      const error40 = attrPairs.get("e");
       const serverSignature = attrPairs.get("v");
+      if (error40) {
+        throw new Error(`SASL: SCRAM-SERVER-FINAL-MESSAGE: server returned error: "${error40}"`);
+      }
       if (!serverSignature) {
         throw new Error("SASL: SCRAM-SERVER-FINAL-MESSAGE: server signature is missing");
       } else if (!isBase64(serverSignature)) {
@@ -48378,14 +48809,15 @@ var require_sasl = __commonJS({
     module.exports = {
       startSession,
       continueSession,
-      finalizeSession
+      finalizeSession,
+      DEFAULT_MAX_SCRAM_ITERATIONS
     };
   }
 });
 
-// ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/type-overrides.js
+// ../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/lib/type-overrides.js
 var require_type_overrides = __commonJS({
-  "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/type-overrides.js"(exports, module) {
+  "../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/lib/type-overrides.js"(exports, module) {
     "use strict";
     var types3 = require_pg_types();
     function TypeOverrides2(userTypes) {
@@ -48418,16 +48850,16 @@ var require_type_overrides = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/pg-connection-string@2.12.0/node_modules/pg-connection-string/index.js
+// ../../node_modules/.pnpm/pg-connection-string@2.13.0/node_modules/pg-connection-string/index.js
 var require_pg_connection_string = __commonJS({
-  "../../node_modules/.pnpm/pg-connection-string@2.12.0/node_modules/pg-connection-string/index.js"(exports, module) {
+  "../../node_modules/.pnpm/pg-connection-string@2.13.0/node_modules/pg-connection-string/index.js"(exports, module) {
     "use strict";
     function parse4(str2, options = {}) {
       if (str2.charAt(0) === "/") {
         const config3 = str2.split(" ");
         return { host: config3[0], database: config3[1] };
       }
-      const config2 = {};
+      const config2 = /* @__PURE__ */ Object.create(null);
       let result;
       let dummyHost = false;
       if (/ |%[^a-f0-9]|%[a-f0-9][^a-f0-9]/i.test(str2)) {
@@ -48550,7 +48982,7 @@ var require_pg_connection_string = __commonJS({
           c[key] = value;
         }
         return c;
-      }, {});
+      }, /* @__PURE__ */ Object.create(null));
       return connectionOptions;
     }
     function toClientConfig(config2) {
@@ -48577,7 +49009,7 @@ var require_pg_connection_string = __commonJS({
           }
         }
         return c;
-      }, {});
+      }, /* @__PURE__ */ Object.create(null));
       return poolConfig;
     }
     function parseIntoClientConfig(str2) {
@@ -48603,9 +49035,9 @@ See https://www.postgresql.org/docs/current/libpq-ssl.html for libpq SSL mode de
   }
 });
 
-// ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/connection-parameters.js
+// ../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/lib/connection-parameters.js
 var require_connection_parameters = __commonJS({
-  "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/connection-parameters.js"(exports, module) {
+  "../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/lib/connection-parameters.js"(exports, module) {
     "use strict";
     var dns = __require("dns");
     var defaults3 = require_defaults();
@@ -48744,9 +49176,9 @@ var require_connection_parameters = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/result.js
+// ../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/lib/result.js
 var require_result = __commonJS({
-  "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/result.js"(exports, module) {
+  "../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/lib/result.js"(exports, module) {
     "use strict";
     var types3 = require_pg_types();
     var matchRegexp = /^([A-Za-z]+)(?: (\d+))?(?: (\d+))?/;
@@ -48818,7 +49250,7 @@ var require_result = __commonJS({
         if (this.fields.length) {
           this._parsers = new Array(fieldDescriptions.length);
         }
-        const row = {};
+        const row = /* @__PURE__ */ Object.create(null);
         for (let i = 0; i < fieldDescriptions.length; i++) {
           const desc2 = fieldDescriptions[i];
           row[desc2.name] = null;
@@ -48835,9 +49267,9 @@ var require_result = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/query.js
+// ../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/lib/query.js
 var require_query = __commonJS({
-  "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/query.js"(exports, module) {
+  "../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/lib/query.js"(exports, module) {
     "use strict";
     var { EventEmitter } = __require("events");
     var Result2 = require_result();
@@ -49032,9 +49464,9 @@ var require_query = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/pg-protocol@1.13.0/node_modules/pg-protocol/dist/messages.js
+// ../../node_modules/.pnpm/pg-protocol@1.14.0/node_modules/pg-protocol/dist/messages.js
 var require_messages = __commonJS({
-  "../../node_modules/.pnpm/pg-protocol@1.13.0/node_modules/pg-protocol/dist/messages.js"(exports) {
+  "../../node_modules/.pnpm/pg-protocol@1.14.0/node_modules/pg-protocol/dist/messages.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.NoticeMessage = exports.DataRowMessage = exports.CommandCompleteMessage = exports.ReadyForQueryMessage = exports.NotificationResponseMessage = exports.BackendKeyDataMessage = exports.AuthenticationMD5Password = exports.ParameterStatusMessage = exports.ParameterDescriptionMessage = exports.RowDescriptionMessage = exports.Field = exports.CopyResponse = exports.CopyDataMessage = exports.DatabaseError = exports.copyDone = exports.emptyQuery = exports.replicationStart = exports.portalSuspended = exports.noData = exports.closeComplete = exports.bindComplete = exports.parseComplete = void 0;
@@ -49197,9 +49629,9 @@ var require_messages = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/pg-protocol@1.13.0/node_modules/pg-protocol/dist/buffer-writer.js
+// ../../node_modules/.pnpm/pg-protocol@1.14.0/node_modules/pg-protocol/dist/buffer-writer.js
 var require_buffer_writer = __commonJS({
-  "../../node_modules/.pnpm/pg-protocol@1.13.0/node_modules/pg-protocol/dist/buffer-writer.js"(exports) {
+  "../../node_modules/.pnpm/pg-protocol@1.14.0/node_modules/pg-protocol/dist/buffer-writer.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Writer = void 0;
@@ -49278,9 +49710,9 @@ var require_buffer_writer = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/pg-protocol@1.13.0/node_modules/pg-protocol/dist/serializer.js
+// ../../node_modules/.pnpm/pg-protocol@1.14.0/node_modules/pg-protocol/dist/serializer.js
 var require_serializer2 = __commonJS({
-  "../../node_modules/.pnpm/pg-protocol@1.13.0/node_modules/pg-protocol/dist/serializer.js"(exports) {
+  "../../node_modules/.pnpm/pg-protocol@1.14.0/node_modules/pg-protocol/dist/serializer.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.serialize = void 0;
@@ -49495,9 +49927,9 @@ var require_serializer2 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/pg-protocol@1.13.0/node_modules/pg-protocol/dist/buffer-reader.js
+// ../../node_modules/.pnpm/pg-protocol@1.14.0/node_modules/pg-protocol/dist/buffer-reader.js
 var require_buffer_reader = __commonJS({
-  "../../node_modules/.pnpm/pg-protocol@1.13.0/node_modules/pg-protocol/dist/buffer-reader.js"(exports) {
+  "../../node_modules/.pnpm/pg-protocol@1.14.0/node_modules/pg-protocol/dist/buffer-reader.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.BufferReader = void 0;
@@ -49554,9 +49986,9 @@ var require_buffer_reader = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/pg-protocol@1.13.0/node_modules/pg-protocol/dist/parser.js
+// ../../node_modules/.pnpm/pg-protocol@1.14.0/node_modules/pg-protocol/dist/parser.js
 var require_parser = __commonJS({
-  "../../node_modules/.pnpm/pg-protocol@1.13.0/node_modules/pg-protocol/dist/parser.js"(exports) {
+  "../../node_modules/.pnpm/pg-protocol@1.14.0/node_modules/pg-protocol/dist/parser.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Parser = void 0;
@@ -49861,9 +50293,9 @@ var require_parser = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/pg-protocol@1.13.0/node_modules/pg-protocol/dist/index.js
-var require_dist4 = __commonJS({
-  "../../node_modules/.pnpm/pg-protocol@1.13.0/node_modules/pg-protocol/dist/index.js"(exports) {
+// ../../node_modules/.pnpm/pg-protocol@1.14.0/node_modules/pg-protocol/dist/index.js
+var require_dist5 = __commonJS({
+  "../../node_modules/.pnpm/pg-protocol@1.14.0/node_modules/pg-protocol/dist/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.DatabaseError = exports.serialize = exports.parse = void 0;
@@ -49885,18 +50317,18 @@ var require_dist4 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/pg-cloudflare@1.3.0/node_modules/pg-cloudflare/dist/empty.js
+// ../../node_modules/.pnpm/pg-cloudflare@1.4.0/node_modules/pg-cloudflare/dist/empty.js
 var require_empty = __commonJS({
-  "../../node_modules/.pnpm/pg-cloudflare@1.3.0/node_modules/pg-cloudflare/dist/empty.js"(exports) {
+  "../../node_modules/.pnpm/pg-cloudflare@1.4.0/node_modules/pg-cloudflare/dist/empty.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = {};
   }
 });
 
-// ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/stream.js
+// ../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/lib/stream.js
 var require_stream = __commonJS({
-  "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/stream.js"(exports, module) {
+  "../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/lib/stream.js"(exports, module) {
     var { getStream, getSecureStream } = getStreamFuncs();
     module.exports = {
       /**
@@ -49960,12 +50392,12 @@ var require_stream = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/connection.js
+// ../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/lib/connection.js
 var require_connection = __commonJS({
-  "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/connection.js"(exports, module) {
+  "../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/lib/connection.js"(exports, module) {
     "use strict";
     var EventEmitter = __require("events").EventEmitter;
-    var { parse: parse4, serialize } = require_dist4();
+    var { parse: parse4, serialize } = require_dist5();
     var { getStream, getSecureStream } = require_stream();
     var flushBuffer = serialize.flush();
     var syncBuffer = serialize.sync();
@@ -50436,9 +50868,9 @@ var require_lib4 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/client.js
+// ../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/lib/client.js
 var require_client = __commonJS({
-  "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/client.js"(exports, module) {
+  "../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/lib/client.js"(exports, module) {
     var EventEmitter = __require("events").EventEmitter;
     var utils = require_utils6();
     var nodeUtils = __require("util");
@@ -50474,6 +50906,16 @@ var require_client = __commonJS({
       },
       "Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead."
     );
+    function coerceNumberOrDefault(value, defaultValue) {
+      if (typeof value === "number") {
+        return Number.isFinite(value) ? value : defaultValue;
+      }
+      if (typeof value === "string" && value.trim() !== "") {
+        const n = Number(value);
+        return Number.isFinite(n) ? n : defaultValue;
+      }
+      return defaultValue;
+    }
     var Client3 = class extends EventEmitter {
       constructor(config2) {
         super();
@@ -50502,7 +50944,9 @@ var require_client = __commonJS({
         this._connectionError = false;
         this._queryable = true;
         this._activeQuery = null;
+        this._txStatus = null;
         this.enableChannelBinding = Boolean(c.enableChannelBinding);
+        this.scramMaxIterations = coerceNumberOrDefault(c.scramMaxIterations, sasl.DEFAULT_MAX_SCRAM_ITERATIONS);
         this.connection = c.connection || new Connection2({
           stream: c.stream,
           ssl: this.connectionParameters.ssl,
@@ -50693,7 +51137,11 @@ var require_client = __commonJS({
       _handleAuthSASL(msg) {
         this._getPassword(() => {
           try {
-            this.saslSession = sasl.startSession(msg.mechanisms, this.enableChannelBinding && this.connection.stream);
+            this.saslSession = sasl.startSession(
+              msg.mechanisms,
+              this.enableChannelBinding && this.connection.stream,
+              this.scramMaxIterations
+            );
             this.connection.sendSASLInitialResponseMessage(this.saslSession.mechanism, this.saslSession.response);
           } catch (err) {
             this.connection.emit("error", err);
@@ -50738,6 +51186,7 @@ var require_client = __commonJS({
         }
         const activeQuery = this._getActiveQuery();
         this._activeQuery = null;
+        this._txStatus = msg?.status ?? null;
         this.readyForQuery = true;
         if (activeQuery) {
           activeQuery.handleReadyForQuery(this.connection);
@@ -50942,13 +51391,10 @@ var require_client = __commonJS({
       query(config2, values, callback) {
         let query;
         let result;
-        let readTimeout;
-        let readTimeoutTimer;
-        let queryCallback;
-        if (config2 === null || config2 === void 0) {
+        if (config2 == null) {
           throw new TypeError("Client was passed a null or undefined query");
-        } else if (typeof config2.submit === "function") {
-          readTimeout = config2.query_timeout || this.connectionParameters.query_timeout;
+        }
+        if (typeof config2.submit === "function") {
           result = query = config2;
           if (!query.callback) {
             if (typeof values === "function") {
@@ -50958,7 +51404,6 @@ var require_client = __commonJS({
             }
           }
         } else {
-          readTimeout = config2.query_timeout || this.connectionParameters.query_timeout;
           query = new Query2(config2, values, callback);
           if (!query.callback) {
             result = new this._Promise((resolve, reject) => {
@@ -50967,12 +51412,15 @@ var require_client = __commonJS({
               Error.captureStackTrace(err);
               throw err;
             });
+          } else if (typeof query.callback !== "function") {
+            throw new TypeError("callback is not a function");
           }
         }
+        const readTimeout = config2.query_timeout || this.connectionParameters.query_timeout;
         if (readTimeout) {
-          queryCallback = query.callback || (() => {
+          const queryCallback = query.callback || (() => {
           });
-          readTimeoutTimer = setTimeout(() => {
+          const readTimeoutTimer = setTimeout(() => {
             const error40 = new Error("Query read timeout");
             process.nextTick(() => {
               query.handleError(error40, this.connection);
@@ -51022,11 +51470,15 @@ var require_client = __commonJS({
       unref() {
         this.connection.unref();
       }
+      getTransactionStatus() {
+        return this._txStatus;
+      }
       end(cb) {
         this._ending = true;
         if (!this.connection._connecting || this._ended) {
           if (cb) {
             cb();
+            return;
           } else {
             return this._Promise.resolve();
           }
@@ -51054,9 +51506,9 @@ var require_client = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js
+// ../../node_modules/.pnpm/pg-pool@3.14.0_pg@8.21.0/node_modules/pg-pool/index.js
 var require_pg_pool = __commonJS({
-  "../../node_modules/.pnpm/pg-pool@3.13.0_pg@8.20.0/node_modules/pg-pool/index.js"(exports, module) {
+  "../../node_modules/.pnpm/pg-pool@3.14.0_pg@8.21.0/node_modules/pg-pool/index.js"(exports, module) {
     "use strict";
     var EventEmitter = __require("events").EventEmitter;
     var NOOP = function() {
@@ -51480,9 +51932,9 @@ var require_pg_pool = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/native/query.js
+// ../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/lib/native/query.js
 var require_query2 = __commonJS({
-  "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/native/query.js"(exports, module) {
+  "../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/lib/native/query.js"(exports, module) {
     "use strict";
     var EventEmitter = __require("events").EventEmitter;
     var util2 = __require("util");
@@ -51621,9 +52073,9 @@ var require_query2 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/native/client.js
+// ../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/lib/native/client.js
 var require_client2 = __commonJS({
-  "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/native/client.js"(exports, module) {
+  "../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/lib/native/client.js"(exports, module) {
     var nodeUtils = __require("util");
     var Native;
     try {
@@ -51807,8 +52259,11 @@ var require_client2 = __commonJS({
     Client3.prototype.end = function(cb) {
       const self2 = this;
       this._ending = true;
-      if (!this._connected) {
-        this.once("connect", this.end.bind(this, cb));
+      if (this._connecting && !this._connected) {
+        this.once("connect", () => {
+          this.end(() => {
+          });
+        });
       }
       let result;
       if (!cb) {
@@ -51871,20 +52326,23 @@ var require_client2 = __commonJS({
     Client3.prototype.isConnected = function() {
       return this._connected;
     };
+    Client3.prototype.getTransactionStatus = function() {
+      return this.native.getTransactionStatus();
+    };
   }
 });
 
-// ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/native/index.js
+// ../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/lib/native/index.js
 var require_native = __commonJS({
-  "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/native/index.js"(exports, module) {
+  "../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/lib/native/index.js"(exports, module) {
     "use strict";
     module.exports = require_client2();
   }
 });
 
-// ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/index.js
+// ../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/lib/index.js
 var require_lib5 = __commonJS({
-  "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/index.js"(exports, module) {
+  "../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/lib/index.js"(exports, module) {
     "use strict";
     var Client3 = require_client();
     var defaults3 = require_defaults();
@@ -51893,7 +52351,7 @@ var require_lib5 = __commonJS({
     var utils = require_utils6();
     var Pool4 = require_pg_pool();
     var TypeOverrides2 = require_type_overrides();
-    var { DatabaseError: DatabaseError2 } = require_dist4();
+    var { DatabaseError: DatabaseError2 } = require_dist5();
     var { escapeIdentifier: escapeIdentifier2, escapeLiteral: escapeLiteral2 } = require_utils6();
     var poolFactory = (Client4) => {
       return class BoundPool extends Pool4 {
@@ -51948,9 +52406,9 @@ var require_lib5 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/@replit+connectors-sdk@0.4.0/node_modules/@replit/connectors-sdk/identity.js
+// ../../node_modules/.pnpm/@replit+connectors-sdk@0.4.1/node_modules/@replit/connectors-sdk/identity.js
 var require_identity = __commonJS({
-  "../../node_modules/.pnpm/@replit+connectors-sdk@0.4.0/node_modules/@replit/connectors-sdk/identity.js"(exports) {
+  "../../node_modules/.pnpm/@replit+connectors-sdk@0.4.1/node_modules/@replit/connectors-sdk/identity.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.resolveAudience = resolveAudience;
@@ -52028,9 +52486,9 @@ var require_identity = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/@replit+connectors-sdk@0.4.0/node_modules/@replit/connectors-sdk/client.js
+// ../../node_modules/.pnpm/@replit+connectors-sdk@0.4.1/node_modules/@replit/connectors-sdk/client.js
 var require_client3 = __commonJS({
-  "../../node_modules/.pnpm/@replit+connectors-sdk@0.4.0/node_modules/@replit/connectors-sdk/client.js"(exports) {
+  "../../node_modules/.pnpm/@replit+connectors-sdk@0.4.1/node_modules/@replit/connectors-sdk/client.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.ReplitConnectors = void 0;
@@ -52063,6 +52521,21 @@ var require_client3 = __commonJS({
       }
       return result;
     }
+    var dbxCompoundTokenStrategy = ({ baseUrl, connectorName, connectionId, rawIdentityToken }) => ({
+      host: baseUrl,
+      token: `${rawIdentityToken} dbx:${connectionId}`,
+      connectorName
+    });
+    var pathRouteStrategy = ({ baseUrl, connectorName, connectionId, rawIdentityToken }) => ({
+      host: `${baseUrl}/api/v2/cli-proxy/${connectorName}/${connectionId}`,
+      token: rawIdentityToken,
+      connectorName
+    });
+    var CLI_CONFIG_STRATEGIES = {
+      databricks: dbxCompoundTokenStrategy,
+      "databricks-m2m": dbxCompoundTokenStrategy,
+      "microsoft-fabric": pathRouteStrategy
+    };
     var ReplitConnectors2 = class {
       constructor(options) {
         this.baseUrl = options?.baseUrl ?? (0, identity_1.resolveBaseUrl)();
@@ -52137,8 +52610,10 @@ var require_client3 = __commonJS({
         return { ...headers, "Connector-Name": connectorName };
       }
       async getCliConfig(connectorName) {
-        if (connectorName !== "databricks-m2m" && connectorName !== "databricks") {
-          throw new Error(`getCliConfig() is only supported for databricks-m2m or databricks, got: ${connectorName}`);
+        const strategy = CLI_CONFIG_STRATEGIES[connectorName];
+        if (!strategy) {
+          const supported = Object.keys(CLI_CONFIG_STRATEGIES).join(", ");
+          throw new Error(`getCliConfig() is only supported for ${supported}, got: ${connectorName}`);
         }
         const connections = await this.listConnections({
           connector_names: connectorName
@@ -52153,11 +52628,12 @@ var require_client3 = __commonJS({
           throw new Error("Replit identity token not found");
         }
         const rawToken = identityToken.replace(/^Bearer\s+/i, "");
-        return {
-          host: this.baseUrl,
-          token: `${rawToken} dbx:${connection.id}`,
-          connectorName
-        };
+        return strategy({
+          baseUrl: this.baseUrl,
+          connectorName,
+          connectionId: connection.id,
+          rawIdentityToken: rawToken
+        });
       }
       createProxyFetch(connectorName) {
         const proxyBase = this.getProxyUrl();
@@ -52207,9 +52683,9 @@ var require_client3 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/@replit+connectors-sdk@0.4.0/node_modules/@replit/connectors-sdk/index.js
+// ../../node_modules/.pnpm/@replit+connectors-sdk@0.4.1/node_modules/@replit/connectors-sdk/index.js
 var require_connectors_sdk = __commonJS({
-  "../../node_modules/.pnpm/@replit+connectors-sdk@0.4.0/node_modules/@replit/connectors-sdk/index.js"(exports) {
+  "../../node_modules/.pnpm/@replit+connectors-sdk@0.4.1/node_modules/@replit/connectors-sdk/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.ReplitConnectors = void 0;
@@ -61213,7 +61689,7 @@ var import_express13 = __toESM(require_express2(), 1);
 var import_cors = __toESM(require_lib3(), 1);
 var import_pino_http = __toESM(require_logger(), 1);
 
-// ../../node_modules/.pnpm/@clerk+shared@4.7.0_react-d_40c3c423be94f20c3e1e2e46ec109c1b/node_modules/@clerk/shared/dist/runtime/underscore-ClYSgvuy.mjs
+// ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/_chunks/underscore-CPJSkOtE.mjs
 function snakeToCamel(str2) {
   return str2 ? str2.replace(/([-_][a-z])/g, (match2) => match2.toUpperCase().replace(/-|_/, "")) : "";
 }
@@ -61256,7 +61732,7 @@ function isTruthy(value) {
   return false;
 }
 
-// ../../node_modules/.pnpm/@clerk+express@2.1.1_express@5.2.1/node_modules/@clerk/express/dist/chunk-3KITKQCB.mjs
+// ../../node_modules/.pnpm/@clerk+express@2.1.23_express@5.2.1/node_modules/@clerk/express/dist/chunk-2VERGOLI.mjs
 import { Readable } from "stream";
 var requestHasAuthObject = (req) => {
   return "auth" in req;
@@ -61284,7 +61760,7 @@ var loadApiEnv = () => {
     jwtKey: process.env.CLERK_JWT_KEY || "",
     sdkMetadata: {
       name: "@clerk/express",
-      version: "2.1.1",
+      version: "2.1.23",
       environment: process.env.NODE_ENV
     },
     telemetry: {
@@ -61322,7 +61798,25 @@ var requestToProxyRequest = (req) => {
   });
 };
 
-// ../../node_modules/.pnpm/@clerk+shared@4.7.0_react-d_40c3c423be94f20c3e1e2e46ec109c1b/node_modules/@clerk/shared/dist/runtime/runtimeEnvironment-D1yr0yUs.mjs
+// ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/_chunks/runtimeEnvironment-DHuMF-tN.mjs
+var automatedEnvironmentVariables = [
+  "CI",
+  "CONTINUOUS_INTEGRATION",
+  "GITHUB_ACTIONS",
+  "GITLAB_CI",
+  "CIRCLECI",
+  "TRAVIS",
+  "BUILDKITE",
+  "BITBUCKET_BUILD_NUMBER",
+  "APPVEYOR",
+  "CODEBUILD_BUILD_ID",
+  "TF_BUILD",
+  "TEAMCITY_VERSION",
+  "JENKINS_URL",
+  "HUDSON_URL",
+  "BAMBOO_BUILDKEY",
+  "CF_PAGES"
+];
 var isTestEnvironment = () => {
   try {
     return process.env.NODE_ENV === "test";
@@ -61338,7 +61832,7 @@ var isProductionEnvironment = () => {
   return false;
 };
 
-// ../../node_modules/.pnpm/@clerk+shared@4.7.0_react-d_40c3c423be94f20c3e1e2e46ec109c1b/node_modules/@clerk/shared/dist/runtime/deprecated--jK9xTNh.mjs
+// ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/_chunks/deprecated-D89ptCyg.mjs
 var displayedWarnings = /* @__PURE__ */ new Set();
 var deprecated = (fnName, warning, key) => {
   const hideWarning = isTestEnvironment() || isProductionEnvironment();
@@ -61349,7 +61843,7 @@ var deprecated = (fnName, warning, key) => {
 ${warning}`);
 };
 
-// ../../node_modules/.pnpm/@clerk+shared@4.7.0_react-d_40c3c423be94f20c3e1e2e46ec109c1b/node_modules/@clerk/shared/dist/runtime/constants-Bta24VLk.mjs
+// ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/_chunks/constants-BVchI2jn.mjs
 var LEGACY_DEV_INSTANCE_SUFFIXES = [
   ".lcl.dev",
   ".lclstage.dev",
@@ -61383,21 +61877,21 @@ var STAGING_FAPI_URL = "https://frontend-api.clerkstage.dev";
 var PROD_FAPI_URL = "https://frontend-api.clerk.dev";
 var DEFAULT_PROXY_PATH = "/__clerk";
 
-// ../../node_modules/.pnpm/@clerk+shared@4.7.0_react-d_40c3c423be94f20c3e1e2e46ec109c1b/node_modules/@clerk/shared/dist/runtime/isomorphicAtob-CoF80qYz.mjs
+// ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/_chunks/isomorphicAtob-C1KQ5FtS.mjs
 var isomorphicAtob = (data) => {
   if (typeof atob !== "undefined" && typeof atob === "function") return atob(data);
   else if (typeof globalThis.Buffer !== "undefined") return globalThis.Buffer.from(data, "base64").toString();
   return data;
 };
 
-// ../../node_modules/.pnpm/@clerk+shared@4.7.0_react-d_40c3c423be94f20c3e1e2e46ec109c1b/node_modules/@clerk/shared/dist/runtime/isomorphicBtoa-DWmLcIHi.mjs
+// ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/_chunks/isomorphicBtoa-BBBfp_jr.mjs
 var isomorphicBtoa = (data) => {
   if (typeof btoa !== "undefined" && typeof btoa === "function") return btoa(data);
   else if (typeof globalThis.Buffer !== "undefined") return globalThis.Buffer.from(data).toString("base64");
   return data;
 };
 
-// ../../node_modules/.pnpm/@clerk+shared@4.7.0_react-d_40c3c423be94f20c3e1e2e46ec109c1b/node_modules/@clerk/shared/dist/runtime/keys-DuxzP8MU.mjs
+// ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/_chunks/keys-jlv3GIE3.mjs
 var PUBLISHABLE_KEY_LIVE_PREFIX = "pk_live_";
 var PUBLISHABLE_KEY_TEST_PREFIX = "pk_test_";
 function isValidDecodedPublishableKey(decoded) {
@@ -61458,6 +61952,9 @@ function createDevOrStagingUrlCache() {
     return res;
   } };
 }
+function isProductionFromPublishableKey(apiKey) {
+  return apiKey.startsWith("live_") || apiKey.startsWith("pk_live_");
+}
 function isDevelopmentFromSecretKey(apiKey) {
   return apiKey.startsWith("test_") || apiKey.startsWith("sk_test_");
 }
@@ -61470,7 +61967,7 @@ var getSuffixedCookieName = (cookieName, cookieSuffix) => {
   return `${cookieName}_${cookieSuffix}`;
 };
 
-// ../../node_modules/.pnpm/@clerk+shared@4.7.0_react-d_40c3c423be94f20c3e1e2e46ec109c1b/node_modules/@clerk/shared/dist/runtime/retry-DqRIhHV5.mjs
+// ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/_chunks/retry-NrE3SkPj.mjs
 var defaultOptions = {
   initialDelay: 125,
   maxDelayBetweenRetries: 0,
@@ -61521,7 +62018,7 @@ var retry = async (callback, options = {}) => {
   }
 };
 
-// ../../node_modules/.pnpm/@clerk+shared@4.7.0_react-d_40c3c423be94f20c3e1e2e46ec109c1b/node_modules/@clerk/shared/dist/runtime/url-C6gPMFx5.mjs
+// ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/_chunks/url-BwZwnCsF.mjs
 function isLegacyDevAccountPortalOrigin(host) {
   return LEGACY_DEV_INSTANCE_SUFFIXES.some((legacyDevSuffix) => {
     return host.startsWith("accounts.") && host.endsWith(legacyDevSuffix);
@@ -61533,7 +62030,7 @@ function isCurrentDevAccountPortalOrigin(host) {
   });
 }
 
-// ../../node_modules/.pnpm/@clerk+shared@4.7.0_react-d_40c3c423be94f20c3e1e2e46ec109c1b/node_modules/@clerk/shared/dist/runtime/clerkRuntimeError-DqAmLuLY.mjs
+// ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/_chunks/clerkRuntimeError-EpUpwIcY.mjs
 function createErrorTypeGuard(ErrorClass) {
   function typeGuard(error40) {
     const target = error40 ?? this;
@@ -61598,7 +62095,7 @@ var ClerkRuntimeError = class ClerkRuntimeError2 extends ClerkError {
 };
 var isClerkRuntimeError = createErrorTypeGuard(ClerkRuntimeError);
 
-// ../../node_modules/.pnpm/@clerk+shared@4.7.0_react-d_40c3c423be94f20c3e1e2e46ec109c1b/node_modules/@clerk/shared/dist/runtime/error-NXMTfCAv.mjs
+// ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/_chunks/error-DAG0ASPV.mjs
 var ClerkAPIError = class {
   static kind = "ClerkAPIError";
   code;
@@ -61716,11 +62213,11 @@ function buildErrorThrower({ packageName, customMessages }) {
   };
 }
 
-// ../../node_modules/.pnpm/@clerk+backend@3.2.9/node_modules/@clerk/backend/dist/chunk-YBVFDYDR.mjs
+// ../../node_modules/.pnpm/@clerk+backend@3.5.0/node_modules/@clerk/backend/dist/chunk-YBVFDYDR.mjs
 var errorThrower = buildErrorThrower({ packageName: "@clerk/backend" });
 var { isDevOrStagingUrl } = createDevOrStagingUrlCache();
 
-// ../../node_modules/.pnpm/@clerk+backend@3.2.9/node_modules/@clerk/backend/dist/chunk-RZ7A7F6X.mjs
+// ../../node_modules/.pnpm/@clerk+backend@3.5.0/node_modules/@clerk/backend/dist/chunk-RZ7A7F6X.mjs
 var TokenVerificationErrorCode = {
   InvalidSecretKey: "clerk_key_invalid"
 };
@@ -61793,10 +62290,10 @@ var _MachineTokenVerificationError = class _MachineTokenVerificationError2 exten
 _MachineTokenVerificationError.kind = "MachineTokenVerificationError";
 var MachineTokenVerificationError = _MachineTokenVerificationError;
 
-// ../../node_modules/.pnpm/@clerk+backend@3.2.9/node_modules/@clerk/backend/dist/runtime/node/crypto.mjs
+// ../../node_modules/.pnpm/@clerk+backend@3.5.0/node_modules/@clerk/backend/dist/runtime/node/crypto.mjs
 import { webcrypto } from "node:crypto";
 
-// ../../node_modules/.pnpm/@clerk+backend@3.2.9/node_modules/@clerk/backend/dist/chunk-Q2KZDK4G.mjs
+// ../../node_modules/.pnpm/@clerk+backend@3.5.0/node_modules/@clerk/backend/dist/chunk-J2CDX2WG.mjs
 var globalFetch = fetch.bind(globalThis);
 var runtime = {
   crypto: webcrypto,
@@ -61939,11 +62436,12 @@ var assertAudienceClaim = (aud, audience) => {
     }
   }
 };
-var assertHeaderType = (typ, allowedTypes = "JWT") => {
-  if (typeof typ === "undefined") {
+var assertHeaderType = (typ, allowedTypes) => {
+  if (typeof typ === "undefined" && typeof allowedTypes === "undefined") {
     return;
   }
-  const allowed = Array.isArray(allowedTypes) ? allowedTypes : [allowedTypes];
+  const expectedTypes = allowedTypes ?? "JWT";
+  const allowed = Array.isArray(expectedTypes) ? expectedTypes : [expectedTypes];
   if (!allowed.includes(typ)) {
     throw new TokenVerificationError({
       action: TokenVerificationErrorAction.EnsureClerkJWT,
@@ -62115,7 +62613,7 @@ function decodeJwt(token) {
 }
 async function verifyJwt(token, options) {
   const { audience, authorizedParties, clockSkewInMs, key, headerType } = options;
-  const clockSkew = clockSkewInMs || DEFAULT_CLOCK_SKEW_IN_MS;
+  const clockSkew = typeof clockSkewInMs === "number" && Number.isFinite(clockSkewInMs) ? clockSkewInMs : DEFAULT_CLOCK_SKEW_IN_MS;
   const { data: decoded, errors } = decodeJwt(token);
   if (errors) {
     return { errors };
@@ -62125,13 +62623,6 @@ async function verifyJwt(token, options) {
     const { typ, alg } = header;
     assertHeaderType(typ, headerType);
     assertHeaderAlgorithm(alg);
-    const { azp, sub, aud, iat, exp, nbf } = payload;
-    assertSubClaim(sub);
-    assertAudienceClaim([aud], [audience]);
-    assertAuthorizedPartiesClaim(azp, authorizedParties);
-    assertExpirationClaim(exp, clockSkew);
-    assertActivationClaim(nbf, clockSkew);
-    assertIssuedAtClaim(iat, clockSkew);
   } catch (err) {
     return { errors: [err] };
   }
@@ -62157,10 +62648,21 @@ async function verifyJwt(token, options) {
       ]
     };
   }
+  try {
+    const { azp, sub, aud, iat, exp, nbf } = payload;
+    assertSubClaim(sub);
+    assertAudienceClaim(aud, audience);
+    assertAuthorizedPartiesClaim(azp, authorizedParties);
+    assertExpirationClaim(exp, clockSkew);
+    assertActivationClaim(nbf, clockSkew);
+    assertIssuedAtClaim(iat, clockSkew);
+  } catch (err) {
+    return { errors: [err] };
+  }
   return { data: payload };
 }
 
-// ../../node_modules/.pnpm/@clerk+backend@3.2.9/node_modules/@clerk/backend/dist/chunk-TOROEX6P.mjs
+// ../../node_modules/.pnpm/@clerk+backend@3.5.0/node_modules/@clerk/backend/dist/chunk-TOROEX6P.mjs
 var __create2 = Object.create;
 var __defProp2 = Object.defineProperty;
 var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -62195,13 +62697,63 @@ var __privateAdd = (obj, member, value) => member.has(obj) ? __typeError("Cannot
 var __privateSet = (obj, member, value, setter) => (__accessCheck(obj, member, "write to private field"), setter ? setter.call(obj, value) : member.set(obj, value), value);
 var __privateMethod = (obj, member, method) => (__accessCheck(obj, member, "access private method"), method);
 
-// ../../node_modules/.pnpm/@clerk+shared@4.7.0_react-d_40c3c423be94f20c3e1e2e46ec109c1b/node_modules/@clerk/shared/dist/runtime/buildAccountsBaseUrl.mjs
+// ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/buildAccountsBaseUrl.mjs
 function buildAccountsBaseUrl(frontendApi) {
   if (!frontendApi) return "";
   return `https://${frontendApi.replace(/clerk\.accountsstage\./, "accountsstage.").replace(/clerk\.accounts\.|clerk\./, "accounts.")}`;
 }
 
-// ../../node_modules/.pnpm/@clerk+shared@4.7.0_react-d_40c3c423be94f20c3e1e2e46ec109c1b/node_modules/@clerk/shared/dist/runtime/authorization-Un7v7f6J.mjs
+// ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/_chunks/logger-C6joC6-q.mjs
+var loggedMessages = /* @__PURE__ */ new Set();
+var logger = {
+  warnOnce: (msg) => {
+    if (loggedMessages.has(msg)) return;
+    loggedMessages.add(msg);
+    console.warn(msg);
+  },
+  logOnce: (msg) => {
+    if (loggedMessages.has(msg)) return;
+    console.log(msg);
+    loggedMessages.add(msg);
+  }
+};
+
+// ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/_chunks/proxy-6sFESt4u.mjs
+function isValidProxyUrl(key) {
+  if (!key) return true;
+  return isHttpOrHttps(key) || isProxyUrlRelative(key);
+}
+function isHttpOrHttps(key) {
+  return /^http(s)?:\/\//.test(key || "");
+}
+function isProxyUrlRelative(key) {
+  return key.startsWith("/");
+}
+var AUTO_PROXY_HOST_SUFFIXES = [".vercel.app"];
+var AUTO_PROXY_PATH = "/__clerk";
+function shouldAutoProxy(hostname2) {
+  return AUTO_PROXY_HOST_SUFFIXES.some((hostSuffix) => hostname2?.endsWith(hostSuffix)) ?? false;
+}
+function getDefaultEnvironment() {
+  return typeof process !== "undefined" && process.env ? process.env : {};
+}
+function normalizeHostname(hostnameOrUrl) {
+  if (hostnameOrUrl.startsWith("http://") || hostnameOrUrl.startsWith("https://")) try {
+    return new URL(hostnameOrUrl).hostname;
+  } catch {
+    return "";
+  }
+  return hostnameOrUrl.split("/")[0] || "";
+}
+function getAutoProxyUrlFromEnvironment({ publishableKey, hasDomain = false, hasProxyUrl = false, environment = getDefaultEnvironment() }) {
+  if (hasProxyUrl || hasDomain || !isProductionFromPublishableKey(publishableKey)) return "";
+  if (environment.VERCEL_TARGET_ENV !== "production") return "";
+  const vercelProductionHostname = environment.VERCEL_PROJECT_PRODUCTION_URL;
+  if (!vercelProductionHostname || !shouldAutoProxy(normalizeHostname(vercelProductionHostname))) return "";
+  return AUTO_PROXY_PATH;
+}
+
+// ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/_chunks/authorization-D10DwNv6.mjs
 var TYPES_TO_OBJECTS = {
   strict_mfa: {
     afterMinutes: 10,
@@ -62240,14 +62792,25 @@ var USER_SCOPES = /* @__PURE__ */ new Set(["u", "user"]);
 var isValidMaxAge = (maxAge) => typeof maxAge === "number" && maxAge > 0;
 var isValidLevel = (level) => ALLOWED_LEVELS.has(level);
 var isValidVerificationType = (type) => ALLOWED_TYPES.has(type);
+var isValidFactorAge = (x) => typeof x === "number" && Number.isFinite(x) && (x === -1 || x >= 0);
 var prefixWithOrg = (value) => value.replace(/^(org:)*/, "org:");
 var checkOrgAuthorization = (params, options) => {
   const { orgId, orgRole, orgPermissions } = options;
-  if (!params.role && !params.permission) return null;
-  if (!orgId || !orgRole || !orgPermissions) return null;
-  if (params.permission) return orgPermissions.includes(prefixWithOrg(params.permission));
-  if (params.role) return prefixWithOrg(orgRole) === prefixWithOrg(params.role);
-  return null;
+  const roleAsked = params.role !== void 0;
+  const permissionAsked = params.permission !== void 0;
+  if (!roleAsked && !permissionAsked) return "skip";
+  if (roleAsked && typeof params.role !== "string") return "fail";
+  if (permissionAsked && typeof params.permission !== "string") return "fail";
+  if (!orgId) return "fail";
+  if (roleAsked) {
+    if (typeof orgRole !== "string" || !orgRole) return "fail";
+    if (prefixWithOrg(orgRole) !== prefixWithOrg(params.role)) return "fail";
+  }
+  if (permissionAsked) {
+    if (!Array.isArray(orgPermissions)) return "fail";
+    if (!orgPermissions.includes(prefixWithOrg(params.permission))) return "fail";
+  }
+  return "pass";
 };
 var checkForFeatureOrPlan = (claim, featureOrPlan) => {
   const { org: orgFeatures, user: userFeatures } = splitByScope(claim);
@@ -62264,9 +62827,28 @@ var checkForFeatureOrPlan = (claim, featureOrPlan) => {
 };
 var checkBillingAuthorization = (params, options) => {
   const { features, plans } = options;
-  if (params.feature && features) return checkForFeatureOrPlan(features, params.feature);
-  if (params.plan && plans) return checkForFeatureOrPlan(plans, params.plan);
-  return null;
+  const featureAsked = params.feature !== void 0;
+  const planAsked = params.plan !== void 0;
+  if (!featureAsked && !planAsked) return "skip";
+  if (featureAsked && typeof params.feature !== "string") return "fail";
+  if (planAsked && typeof params.plan !== "string") return "fail";
+  if (featureAsked) {
+    if (typeof features !== "string" || !features) return "fail";
+    try {
+      if (!checkForFeatureOrPlan(features, params.feature)) return "fail";
+    } catch {
+      return "fail";
+    }
+  }
+  if (planAsked) {
+    if (typeof plans !== "string" || !plans) return "fail";
+    try {
+      if (!checkForFeatureOrPlan(plans, params.plan)) return "fail";
+    } catch {
+      return "fail";
+    }
+  }
+  return "pass";
 };
 var splitByScope = (fea) => {
   const org = [];
@@ -62306,34 +62888,42 @@ var validateReverificationConfig = (config2) => {
   return false;
 };
 var checkReverificationAuthorization = (params, { factorVerificationAge }) => {
-  if (!params.reverification || !factorVerificationAge) return null;
-  const isValidReverification = validateReverificationConfig(params.reverification);
-  if (!isValidReverification) return null;
-  const { level, afterMinutes } = isValidReverification();
+  if (params.reverification === void 0) return "skip";
+  if (!factorVerificationAge) return "fail";
+  if (!Array.isArray(factorVerificationAge) || factorVerificationAge.length !== 2 || !isValidFactorAge(factorVerificationAge[0]) || !isValidFactorAge(factorVerificationAge[1])) return "fail";
+  const getConfig = validateReverificationConfig(params.reverification);
+  if (!getConfig) return "fail";
+  const { level, afterMinutes } = getConfig();
   const [factor1Age, factor2Age] = factorVerificationAge;
-  const isValidFactor1 = factor1Age !== -1 ? afterMinutes > factor1Age : null;
-  const isValidFactor2 = factor2Age !== -1 ? afterMinutes > factor2Age : null;
+  if (factor1Age === -1 && factor2Age === -1) return "fail";
+  const factor1FreshEnough = factor1Age !== -1 && afterMinutes > factor1Age;
+  const factor2FreshEnough = factor2Age !== -1 && afterMinutes > factor2Age;
   switch (level) {
     case "first_factor":
-      return isValidFactor1;
+      return factor1FreshEnough ? "pass" : "fail";
     case "second_factor":
-      return factor2Age !== -1 ? isValidFactor2 : isValidFactor1;
+      if (factor2Age === -1) return factor1FreshEnough ? "pass" : "fail";
+      if (factor1Age === -1) return factor2FreshEnough ? "pass" : "fail";
+      return factor2FreshEnough ? "pass" : "fail";
     case "multi_factor":
-      return factor2Age === -1 ? isValidFactor1 : isValidFactor1 && isValidFactor2;
+      if (factor2Age === -1) return factor1FreshEnough ? "pass" : "fail";
+      if (factor1Age === -1) return "fail";
+      return factor1FreshEnough && factor2FreshEnough ? "pass" : "fail";
   }
 };
+var combine = (results) => results.some((r) => r === "pass") && results.every((r) => r === "pass" || r === "skip");
 var createCheckAuthorization = (options) => {
   return (params) => {
     if (!options.userId) return false;
-    const billingAuthorization = checkBillingAuthorization(params, options);
-    const orgAuthorization = checkOrgAuthorization(params, options);
-    const reverificationAuthorization = checkReverificationAuthorization(params, options);
-    if ([billingAuthorization || orgAuthorization, reverificationAuthorization].some((a) => a === null)) return [billingAuthorization || orgAuthorization, reverificationAuthorization].some((a) => a === true);
-    return [billingAuthorization || orgAuthorization, reverificationAuthorization].every((a) => a === true);
+    return combine([
+      checkOrgAuthorization(params, options),
+      checkBillingAuthorization(params, options),
+      checkReverificationAuthorization(params, options)
+    ]);
   };
 };
 
-// ../../node_modules/.pnpm/@clerk+shared@4.7.0_react-d_40c3c423be94f20c3e1e2e46ec109c1b/node_modules/@clerk/shared/dist/runtime/jwtPayloadParser.mjs
+// ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/jwtPayloadParser.mjs
 var parsePermissions = ({ per, fpm }) => {
   if (!per || !fpm) return {
     permissions: [],
@@ -62403,7 +62993,7 @@ var __experimental_JWTPayloadToAuthObjectProperties = (claims) => {
   };
 };
 
-// ../../node_modules/.pnpm/@clerk+shared@4.7.0_react-d_40c3c423be94f20c3e1e2e46ec109c1b/node_modules/@clerk/shared/dist/runtime/pathToRegexp-7eww5BY6.mjs
+// ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/_chunks/pathToRegexp-CNkSDpje.mjs
 function _(r) {
   for (var n = [], e = 0; e < r.length; ) {
     var a = r[e];
@@ -62640,17 +63230,24 @@ ${e.message}`);
   }
 }
 
-// ../../node_modules/.pnpm/@clerk+backend@3.2.9/node_modules/@clerk/backend/dist/chunk-EQOZORTW.mjs
-var require_dist2 = __commonJS2({
-  "../../node_modules/.pnpm/cookie@1.0.2/node_modules/cookie/dist/index.js"(exports) {
+// ../../node_modules/.pnpm/@clerk+backend@3.5.0/node_modules/@clerk/backend/dist/chunk-H3NCOZAT.mjs
+var require_dist3 = __commonJS2({
+  "../../node_modules/.pnpm/cookie@1.1.1/node_modules/cookie/dist/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.parse = parse22;
-    exports.serialize = serialize;
+    exports.parseCookie = parseCookie;
+    exports.parse = parseCookie;
+    exports.stringifyCookie = stringifyCookie;
+    exports.stringifySetCookie = stringifySetCookie;
+    exports.serialize = stringifySetCookie;
+    exports.parseSetCookie = parseSetCookie;
+    exports.stringifySetCookie = stringifySetCookie;
+    exports.serialize = stringifySetCookie;
     var cookieNameRegExp = /^[\u0021-\u003A\u003C\u003E-\u007E]+$/;
     var cookieValueRegExp = /^[\u0021-\u003A\u003C-\u007E]*$/;
     var domainValueRegExp = /^([.]?[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)([.][a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*$/i;
     var pathValueRegExp = /^[\u0020-\u003A\u003D-\u007E]*$/;
+    var maxAgeRegExp = /^-?\d+$/;
     var __toString = Object.prototype.toString;
     var NullObject = /* @__PURE__ */ (() => {
       const C = function() {
@@ -62658,7 +63255,7 @@ var require_dist2 = __commonJS2({
       C.prototype = /* @__PURE__ */ Object.create(null);
       return C;
     })();
-    function parse22(str2, options) {
+    function parseCookie(str2, options) {
       const obj = new NullObject();
       const len = str2.length;
       if (len < 2)
@@ -62666,91 +63263,87 @@ var require_dist2 = __commonJS2({
       const dec = options?.decode || decode;
       let index = 0;
       do {
-        const eqIdx = str2.indexOf("=", index);
+        const eqIdx = eqIndex(str2, index, len);
         if (eqIdx === -1)
           break;
-        const colonIdx = str2.indexOf(";", index);
-        const endIdx = colonIdx === -1 ? len : colonIdx;
+        const endIdx = endIndex(str2, index, len);
         if (eqIdx > endIdx) {
           index = str2.lastIndexOf(";", eqIdx - 1) + 1;
           continue;
         }
-        const keyStartIdx = startIndex(str2, index, eqIdx);
-        const keyEndIdx = endIndex(str2, eqIdx, keyStartIdx);
-        const key = str2.slice(keyStartIdx, keyEndIdx);
+        const key = valueSlice(str2, index, eqIdx);
         if (obj[key] === void 0) {
-          let valStartIdx = startIndex(str2, eqIdx + 1, endIdx);
-          let valEndIdx = endIndex(str2, endIdx, valStartIdx);
-          const value = dec(str2.slice(valStartIdx, valEndIdx));
-          obj[key] = value;
+          obj[key] = dec(valueSlice(str2, eqIdx + 1, endIdx));
         }
         index = endIdx + 1;
       } while (index < len);
       return obj;
     }
-    function startIndex(str2, index, max) {
-      do {
-        const code = str2.charCodeAt(index);
-        if (code !== 32 && code !== 9)
-          return index;
-      } while (++index < max);
-      return max;
-    }
-    function endIndex(str2, index, min) {
-      while (index > min) {
-        const code = str2.charCodeAt(--index);
-        if (code !== 32 && code !== 9)
-          return index + 1;
-      }
-      return min;
-    }
-    function serialize(name, val, options) {
+    function stringifyCookie(cookie, options) {
       const enc = options?.encode || encodeURIComponent;
-      if (!cookieNameRegExp.test(name)) {
-        throw new TypeError(`argument name is invalid: ${name}`);
+      const cookieStrings = [];
+      for (const name of Object.keys(cookie)) {
+        const val = cookie[name];
+        if (val === void 0)
+          continue;
+        if (!cookieNameRegExp.test(name)) {
+          throw new TypeError(`cookie name is invalid: ${name}`);
+        }
+        const value = enc(val);
+        if (!cookieValueRegExp.test(value)) {
+          throw new TypeError(`cookie val is invalid: ${val}`);
+        }
+        cookieStrings.push(`${name}=${value}`);
       }
-      const value = enc(val);
+      return cookieStrings.join("; ");
+    }
+    function stringifySetCookie(_name, _val, _opts) {
+      const cookie = typeof _name === "object" ? _name : { ..._opts, name: _name, value: String(_val) };
+      const options = typeof _val === "object" ? _val : _opts;
+      const enc = options?.encode || encodeURIComponent;
+      if (!cookieNameRegExp.test(cookie.name)) {
+        throw new TypeError(`argument name is invalid: ${cookie.name}`);
+      }
+      const value = cookie.value ? enc(cookie.value) : "";
       if (!cookieValueRegExp.test(value)) {
-        throw new TypeError(`argument val is invalid: ${val}`);
+        throw new TypeError(`argument val is invalid: ${cookie.value}`);
       }
-      let str2 = name + "=" + value;
-      if (!options)
-        return str2;
-      if (options.maxAge !== void 0) {
-        if (!Number.isInteger(options.maxAge)) {
-          throw new TypeError(`option maxAge is invalid: ${options.maxAge}`);
+      let str2 = cookie.name + "=" + value;
+      if (cookie.maxAge !== void 0) {
+        if (!Number.isInteger(cookie.maxAge)) {
+          throw new TypeError(`option maxAge is invalid: ${cookie.maxAge}`);
         }
-        str2 += "; Max-Age=" + options.maxAge;
+        str2 += "; Max-Age=" + cookie.maxAge;
       }
-      if (options.domain) {
-        if (!domainValueRegExp.test(options.domain)) {
-          throw new TypeError(`option domain is invalid: ${options.domain}`);
+      if (cookie.domain) {
+        if (!domainValueRegExp.test(cookie.domain)) {
+          throw new TypeError(`option domain is invalid: ${cookie.domain}`);
         }
-        str2 += "; Domain=" + options.domain;
+        str2 += "; Domain=" + cookie.domain;
       }
-      if (options.path) {
-        if (!pathValueRegExp.test(options.path)) {
-          throw new TypeError(`option path is invalid: ${options.path}`);
+      if (cookie.path) {
+        if (!pathValueRegExp.test(cookie.path)) {
+          throw new TypeError(`option path is invalid: ${cookie.path}`);
         }
-        str2 += "; Path=" + options.path;
+        str2 += "; Path=" + cookie.path;
       }
-      if (options.expires) {
-        if (!isDate(options.expires) || !Number.isFinite(options.expires.valueOf())) {
-          throw new TypeError(`option expires is invalid: ${options.expires}`);
+      if (cookie.expires) {
+        if (!isDate(cookie.expires) || !Number.isFinite(cookie.expires.valueOf())) {
+          throw new TypeError(`option expires is invalid: ${cookie.expires}`);
         }
-        str2 += "; Expires=" + options.expires.toUTCString();
+        str2 += "; Expires=" + cookie.expires.toUTCString();
       }
-      if (options.httpOnly) {
+      if (cookie.httpOnly) {
         str2 += "; HttpOnly";
       }
-      if (options.secure) {
+      if (cookie.secure) {
         str2 += "; Secure";
       }
-      if (options.partitioned) {
+      if (cookie.partitioned) {
         str2 += "; Partitioned";
       }
-      if (options.priority) {
-        const priority = typeof options.priority === "string" ? options.priority.toLowerCase() : void 0;
+      if (cookie.priority) {
+        const priority = typeof cookie.priority === "string" ? cookie.priority.toLowerCase() : void 0;
         switch (priority) {
           case "low":
             str2 += "; Priority=Low";
@@ -62762,11 +63355,11 @@ var require_dist2 = __commonJS2({
             str2 += "; Priority=High";
             break;
           default:
-            throw new TypeError(`option priority is invalid: ${options.priority}`);
+            throw new TypeError(`option priority is invalid: ${cookie.priority}`);
         }
       }
-      if (options.sameSite) {
-        const sameSite = typeof options.sameSite === "string" ? options.sameSite.toLowerCase() : options.sameSite;
+      if (cookie.sameSite) {
+        const sameSite = typeof cookie.sameSite === "string" ? cookie.sameSite.toLowerCase() : cookie.sameSite;
         switch (sameSite) {
           case true:
           case "strict":
@@ -62779,10 +63372,97 @@ var require_dist2 = __commonJS2({
             str2 += "; SameSite=None";
             break;
           default:
-            throw new TypeError(`option sameSite is invalid: ${options.sameSite}`);
+            throw new TypeError(`option sameSite is invalid: ${cookie.sameSite}`);
         }
       }
       return str2;
+    }
+    function parseSetCookie(str2, options) {
+      const dec = options?.decode || decode;
+      const len = str2.length;
+      const endIdx = endIndex(str2, 0, len);
+      const eqIdx = eqIndex(str2, 0, endIdx);
+      const setCookie = eqIdx === -1 ? { name: "", value: dec(valueSlice(str2, 0, endIdx)) } : {
+        name: valueSlice(str2, 0, eqIdx),
+        value: dec(valueSlice(str2, eqIdx + 1, endIdx))
+      };
+      let index = endIdx + 1;
+      while (index < len) {
+        const endIdx2 = endIndex(str2, index, len);
+        const eqIdx2 = eqIndex(str2, index, endIdx2);
+        const attr = eqIdx2 === -1 ? valueSlice(str2, index, endIdx2) : valueSlice(str2, index, eqIdx2);
+        const val = eqIdx2 === -1 ? void 0 : valueSlice(str2, eqIdx2 + 1, endIdx2);
+        switch (attr.toLowerCase()) {
+          case "httponly":
+            setCookie.httpOnly = true;
+            break;
+          case "secure":
+            setCookie.secure = true;
+            break;
+          case "partitioned":
+            setCookie.partitioned = true;
+            break;
+          case "domain":
+            setCookie.domain = val;
+            break;
+          case "path":
+            setCookie.path = val;
+            break;
+          case "max-age":
+            if (val && maxAgeRegExp.test(val))
+              setCookie.maxAge = Number(val);
+            break;
+          case "expires":
+            if (!val)
+              break;
+            const date6 = new Date(val);
+            if (Number.isFinite(date6.valueOf()))
+              setCookie.expires = date6;
+            break;
+          case "priority":
+            if (!val)
+              break;
+            const priority = val.toLowerCase();
+            if (priority === "low" || priority === "medium" || priority === "high") {
+              setCookie.priority = priority;
+            }
+            break;
+          case "samesite":
+            if (!val)
+              break;
+            const sameSite = val.toLowerCase();
+            if (sameSite === "lax" || sameSite === "strict" || sameSite === "none") {
+              setCookie.sameSite = sameSite;
+            }
+            break;
+        }
+        index = endIdx2 + 1;
+      }
+      return setCookie;
+    }
+    function endIndex(str2, min, len) {
+      const index = str2.indexOf(";", min);
+      return index === -1 ? len : index;
+    }
+    function eqIndex(str2, min, max) {
+      const index = str2.indexOf("=", min);
+      return index < max ? index : -1;
+    }
+    function valueSlice(str2, min, max) {
+      let start = min;
+      let end = max;
+      do {
+        const code = str2.charCodeAt(start);
+        if (code !== 32 && code !== 9)
+          break;
+      } while (++start < end);
+      while (end > start) {
+        const code = str2.charCodeAt(end - 1);
+        if (code !== 32 && code !== 9)
+          break;
+        end--;
+      }
+      return str2.slice(start, end);
     }
     function decode(str2) {
       if (str2.indexOf("%") === -1)
@@ -62800,7 +63480,7 @@ var require_dist2 = __commonJS2({
 });
 var API_URL = "https://api.clerk.com";
 var API_VERSION = "v1";
-var USER_AGENT = `${"@clerk/backend"}@${"3.2.9"}`;
+var USER_AGENT = `${"@clerk/backend"}@${"3.5.0"}`;
 var MAX_CACHE_LAST_UPDATED_AT_SECONDS = 5 * 60;
 var SUPPORTED_BAPI_VERSION = "2025-11-10";
 var Attributes = {
@@ -62908,6 +63588,14 @@ var AuthenticateContext = class {
     this.cookieSuffix = cookieSuffix;
     this.clerkRequest = clerkRequest;
     this.originalFrontendApi = "";
+    const autoProxyPath = getAutoProxyUrlFromEnvironment({
+      publishableKey: options.publishableKey ?? "",
+      hasProxyUrl: !!options.proxyUrl,
+      hasDomain: !!options.domain
+    });
+    if (autoProxyPath) {
+      options = { ...options, proxyUrl: `${clerkRequest.clerkUrl.origin}${autoProxyPath}` };
+    }
     if (options.acceptsToken === TokenType.M2MToken || options.acceptsToken === TokenType.ApiKey) {
       this.initHeaderValues();
     } else {
@@ -63124,8 +63812,36 @@ var createAuthenticateContext = async (clerkRequest, options) => {
 };
 var SEPARATOR = "/";
 var MULTIPLE_SEPARATOR_REGEX = new RegExp("(?<!:)" + SEPARATOR + "{1,}", "g");
+var MAX_DECODES = 10;
+function isDotSegment(segment) {
+  let candidate = segment;
+  for (let i = 0; i <= MAX_DECODES; i++) {
+    if (candidate.split(/[/\\]/).some((p) => p === "." || p === "..")) {
+      return true;
+    }
+    if (i === MAX_DECODES) {
+      throw new Error(`joinPaths: too many layers of encoding in ${segment}`);
+    }
+    try {
+      const next = decodeURIComponent(candidate);
+      if (next === candidate) {
+        break;
+      }
+      candidate = next;
+    } catch {
+      break;
+    }
+  }
+  return false;
+}
 function joinPaths(...args) {
-  return args.filter((p) => p).join(SEPARATOR).replace(MULTIPLE_SEPARATOR_REGEX, SEPARATOR);
+  const result = args.filter((p) => p).join(SEPARATOR).replace(MULTIPLE_SEPARATOR_REGEX, SEPARATOR);
+  for (const segment of result.split(SEPARATOR)) {
+    if (isDotSegment(segment)) {
+      throw new Error(`joinPaths: "." and ".." path segments are not allowed (received "${result}")`);
+    }
+  }
+  return result;
 }
 var AbstractAPI = class {
   constructor(request) {
@@ -63181,7 +63897,10 @@ var AccountlessApplicationAPI = class extends AbstractAPI {
     return this.request({
       method: "POST",
       path: basePath3,
-      headerParams
+      headerParams,
+      queryParams: {
+        source: params?.source
+      }
     });
   }
   async completeAccountlessApplicationOnboarding(params) {
@@ -63189,7 +63908,10 @@ var AccountlessApplicationAPI = class extends AbstractAPI {
     return this.request({
       method: "POST",
       path: joinPaths(basePath3, "complete"),
-      headerParams
+      headerParams,
+      queryParams: {
+        source: params?.source
+      }
     });
   }
 };
@@ -63506,6 +64228,12 @@ var InstanceAPI = class extends AbstractAPI {
       bodyParams: params
     });
   }
+  async getOrganizationSettings() {
+    return this.request({
+      method: "GET",
+      path: joinPaths(basePath13, "organization_settings")
+    });
+  }
   async updateOrganizationSettings(params) {
     return this.request({
       method: "PATCH",
@@ -63682,6 +64410,16 @@ var IdPOAuthAccessToken = class _IdPOAuthAccessToken {
     );
   }
 };
+var M2M_RESERVED_JWT_CLAIMS = /* @__PURE__ */ new Set(["iss", "sub", "exp", "nbf", "iat", "jti"]);
+function extractCustomClaims(payload) {
+  const claims = {};
+  for (const key of Object.keys(payload)) {
+    if (!M2M_RESERVED_JWT_CLAIMS.has(key)) {
+      claims[key] = payload[key];
+    }
+  }
+  return Object.keys(claims).length > 0 ? claims : null;
+}
 var M2MToken = class _M2MToken {
   constructor(id, subject, scopes, claims, revoked, revocationReason, expired, expiration, createdAt, updatedAt, token) {
     this.id = id;
@@ -63717,7 +64455,7 @@ var M2MToken = class _M2MToken {
       // jti should always be present in Clerk-issued M2M JWTs
       payload.sub,
       payload.scopes?.split(" ") ?? payload.aud ?? [],
-      null,
+      extractCustomClaims(payload),
       false,
       null,
       payload.exp * 1e3 <= Date.now() - clockSkewInMs,
@@ -64006,13 +64744,20 @@ var M2MTokenApi = class extends AbstractAPI {
     return this.request(requestOptions);
   }
   async createToken(params) {
-    const { claims = null, machineSecretKey, secondsUntilExpiration = null, tokenFormat = "opaque" } = params || {};
+    const {
+      claims = null,
+      machineSecretKey,
+      minRemainingTtlSeconds,
+      secondsUntilExpiration = null,
+      tokenFormat = "opaque"
+    } = params || {};
     const requestOptions = __privateMethod(this, _M2MTokenApi_instances, createRequestOptions_fn).call(this, {
       method: "POST",
       path: basePath16,
       bodyParams: {
         secondsUntilExpiration,
         claims,
+        minRemainingTtlSeconds,
         tokenFormat
       }
     }, machineSecretKey);
@@ -64649,6 +65394,22 @@ var UserAPI = class extends AbstractAPI {
       bodyParams: params
     });
   }
+  async replaceUserEmailAddress(userId, params) {
+    this.requireId(userId);
+    return this.request({
+      method: "PUT",
+      path: joinPaths(basePath29, userId, "email_address"),
+      bodyParams: params
+    });
+  }
+  async replaceUserPhoneNumber(userId, params) {
+    this.requireId(userId);
+    return this.request({
+      method: "PUT",
+      path: joinPaths(basePath29, userId, "phone_number"),
+      bodyParams: params
+    });
+  }
   async updateUserProfileImage(userId, params) {
     this.requireId(userId);
     const formData = new runtime.FormData();
@@ -65144,9 +65905,10 @@ var AccountlessApplication = class _AccountlessApplication {
   }
 };
 var AgentTask = class _AgentTask {
-  constructor(agentId, taskId, url2) {
+  constructor(agentId, taskId, agentTaskId, url2) {
     this.agentId = agentId;
     this.taskId = taskId;
+    this.agentTaskId = agentTaskId;
     this.url = url2;
   }
   /**
@@ -65156,7 +65918,8 @@ var AgentTask = class _AgentTask {
    * @returns A new AgentTask instance
    */
   static fromJSON(data) {
-    return new _AgentTask(data.agent_id, data.task_id, data.url);
+    const agentTaskId = data.agent_task_id ?? data.task_id ?? "";
+    return new _AgentTask(data.agent_id, agentTaskId, agentTaskId, data.url);
   }
 };
 var ActorToken = class _ActorToken {
@@ -65694,8 +66457,64 @@ var EnterpriseAccount = class _EnterpriseAccount {
     );
   }
 };
+var EnterpriseConnectionSamlConnection = class _EnterpriseConnectionSamlConnection {
+  constructor(id, name, idpEntityId, idpSsoUrl, idpCertificate, idpMetadataUrl, idpMetadata, acsUrl, spEntityId, spMetadataUrl, syncUserAttributes, allowSubdomains, allowIdpInitiated) {
+    this.id = id;
+    this.name = name;
+    this.idpEntityId = idpEntityId;
+    this.idpSsoUrl = idpSsoUrl;
+    this.idpCertificate = idpCertificate;
+    this.idpMetadataUrl = idpMetadataUrl;
+    this.idpMetadata = idpMetadata;
+    this.acsUrl = acsUrl;
+    this.spEntityId = spEntityId;
+    this.spMetadataUrl = spMetadataUrl;
+    this.syncUserAttributes = syncUserAttributes;
+    this.allowSubdomains = allowSubdomains;
+    this.allowIdpInitiated = allowIdpInitiated;
+  }
+  static fromJSON(data) {
+    return new _EnterpriseConnectionSamlConnection(
+      data.id,
+      data.name,
+      data.idp_entity_id,
+      data.idp_sso_url,
+      data.idp_certificate,
+      data.idp_metadata_url,
+      data.idp_metadata,
+      data.acs_url,
+      data.sp_entity_id,
+      data.sp_metadata_url,
+      data.sync_user_attributes,
+      data.allow_subdomains,
+      data.allow_idp_initiated
+    );
+  }
+};
+var EnterpriseConnectionOauthConfig = class _EnterpriseConnectionOauthConfig {
+  constructor(id, name, clientId, discoveryUrl, logoPublicUrl, createdAt, updatedAt) {
+    this.id = id;
+    this.name = name;
+    this.clientId = clientId;
+    this.discoveryUrl = discoveryUrl;
+    this.logoPublicUrl = logoPublicUrl;
+    this.createdAt = createdAt;
+    this.updatedAt = updatedAt;
+  }
+  static fromJSON(data) {
+    return new _EnterpriseConnectionOauthConfig(
+      data.id,
+      data.name,
+      data.client_id,
+      data.discovery_url,
+      data.logo_public_url,
+      data.created_at,
+      data.updated_at
+    );
+  }
+};
 var EnterpriseConnection = class _EnterpriseConnection {
-  constructor(id, name, domains, organizationId, active, syncUserAttributes, allowSubdomains, disableAdditionalIdentifications, createdAt, updatedAt) {
+  constructor(id, name, domains, organizationId, active, syncUserAttributes, allowSubdomains, disableAdditionalIdentifications, createdAt, updatedAt, samlConnection, oauthConfig) {
     this.id = id;
     this.name = name;
     this.domains = domains;
@@ -65706,6 +66525,8 @@ var EnterpriseConnection = class _EnterpriseConnection {
     this.disableAdditionalIdentifications = disableAdditionalIdentifications;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
+    this.samlConnection = samlConnection;
+    this.oauthConfig = oauthConfig;
   }
   static fromJSON(data) {
     return new _EnterpriseConnection(
@@ -65718,7 +66539,9 @@ var EnterpriseConnection = class _EnterpriseConnection {
       data.allow_subdomains,
       data.disable_additional_identifications,
       data.created_at,
-      data.updated_at
+      data.updated_at,
+      data.saml_connection != null ? EnterpriseConnectionSamlConnection.fromJSON(data.saml_connection) : null,
+      data.oauth_config != null ? EnterpriseConnectionOauthConfig.fromJSON(data.oauth_config) : null
     );
   }
 };
@@ -65886,6 +66709,9 @@ var ObjectType = {
   TotalCount: "total_count",
   TestingToken: "testing_token",
   Role: "role",
+  RoleSet: "role_set",
+  RoleSetItem: "role_set_item",
+  RoleSetMigration: "role_set_migration",
   Permission: "permission",
   BillingPayer: "commerce_payer",
   BillingPaymentAttempt: "commerce_payment_attempt",
@@ -67275,7 +68101,7 @@ var withDebugHeaders = (requestState) => {
   requestState.headers = headers;
   return requestState;
 };
-var import_cookie = __toESM2(require_dist2());
+var import_cookie = __toESM2(require_dist3());
 var ClerkUrl = class extends URL {
   isCrossOrigin(other) {
     return this.origin !== new URL(other.toString()).origin;
@@ -67287,7 +68113,20 @@ var createClerkUrl = (...args) => {
 var ClerkRequest = class extends Request {
   constructor(input, init) {
     const url2 = typeof input !== "string" && "url" in input ? input.url : String(input);
-    super(url2, init || typeof input === "string" ? void 0 : input);
+    let cloneInit;
+    if (init) {
+      cloneInit = init;
+    } else if (typeof input !== "string") {
+      cloneInit = new Proxy(input, {
+        get(target, prop) {
+          if (prop === "signal" || prop === "body") {
+            return void 0;
+          }
+          return Reflect.get(target, prop, target);
+        }
+      });
+    }
+    super(url2, cloneInit);
     this.clerkUrl = this.deriveUrlFromHeaders(this);
     this.cookies = this.parseCookies(this);
   }
@@ -68212,7 +69051,7 @@ var authenticateRequest = (async (request, options) => {
         throw errors[0];
       }
       if (!data.azp) {
-        console.warn(
+        logger.warnOnce(
           "Clerk: Session token from cookie is missing the azp claim. In a future version of Clerk, this token will be considered invalid. Please contact Clerk support if you see this warning."
         );
       }
@@ -68461,7 +69300,7 @@ function createAuthenticateRequest(params) {
   };
 }
 
-// ../../node_modules/.pnpm/@clerk+backend@3.2.9/node_modules/@clerk/backend/dist/chunk-P263NW7Z.mjs
+// ../../node_modules/.pnpm/@clerk+backend@3.5.0/node_modules/@clerk/backend/dist/chunk-P263NW7Z.mjs
 function withLegacyReturn(cb) {
   return async (...args) => {
     const { data, errors } = await cb(...args);
@@ -68472,7 +69311,44 @@ function withLegacyReturn(cb) {
   };
 }
 
-// ../../node_modules/.pnpm/@clerk+shared@4.7.0_react-d_40c3c423be94f20c3e1e2e46ec109c1b/node_modules/@clerk/shared/dist/runtime/telemetry-DE2JFEBf.mjs
+// ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/_chunks/telemetry-DmiY4LSf.mjs
+var PROCESS_FLAG = /* @__PURE__ */ Symbol.for("@clerk/shared.telemetryNoticeShown");
+var NOTICE_LINES = [
+  "Attention: Clerk collects telemetry data from its SDKs when connected to development instances.",
+  "The data collected is used to inform Clerk's product roadmap.",
+  "To learn more, including how to opt-out from the telemetry program, visit: https://clerk.com/docs/telemetry."
+];
+function isServerRuntime() {
+  if (typeof window !== "undefined") return false;
+  if (typeof globalThis.EdgeRuntime !== "undefined") return false;
+  return true;
+}
+function isCI() {
+  if (typeof process === "undefined" || !process.env) return false;
+  return automatedEnvironmentVariables.some((name) => isTruthy(process.env[name]));
+}
+function hasSeen() {
+  return Boolean(globalThis[PROCESS_FLAG]);
+}
+function markSeen() {
+  globalThis[PROCESS_FLAG] = true;
+}
+function printNotice() {
+  if (typeof console === "undefined" || typeof console.log !== "function") return;
+  for (const line2 of NOTICE_LINES) console.log(line2);
+  console.log("");
+}
+function maybeShowTelemetryNotice(options = {}) {
+  if (options.skip) return;
+  try {
+    if (!isServerRuntime()) return;
+    if (isCI()) return;
+    if (hasSeen()) return;
+    printNotice();
+    markSeen();
+  } catch {
+  }
+}
 var DEFAULT_CACHE_TTL_MS = 864e5;
 var TelemetryEventThrottler = class {
   #cache;
@@ -68601,6 +69477,7 @@ var TelemetryCollector = class {
     if (parsedKey) this.#metadata.instanceType = parsedKey.instanceType;
     if (options.secretKey) this.#metadata.secretKey = options.secretKey.substring(0, 16);
     this.#eventThrottler = new TelemetryEventThrottler(LocalStorageThrottlerCache.isSupported() ? new LocalStorageThrottlerCache() : new InMemoryThrottlerCache());
+    maybeShowTelemetryNotice({ skip: !this.isEnabled });
   }
   get isEnabled() {
     if (this.#metadata.instanceType !== "development") return false;
@@ -68794,7 +69671,7 @@ var TelemetryCollector = class {
   }
 };
 
-// ../../node_modules/.pnpm/@clerk+backend@3.2.9/node_modules/@clerk/backend/dist/index.mjs
+// ../../node_modules/.pnpm/@clerk+backend@3.5.0/node_modules/@clerk/backend/dist/index.mjs
 var verifyToken2 = withLegacyReturn(verifyToken);
 function createClerkClient(options) {
   const opts = { ...options };
@@ -68814,7 +69691,7 @@ function createClerkClient(options) {
   };
 }
 
-// ../../node_modules/.pnpm/@clerk+backend@3.2.9/node_modules/@clerk/backend/dist/proxy.mjs
+// ../../node_modules/.pnpm/@clerk+backend@3.5.0/node_modules/@clerk/backend/dist/proxy.mjs
 var HOP_BY_HOP_HEADERS = /* @__PURE__ */ new Set([
   "connection",
   "keep-alive",
@@ -68951,8 +69828,7 @@ async function clerkFrontendApiProxy(request, options) {
     const fetchOptions = {
       method: request.method,
       headers,
-      redirect: "manual",
-      signal: request.signal
+      redirect: "manual"
     };
     if (hasBody) {
       fetchOptions.duplex = "half";
@@ -68997,26 +69873,14 @@ async function clerkFrontendApiProxy(request, options) {
   }
 }
 
-// ../../node_modules/.pnpm/@clerk+shared@4.7.0_react-d_40c3c423be94f20c3e1e2e46ec109c1b/node_modules/@clerk/shared/dist/runtime/proxy-BcfViKjn.mjs
-function isValidProxyUrl(key) {
-  if (!key) return true;
-  return isHttpOrHttps(key) || isProxyUrlRelative(key);
-}
-function isHttpOrHttps(key) {
-  return /^http(s)?:\/\//.test(key || "");
-}
-function isProxyUrlRelative(key) {
-  return key.startsWith("/");
-}
-
-// ../../node_modules/.pnpm/@clerk+shared@4.7.0_react-d_40c3c423be94f20c3e1e2e46ec109c1b/node_modules/@clerk/shared/dist/runtime/handleValueOrFn-iAIjw-kJ.mjs
+// ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/_chunks/handleValueOrFn-xqbU450o.mjs
 function handleValueOrFn(value, url2, defaultValue) {
   if (typeof value === "function") return value(url2);
   if (typeof value !== "undefined") return value;
   if (typeof defaultValue !== "undefined") return defaultValue;
 }
 
-// ../../node_modules/.pnpm/@clerk+express@2.1.1_express@5.2.1/node_modules/@clerk/express/dist/index.mjs
+// ../../node_modules/.pnpm/@clerk+express@2.1.23_express@5.2.1/node_modules/@clerk/express/dist/index.mjs
 import { Readable as Readable2 } from "stream";
 var clerkClientSingleton = {};
 var clerkClient = new Proxy(clerkClientSingleton, {
@@ -69025,7 +69889,7 @@ var clerkClient = new Proxy(clerkClientSingleton, {
       return clerkClientSingleton[property];
     }
     const env = { ...loadApiEnv(), ...loadClientEnv() };
-    const client = createClerkClient({ ...env, userAgent: `${"@clerk/express"}@${"2.1.1"}` });
+    const client = createClerkClient({ ...env, userAgent: `${"@clerk/express"}@${"2.1.23"}` });
     if (env.secretKey) {
       clerkClientSingleton = client;
     }
@@ -69057,17 +69921,29 @@ Invalid signInUrl. A satellite application requires a signInUrl for development 
 Check if signInUrl is missing from your configuration or if it is not an absolute URL.`;
 var authenticateRequest2 = (opts) => {
   const { clerkClient: clerkClient2, request, options } = opts;
-  const { jwtKey, authorizedParties, audience, acceptsToken, clockSkewInMs } = options || {};
+  const {
+    clerkClient: _clerkClient,
+    debug: _debug,
+    frontendApiProxy: _frontendApiProxy,
+    isSatellite: isSatelliteInput,
+    domain: domainInput,
+    signInUrl: signInUrlInput,
+    proxyUrl: proxyUrlInput,
+    secretKey: secretKeyInput,
+    machineSecretKey: machineSecretKeyInput,
+    publishableKey: publishableKeyInput,
+    ...restOptions
+  } = options || {};
   const clerkRequest = createClerkRequest(incomingMessageToRequest(request));
   const env = { ...loadApiEnv(), ...loadClientEnv() };
-  const secretKey = options?.secretKey || env.secretKey;
-  const machineSecretKey = options?.machineSecretKey || env.machineSecretKey;
-  const publishableKey = options?.publishableKey || env.publishableKey;
-  const isSatellite = handleValueOrFn(options?.isSatellite, clerkRequest.clerkUrl, env.isSatellite);
-  const domain2 = handleValueOrFn(options?.domain, clerkRequest.clerkUrl) || env.domain;
-  const signInUrl = options?.signInUrl || env.signInUrl;
+  const secretKey = secretKeyInput || env.secretKey;
+  const machineSecretKey = machineSecretKeyInput || env.machineSecretKey;
+  const publishableKey = publishableKeyInput || env.publishableKey;
+  const isSatellite = handleValueOrFn(isSatelliteInput, clerkRequest.clerkUrl, env.isSatellite);
+  const domain2 = handleValueOrFn(domainInput, clerkRequest.clerkUrl) || env.domain;
+  const signInUrl = signInUrlInput || env.signInUrl;
   const proxyUrl = absoluteProxyUrl(
-    handleValueOrFn(options?.proxyUrl, clerkRequest.clerkUrl, env.proxyUrl),
+    handleValueOrFn(proxyUrlInput, clerkRequest.clerkUrl, env.proxyUrl),
     clerkRequest.clerkUrl.toString()
   );
   if (isSatellite && !proxyUrl && !domain2) {
@@ -69077,18 +69953,14 @@ var authenticateRequest2 = (opts) => {
     throw new Error(satelliteAndMissingSignInUrl);
   }
   return clerkClient2.authenticateRequest(clerkRequest, {
-    audience,
+    ...restOptions,
     secretKey,
     machineSecretKey,
     publishableKey,
-    jwtKey,
-    clockSkewInMs,
-    authorizedParties,
     proxyUrl,
     isSatellite,
     domain: domain2,
-    signInUrl,
-    acceptsToken
+    signInUrl
   });
 };
 var setResponseHeaders = (requestState, res) => {
@@ -69114,8 +69986,20 @@ var absoluteProxyUrl = (relativeOrAbsoluteUrl, baseUrl) => {
   }
   return new URL(relativeOrAbsoluteUrl, baseUrl).toString();
 };
+var resolveDefaultClerkClient = (options) => {
+  if (!options.apiUrl && !options.apiVersion) {
+    return clerkClient;
+  }
+  const env = { ...loadApiEnv(), ...loadClientEnv() };
+  return createClerkClient({
+    ...env,
+    ...options.apiUrl ? { apiUrl: options.apiUrl } : {},
+    ...options.apiVersion ? { apiVersion: options.apiVersion } : {},
+    userAgent: `${"@clerk/express"}@${"2.1.23"}`
+  });
+};
 var authenticateAndDecorateRequest = (options = {}) => {
-  const clerkClient2 = options.clerkClient || clerkClient;
+  const clerkClient2 = options.clerkClient || resolveDefaultClerkClient(options);
   const frontendApiProxy = options.frontendApiProxy;
   const proxyPath = stripTrailingSlashes(frontendApiProxy?.path ?? DEFAULT_PROXY_PATH) || DEFAULT_PROXY_PATH;
   const middleware = async (request, response, next) => {
@@ -69193,12 +70077,26 @@ var authenticateAndDecorateRequest = (options = {}) => {
   return middleware;
 };
 var clerkMiddleware = (options = {}) => {
-  const authMiddleware = authenticateAndDecorateRequest({
-    ...options,
-    acceptsToken: "any"
-  });
-  return (request, response, next) => {
-    authMiddleware(request, response, next);
+  if (typeof options !== "function") {
+    const authMiddleware = authenticateAndDecorateRequest({
+      ...options,
+      acceptsToken: "any"
+    });
+    return (request, response, next) => {
+      authMiddleware(request, response, next);
+    };
+  }
+  return async (request, response, next) => {
+    try {
+      const resolvedOptions = await options(request);
+      const handler = authenticateAndDecorateRequest({
+        ...resolvedOptions,
+        acceptsToken: "any"
+      });
+      handler(request, response, next);
+    } catch (err) {
+      next(err);
+    }
   };
 };
 var getAuth = ((req, options) => {
@@ -69210,7 +70108,7 @@ var getAuth = ((req, options) => {
 });
 
 // src/middlewares/clerkProxyMiddleware.ts
-var import_http_proxy_middleware = __toESM(require_dist3(), 1);
+var import_http_proxy_middleware = __toESM(require_dist4(), 1);
 var CLERK_FAPI = "https://frontend-api.clerk.dev";
 var CLERK_PROXY_PATH = "/api/__clerk";
 function clerkProxyMiddleware() {
@@ -73419,7 +74317,7 @@ var health_default = router;
 // src/routes/foods.ts
 var import_express2 = __toESM(require_express2(), 1);
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/entity.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/entity.js
 var entityKind = /* @__PURE__ */ Symbol.for("drizzle:entityKind");
 function is(value, type) {
   if (!value || typeof value !== "object") {
@@ -73445,7 +74343,7 @@ function is(value, type) {
   return false;
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/column.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/column.js
 var Column = class {
   constructor(table, config2) {
     this.table = table;
@@ -73496,7 +74394,7 @@ var Column = class {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/column-builder.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/column-builder.js
 var ColumnBuilder = class {
   static [entityKind] = "ColumnBuilder";
   config;
@@ -73599,10 +74497,10 @@ var ColumnBuilder = class {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/table.utils.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/table.utils.js
 var TableName = /* @__PURE__ */ Symbol.for("drizzle:Name");
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/foreign-keys.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/foreign-keys.js
 var ForeignKeyBuilder = class {
   static [entityKind] = "PgForeignKeyBuilder";
   /** @internal */
@@ -73659,12 +74557,12 @@ var ForeignKey = class {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/tracing-utils.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/tracing-utils.js
 function iife(fn, ...args) {
   return fn(...args);
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/unique-constraint.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/unique-constraint.js
 function uniqueKeyName(table, columns) {
   return `${table[TableName]}_${columns.join("_")}_unique`;
 }
@@ -73714,7 +74612,7 @@ var UniqueConstraint = class {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/utils/array.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/utils/array.js
 function parsePgArrayValue(arrayString, startFrom, inQuotes) {
   for (let i = startFrom; i < arrayString.length; i++) {
     const char2 = arrayString[i];
@@ -73790,7 +74688,7 @@ function makePgArray(array2) {
   }).join(",")}}`;
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/common.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/columns/common.js
 var PgColumnBuilder = class extends ColumnBuilder {
   foreignKeyConfigs = [];
   static [entityKind] = "PgColumnBuilder";
@@ -73974,7 +74872,7 @@ var PgArray = class _PgArray extends PgColumn {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/enum.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/columns/enum.js
 var PgEnumObjectColumnBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgEnumObjectColumnBuilder";
   constructor(name, enumInstance) {
@@ -74032,7 +74930,7 @@ var PgEnumColumn = class extends PgColumn {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/subquery.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/subquery.js
 var Subquery = class {
   static [entityKind] = "Subquery";
   constructor(sql2, fields, alias, isWith = false, usedTables = []) {
@@ -74053,10 +74951,10 @@ var WithSubquery = class extends Subquery {
   static [entityKind] = "WithSubquery";
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/version.js
-var version3 = "0.45.1";
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/version.js
+var version3 = "0.45.2";
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/tracing.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/tracing.js
 var otel;
 var rawTracer;
 var tracer = {
@@ -74091,10 +74989,10 @@ var tracer = {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/view-common.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/view-common.js
 var ViewBaseConfig = /* @__PURE__ */ Symbol.for("drizzle:ViewBaseConfig");
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/table.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/table.js
 var Schema = /* @__PURE__ */ Symbol.for("drizzle:Schema");
 var Columns = /* @__PURE__ */ Symbol.for("drizzle:Columns");
 var ExtraConfigColumns = /* @__PURE__ */ Symbol.for("drizzle:ExtraConfigColumns");
@@ -74159,7 +75057,7 @@ function getTableUniqueName(table) {
   return `${table[Schema] ?? "public"}.${table[TableName]}`;
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/sql/sql.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/sql/sql.js
 var FakePrimitiveParam = class {
   static [entityKind] = "FakePrimitiveParam";
 };
@@ -74556,7 +75454,7 @@ Subquery.prototype.getSQL = function() {
   return new SQL([this]);
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/alias.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/alias.js
 var ColumnAliasProxyHandler = class {
   constructor(table) {
     this.table = table;
@@ -74652,7 +75550,7 @@ function mapColumnsInSQLToAlias(query, alias) {
   }));
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/errors.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/errors.js
 var DrizzleError = class extends Error {
   static [entityKind] = "DrizzleError";
   constructor({ message, cause }) {
@@ -74679,7 +75577,7 @@ var TransactionRollbackError = class extends DrizzleError {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/logger.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/logger.js
 var ConsoleLogWriter = class {
   static [entityKind] = "ConsoleLogWriter";
   write(message) {
@@ -74710,7 +75608,7 @@ var NoopLogger = class {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/query-promise.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/query-promise.js
 var QueryPromise = class {
   static [entityKind] = "QueryPromise";
   [Symbol.toStringTag] = "QueryPromise";
@@ -74734,7 +75632,7 @@ var QueryPromise = class {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/utils.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/utils.js
 function mapResultRow(columns, row, joinsNotNullableMap) {
   const nullifyMap = {};
   const result = columns.reduce(
@@ -74888,7 +75786,7 @@ function isConfig(data) {
 }
 var textDecoder = typeof TextDecoder === "undefined" ? null : new TextDecoder();
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/int.common.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/columns/int.common.js
 var PgIntColumnBaseBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgIntColumnBaseBuilder";
   generatedAlwaysAsIdentity(sequence) {
@@ -74927,7 +75825,7 @@ var PgIntColumnBaseBuilder = class extends PgColumnBuilder {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/bigint.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/columns/bigint.js
 var PgBigInt53Builder = class extends PgIntColumnBaseBuilder {
   static [entityKind] = "PgBigInt53Builder";
   constructor(name) {
@@ -74981,7 +75879,7 @@ function bigint(a, b) {
   return new PgBigInt64Builder(name);
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/bigserial.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/columns/bigserial.js
 var PgBigSerial53Builder = class extends PgColumnBuilder {
   static [entityKind] = "PgBigSerial53Builder";
   constructor(name) {
@@ -75041,7 +75939,7 @@ function bigserial(a, b) {
   return new PgBigSerial64Builder(name);
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/boolean.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/columns/boolean.js
 var PgBooleanBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgBooleanBuilder";
   constructor(name) {
@@ -75062,7 +75960,7 @@ function boolean(name) {
   return new PgBooleanBuilder(name ?? "");
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/char.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/columns/char.js
 var PgCharBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgCharBuilder";
   constructor(name, config2) {
@@ -75091,7 +75989,7 @@ function char(a, b = {}) {
   return new PgCharBuilder(name, config2);
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/cidr.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/columns/cidr.js
 var PgCidrBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgCidrBuilder";
   constructor(name) {
@@ -75112,7 +76010,7 @@ function cidr(name) {
   return new PgCidrBuilder(name ?? "");
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/custom.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/columns/custom.js
 var PgCustomColumnBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgCustomColumnBuilder";
   constructor(name, fieldConfig, customTypeParams) {
@@ -75156,7 +76054,7 @@ function customType(customTypeParams) {
   };
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/date.common.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/columns/date.common.js
 var PgDateColumnBaseBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgDateColumnBaseBuilder";
   defaultNow() {
@@ -75164,7 +76062,7 @@ var PgDateColumnBaseBuilder = class extends PgColumnBuilder {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/date.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/columns/date.js
 var PgDateBuilder = class extends PgDateColumnBaseBuilder {
   static [entityKind] = "PgDateBuilder";
   constructor(name) {
@@ -75219,7 +76117,7 @@ function date(a, b) {
   return new PgDateStringBuilder(name);
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/double-precision.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/columns/double-precision.js
 var PgDoublePrecisionBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgDoublePrecisionBuilder";
   constructor(name) {
@@ -75249,7 +76147,7 @@ function doublePrecision(name) {
   return new PgDoublePrecisionBuilder(name ?? "");
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/inet.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/columns/inet.js
 var PgInetBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgInetBuilder";
   constructor(name) {
@@ -75270,7 +76168,7 @@ function inet(name) {
   return new PgInetBuilder(name ?? "");
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/integer.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/columns/integer.js
 var PgIntegerBuilder = class extends PgIntColumnBaseBuilder {
   static [entityKind] = "PgIntegerBuilder";
   constructor(name) {
@@ -75297,7 +76195,7 @@ function integer(name) {
   return new PgIntegerBuilder(name ?? "");
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/interval.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/columns/interval.js
 var PgIntervalBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgIntervalBuilder";
   constructor(name, intervalConfig) {
@@ -75324,7 +76222,7 @@ function interval(a, b = {}) {
   return new PgIntervalBuilder(name, config2);
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/json.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/columns/json.js
 var PgJsonBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgJsonBuilder";
   constructor(name) {
@@ -75361,7 +76259,7 @@ function json(name) {
   return new PgJsonBuilder(name ?? "");
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/jsonb.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/columns/jsonb.js
 var PgJsonbBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgJsonbBuilder";
   constructor(name) {
@@ -75398,7 +76296,7 @@ function jsonb(name) {
   return new PgJsonbBuilder(name ?? "");
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/line.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/columns/line.js
 var PgLineBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgLineBuilder";
   constructor(name) {
@@ -75459,7 +76357,7 @@ function line(a, b) {
   return new PgLineABCBuilder(name);
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/macaddr.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/columns/macaddr.js
 var PgMacaddrBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgMacaddrBuilder";
   constructor(name) {
@@ -75480,7 +76378,7 @@ function macaddr(name) {
   return new PgMacaddrBuilder(name ?? "");
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/macaddr8.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/columns/macaddr8.js
 var PgMacaddr8Builder = class extends PgColumnBuilder {
   static [entityKind] = "PgMacaddr8Builder";
   constructor(name) {
@@ -75501,7 +76399,7 @@ function macaddr8(name) {
   return new PgMacaddr8Builder(name ?? "");
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/numeric.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/columns/numeric.js
 var PgNumericBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgNumericBuilder";
   constructor(name, precision, scale) {
@@ -75618,7 +76516,7 @@ function numeric(a, b) {
   return mode === "number" ? new PgNumericNumberBuilder(name, config2?.precision, config2?.scale) : mode === "bigint" ? new PgNumericBigIntBuilder(name, config2?.precision, config2?.scale) : new PgNumericBuilder(name, config2?.precision, config2?.scale);
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/point.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/columns/point.js
 var PgPointTupleBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgPointTupleBuilder";
   constructor(name) {
@@ -75685,7 +76583,7 @@ function point(a, b) {
   return new PgPointObjectBuilder(name);
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/postgis_extension/utils.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/columns/postgis_extension/utils.js
 function hexToBytes(hex) {
   const bytes = [];
   for (let c = 0; c < hex.length; c += 2) {
@@ -75724,7 +76622,7 @@ function parseEWKB(hex) {
   throw new Error("Unsupported geometry type");
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/postgis_extension/geometry.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/columns/postgis_extension/geometry.js
 var PgGeometryBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgGeometryBuilder";
   constructor(name) {
@@ -75784,7 +76682,7 @@ function geometry(a, b) {
   return new PgGeometryObjectBuilder(name);
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/real.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/columns/real.js
 var PgRealBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgRealBuilder";
   constructor(name, length) {
@@ -75815,7 +76713,7 @@ function real(name) {
   return new PgRealBuilder(name ?? "");
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/serial.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/columns/serial.js
 var PgSerialBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgSerialBuilder";
   constructor(name) {
@@ -75838,7 +76736,7 @@ function serial(name) {
   return new PgSerialBuilder(name ?? "");
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/smallint.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/columns/smallint.js
 var PgSmallIntBuilder = class extends PgIntColumnBaseBuilder {
   static [entityKind] = "PgSmallIntBuilder";
   constructor(name) {
@@ -75865,7 +76763,7 @@ function smallint(name) {
   return new PgSmallIntBuilder(name ?? "");
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/smallserial.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/columns/smallserial.js
 var PgSmallSerialBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgSmallSerialBuilder";
   constructor(name) {
@@ -75891,7 +76789,7 @@ function smallserial(name) {
   return new PgSmallSerialBuilder(name ?? "");
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/text.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/columns/text.js
 var PgTextBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgTextBuilder";
   constructor(name, config2) {
@@ -75915,7 +76813,7 @@ function text(a, b = {}) {
   return new PgTextBuilder(name, config2);
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/time.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/columns/time.js
 var PgTimeBuilder = class extends PgDateColumnBaseBuilder {
   constructor(name, withTimezone, precision) {
     super(name, "string", "PgTime");
@@ -75949,7 +76847,7 @@ function time(a, b = {}) {
   return new PgTimeBuilder(name, config2.withTimezone ?? false, config2.precision);
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/timestamp.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/columns/timestamp.js
 var PgTimestampBuilder = class extends PgDateColumnBaseBuilder {
   static [entityKind] = "PgTimestampBuilder";
   constructor(name, withTimezone, precision) {
@@ -76030,7 +76928,7 @@ function timestamp(a, b = {}) {
   return new PgTimestampBuilder(name, config2?.withTimezone ?? false, config2?.precision);
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/uuid.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/columns/uuid.js
 var PgUUIDBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgUUIDBuilder";
   constructor(name) {
@@ -76057,7 +76955,7 @@ function uuid(name) {
   return new PgUUIDBuilder(name ?? "");
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/varchar.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/columns/varchar.js
 var PgVarcharBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgVarcharBuilder";
   constructor(name, config2) {
@@ -76086,7 +76984,7 @@ function varchar(a, b = {}) {
   return new PgVarcharBuilder(name, config2);
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/vector_extension/bit.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/columns/vector_extension/bit.js
 var PgBinaryVectorBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgBinaryVectorBuilder";
   constructor(name, config2) {
@@ -76113,7 +77011,7 @@ function bit(a, b) {
   return new PgBinaryVectorBuilder(name, config2);
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/vector_extension/halfvec.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/columns/vector_extension/halfvec.js
 var PgHalfVectorBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgHalfVectorBuilder";
   constructor(name, config2) {
@@ -76146,7 +77044,7 @@ function halfvec(a, b) {
   return new PgHalfVectorBuilder(name, config2);
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/vector_extension/sparsevec.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/columns/vector_extension/sparsevec.js
 var PgSparseVectorBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgSparseVectorBuilder";
   constructor(name, config2) {
@@ -76173,7 +77071,7 @@ function sparsevec(a, b) {
   return new PgSparseVectorBuilder(name, config2);
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/vector_extension/vector.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/columns/vector_extension/vector.js
 var PgVectorBuilder = class extends PgColumnBuilder {
   static [entityKind] = "PgVectorBuilder";
   constructor(name, config2) {
@@ -76206,7 +77104,7 @@ function vector(a, b) {
   return new PgVectorBuilder(name, config2);
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/columns/all.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/columns/all.js
 function getPgColumnBuilders() {
   return {
     bigint,
@@ -76244,7 +77142,7 @@ function getPgColumnBuilders() {
   };
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/table.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/table.js
 var InlineForeignKeys = /* @__PURE__ */ Symbol.for("drizzle:PgInlineForeignKeys");
 var EnableRLS = /* @__PURE__ */ Symbol.for("drizzle:EnableRLS");
 var PgTable = class extends Table {
@@ -76300,7 +77198,7 @@ var pgTable = (name, columns, extraConfig) => {
   return pgTableWithSchema(name, columns, extraConfig, void 0);
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/primary-keys.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/primary-keys.js
 var PrimaryKeyBuilder = class {
   static [entityKind] = "PgPrimaryKeyBuilder";
   /** @internal */
@@ -76330,7 +77228,7 @@ var PrimaryKey = class {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/sql/expressions/conditions.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/sql/expressions/conditions.js
 function bindIfParam(value, column) {
   if (isDriverValueEncoder(column) && !isSQLWrapper(value) && !is(value, Param) && !is(value, Placeholder) && !is(value, Column) && !is(value, Table) && !is(value, View)) {
     return new Param(value, column);
@@ -76445,7 +77343,7 @@ function notIlike(column, value) {
   return sql`${column} not ilike ${value}`;
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/sql/expressions/select.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/sql/expressions/select.js
 function asc(column) {
   return sql`${column} asc`;
 }
@@ -76453,7 +77351,7 @@ function desc(column) {
   return sql`${column} desc`;
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/relations.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/relations.js
 var Relation = class {
   constructor(sourceTable, referencedTable, relationName) {
     this.sourceTable = sourceTable;
@@ -76714,7 +77612,7 @@ function mapRelationalRow(tablesConfig, tableConfig, row, buildQueryResultSelect
   return result;
 }
 
-// ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/esm/index.mjs
+// ../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/esm/index.mjs
 var import_lib = __toESM(require_lib5(), 1);
 var Client2 = import_lib.default.Client;
 var Pool = import_lib.default.Pool;
@@ -76729,7 +77627,7 @@ var TypeOverrides = import_lib.default.TypeOverrides;
 var defaults = import_lib.default.defaults;
 var esm_default = import_lib.default;
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/selection-proxy.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/selection-proxy.js
 var SelectionProxyHandler = class _SelectionProxyHandler {
   static [entityKind] = "SelectionProxyHandler";
   config;
@@ -76797,7 +77695,7 @@ var SelectionProxyHandler = class _SelectionProxyHandler {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/casing.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/casing.js
 function toSnakeCase(input) {
   const words = input.replace(/['\u2019]/g, "").match(/[\da-z]+|[A-Z]+(?![a-z])|[A-Z][\da-z]+/g) ?? [];
   return words.map((word) => word.toLowerCase()).join("_");
@@ -76849,12 +77747,12 @@ var CasingCache = class {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/view-base.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/view-base.js
 var PgViewBase = class extends View {
   static [entityKind] = "PgViewBase";
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/dialect.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/dialect.js
 var PgDialect = class {
   static [entityKind] = "PgDialect";
   /** @internal */
@@ -76892,7 +77790,7 @@ var PgDialect = class {
     });
   }
   escapeName(name) {
-    return `"${name}"`;
+    return `"${name.replace(/"/g, '""')}"`;
   }
   escapeParam(num) {
     return `$${num + 1}`;
@@ -77959,7 +78857,7 @@ var PgDialect = class {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/query-builders/query-builder.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/query-builders/query-builder.js
 var TypedQueryBuilder = class {
   static [entityKind] = "TypedQueryBuilder";
   /** @internal */
@@ -77968,7 +78866,7 @@ var TypedQueryBuilder = class {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/query-builders/select.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/query-builders/select.js
 var PgSelectBuilder = class {
   static [entityKind] = "PgSelectBuilder";
   fields;
@@ -78784,7 +79682,7 @@ var intersectAll = createSetOperator("intersect", true);
 var except = createSetOperator("except", false);
 var exceptAll = createSetOperator("except", true);
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/query-builders/query-builder.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/query-builders/query-builder.js
 var QueryBuilder = class {
   static [entityKind] = "PgQueryBuilder";
   dialect;
@@ -78871,7 +79769,7 @@ var QueryBuilder = class {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/utils.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/utils.js
 function extractUsedTable(table) {
   if (is(table, PgTable)) {
     return [table[Schema] ? `${table[Schema]}.${table[Table.Symbol.BaseName]}` : table[Table.Symbol.BaseName]];
@@ -78885,7 +79783,7 @@ function extractUsedTable(table) {
   return [];
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/query-builders/delete.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/query-builders/delete.js
 var PgDeleteBase = class extends QueryPromise {
   constructor(table, session, dialect, withList) {
     super();
@@ -78981,7 +79879,7 @@ var PgDeleteBase = class extends QueryPromise {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/query-builders/insert.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/query-builders/insert.js
 var PgInsertBuilder = class {
   constructor(table, session, dialect, withList, overridingSystemValue_) {
     this.table = table;
@@ -79174,7 +80072,7 @@ var PgInsertBase = class extends QueryPromise {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/query-builders/refresh-materialized-view.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/query-builders/refresh-materialized-view.js
 var PgRefreshMaterializedView = class extends QueryPromise {
   constructor(view, session, dialect) {
     super();
@@ -79228,7 +80126,7 @@ var PgRefreshMaterializedView = class extends QueryPromise {
   };
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/query-builders/update.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/query-builders/update.js
 var PgUpdateBuilder = class {
   constructor(table, session, dialect, withList) {
     this.table = table;
@@ -79440,7 +80338,7 @@ var PgUpdateBase = class extends QueryPromise {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/query-builders/count.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/query-builders/count.js
 var PgCountBuilder = class _PgCountBuilder extends SQL {
   constructor(params) {
     super(_PgCountBuilder.buildEmbeddedCount(params.source, params.filters).queryChunks);
@@ -79491,7 +80389,7 @@ var PgCountBuilder = class _PgCountBuilder extends SQL {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/query-builders/query.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/query-builders/query.js
 var RelationalQueryBuilder = class {
   constructor(fullSchema, schema, tableNamesMap, table, tableConfig, dialect, session) {
     this.fullSchema = fullSchema;
@@ -79604,7 +80502,7 @@ var PgRelationalQuery = class extends QueryPromise {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/query-builders/raw.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/query-builders/raw.js
 var PgRaw = class extends QueryPromise {
   constructor(execute, sql2, query, mapBatchResult) {
     super();
@@ -79633,7 +80531,7 @@ var PgRaw = class extends QueryPromise {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/db.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/db.js
 var PgDatabase = class {
   constructor(dialect, session, schema) {
     this.dialect = dialect;
@@ -79912,7 +80810,7 @@ var PgDatabase = class {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/cache/core/cache.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/cache/core/cache.js
 var Cache = class {
   static [entityKind] = "Cache";
 };
@@ -79939,7 +80837,7 @@ async function hashQuery(sql2, params) {
   return hashHex;
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/session.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/session.js
 var PgPreparedQuery = class {
   constructor(query, cache2, queryMetadata, cacheConfig) {
     this.query = query;
@@ -80099,15 +80997,15 @@ var PgTransaction = class extends PgDatabase {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/node-postgres/session.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/node-postgres/session.js
 var { Pool: Pool2, types: types2 } = esm_default;
 var NodePgPreparedQuery = class extends PgPreparedQuery {
-  constructor(client, queryString, params, logger2, cache2, queryMetadata, cacheConfig, fields, name, _isResponseInArrayMode, customResultMapper) {
+  constructor(client, queryString, params, logger3, cache2, queryMetadata, cacheConfig, fields, name, _isResponseInArrayMode, customResultMapper) {
     super({ sql: queryString, params }, cache2, queryMetadata, cacheConfig);
     this.client = client;
     this.queryString = queryString;
     this.params = params;
-    this.logger = logger2;
+    this.logger = logger3;
     this.fields = fields;
     this._isResponseInArrayMode = _isResponseInArrayMode;
     this.customResultMapper = customResultMapper;
@@ -80315,7 +81213,7 @@ var NodePgTransaction = class _NodePgTransaction extends PgTransaction {
   }
 };
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/node-postgres/driver.js
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/node-postgres/driver.js
 var NodePgDriver = class {
   constructor(client, dialect, options = {}) {
     this.client = client;
@@ -80335,11 +81233,11 @@ var NodePgDatabase = class extends PgDatabase {
 };
 function construct(client, config2 = {}) {
   const dialect = new PgDialect({ casing: config2.casing });
-  let logger2;
+  let logger3;
   if (config2.logger === true) {
-    logger2 = new DefaultLogger();
+    logger3 = new DefaultLogger();
   } else if (config2.logger !== false) {
-    logger2 = config2.logger;
+    logger3 = config2.logger;
   }
   let schema;
   if (config2.schema) {
@@ -80353,7 +81251,7 @@ function construct(client, config2 = {}) {
       tableNamesMap: tablesConfig.tableNamesMap
     };
   }
-  const driver = new NodePgDriver(client, dialect, { logger: logger2, cache: config2.cache });
+  const driver = new NodePgDriver(client, dialect, { logger: logger3, cache: config2.cache });
   const session = driver.createSession(schema);
   const db2 = new NodePgDatabase(dialect, session, schema);
   db2.$client = client;
@@ -91540,7 +92438,7 @@ function date5(params) {
 // ../../node_modules/.pnpm/zod@3.25.76/node_modules/zod/v4/classic/external.js
 config(en_default2());
 
-// ../../node_modules/.pnpm/drizzle-zod@0.8.3_drizzle-o_b76d21f9ee576bf35159ba9b21aefea5/node_modules/drizzle-zod/index.mjs
+// ../../node_modules/.pnpm/drizzle-zod@0.8.3_drizzle-o_75717ee7f6436df081a15a148acf053c/node_modules/drizzle-zod/index.mjs
 var CONSTANTS = {
   INT8_MIN: -128,
   INT8_MAX: 127,
@@ -92601,7 +93499,7 @@ var dashboard_default = router5;
 // src/routes/analyze-food.ts
 var import_express6 = __toESM(require_express2(), 1);
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/internal/tslib.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/tslib.mjs
 function __classPrivateFieldSet2(receiver, state, value, kind, f) {
   if (kind === "m")
     throw new TypeError("Private method is not writable");
@@ -92619,7 +93517,7 @@ function __classPrivateFieldGet2(receiver, state, kind, f) {
   return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 }
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/internal/utils/uuid.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/utils/uuid.mjs
 var uuid42 = function() {
   const { crypto: crypto2 } = globalThis;
   if (crypto2?.randomUUID) {
@@ -92631,7 +93529,7 @@ var uuid42 = function() {
   return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, (c) => (+c ^ randomByte() & 15 >> +c / 4).toString(16));
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/internal/errors.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/errors.mjs
 function isAbortError(err) {
   return typeof err === "object" && err !== null && // Spec-compliant fetch implementations
   ("name" in err && err.name === "AbortError" || // Expo fetch
@@ -92662,7 +93560,7 @@ var castToError = (err) => {
   return new Error(err);
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/core/error.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/core/error.mjs
 var OpenAIError = class extends Error {
 };
 var APIError = class _APIError extends OpenAIError {
@@ -92796,7 +93694,7 @@ var SubjectTokenProviderError = class extends OpenAIError {
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/internal/utils/values.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/utils/values.mjs
 var startsWithSchemeRegexp = /^[a-z][a-z0-9+.-]*:/i;
 var isAbsoluteURL = (url2) => {
   return startsWithSchemeRegexp.test(url2);
@@ -92839,13 +93737,13 @@ var safeJSON = (text2) => {
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/internal/utils/sleep.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/utils/sleep.mjs
 var sleep3 = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/version.mjs
-var VERSION = "6.34.0";
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/version.mjs
+var VERSION = "6.42.0";
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/internal/detect-platform.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/detect-platform.mjs
 var isRunningInBrowser = () => {
   return (
     // @ts-ignore
@@ -92979,7 +93877,7 @@ var getPlatformHeaders = () => {
   return _platformHeaders ?? (_platformHeaders = getPlatformProperties());
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/internal/shims.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/shims.mjs
 function getDefaultFetch() {
   if (typeof fetch !== "undefined") {
     return fetch;
@@ -93051,7 +93949,7 @@ async function CancelReadableStream(stream) {
   await cancelPromise;
 }
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/internal/request-options.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/request-options.mjs
 var FallbackEncoder = ({ headers, body }) => {
   return {
     bodyHeaders: {
@@ -93061,7 +93959,7 @@ var FallbackEncoder = ({ headers, body }) => {
   };
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/internal/qs/formats.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/qs/formats.mjs
 var default_format = "RFC3986";
 var default_formatter = (v) => String(v);
 var formatters = {
@@ -93070,7 +93968,7 @@ var formatters = {
 };
 var RFC1738 = "RFC1738";
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/internal/qs/utils.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/qs/utils.mjs
 var has = (obj, key) => (has = Object.hasOwn ?? Function.prototype.call.bind(Object.prototype.hasOwnProperty), has(obj, key));
 var hex_table = /* @__PURE__ */ (() => {
   const array2 = [];
@@ -93149,7 +94047,7 @@ function maybe_map(val, fn) {
   return fn(val);
 }
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/internal/qs/stringify.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/qs/stringify.mjs
 var array_prefix_generators = {
   brackets(prefix) {
     return String(prefix) + "[]";
@@ -93427,12 +94325,12 @@ function stringify2(object2, opts = {}) {
   return joined.length > 0 ? prefix + joined : "";
 }
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/internal/utils/query.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/utils/query.mjs
 function stringifyQuery(query) {
   return stringify2(query, { arrayFormat: "brackets" });
 }
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/internal/utils/bytes.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/utils/bytes.mjs
 function concatBytes(buffers) {
   let length = 0;
   for (const buffer of buffers) {
@@ -93457,7 +94355,7 @@ function decodeUTF8(bytes) {
   return (decodeUTF8_ ?? (decoder = new globalThis.TextDecoder(), decodeUTF8_ = decoder.decode.bind(decoder)))(bytes);
 }
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/internal/decoders/line.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/decoders/line.mjs
 var _LineDecoder_buffer;
 var _LineDecoder_carriageReturnIndex;
 var LineDecoder = class {
@@ -93534,7 +94432,7 @@ function findDoubleNewlineIndex(buffer) {
   return -1;
 }
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/internal/utils/log.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/utils/log.mjs
 var levelNumbers = {
   off: 0,
   error: 200,
@@ -93554,11 +94452,11 @@ var parseLogLevel = (maybeLevel, sourceName, client) => {
 };
 function noop2() {
 }
-function makeLogFn(fnLevel, logger2, logLevel) {
-  if (!logger2 || levelNumbers[fnLevel] > levelNumbers[logLevel]) {
+function makeLogFn(fnLevel, logger3, logLevel) {
+  if (!logger3 || levelNumbers[fnLevel] > levelNumbers[logLevel]) {
     return noop2;
   } else {
-    return logger2[fnLevel].bind(logger2);
+    return logger3[fnLevel].bind(logger3);
   }
 }
 var noopLogger = {
@@ -93569,22 +94467,22 @@ var noopLogger = {
 };
 var cachedLoggers = /* @__PURE__ */ new WeakMap();
 function loggerFor(client) {
-  const logger2 = client.logger;
+  const logger3 = client.logger;
   const logLevel = client.logLevel ?? "off";
-  if (!logger2) {
+  if (!logger3) {
     return noopLogger;
   }
-  const cachedLogger = cachedLoggers.get(logger2);
+  const cachedLogger = cachedLoggers.get(logger3);
   if (cachedLogger && cachedLogger[0] === logLevel) {
     return cachedLogger[1];
   }
   const levelLogger = {
-    error: makeLogFn("error", logger2, logLevel),
-    warn: makeLogFn("warn", logger2, logLevel),
-    info: makeLogFn("info", logger2, logLevel),
-    debug: makeLogFn("debug", logger2, logLevel)
+    error: makeLogFn("error", logger3, logLevel),
+    warn: makeLogFn("warn", logger3, logLevel),
+    info: makeLogFn("info", logger3, logLevel),
+    debug: makeLogFn("debug", logger3, logLevel)
   };
-  cachedLoggers.set(logger2, [logLevel, levelLogger]);
+  cachedLoggers.set(logger3, [logLevel, levelLogger]);
   return levelLogger;
 }
 var formatRequestDetails = (details) => {
@@ -93595,7 +94493,7 @@ var formatRequestDetails = (details) => {
   if (details.headers) {
     details.headers = Object.fromEntries((details.headers instanceof Headers ? [...details.headers] : Object.entries(details.headers)).map(([name, value]) => [
       name,
-      name.toLowerCase() === "authorization" || name.toLowerCase() === "cookie" || name.toLowerCase() === "set-cookie" ? "***" : value
+      name.toLowerCase() === "authorization" || name.toLowerCase() === "api-key" || name.toLowerCase() === "x-api-key" || name.toLowerCase() === "cookie" || name.toLowerCase() === "set-cookie" ? "***" : value
     ]));
   }
   if ("retryOfRequestLogID" in details) {
@@ -93607,7 +94505,7 @@ var formatRequestDetails = (details) => {
   return details;
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/core/streaming.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/core/streaming.mjs
 var _Stream_client;
 var Stream = class _Stream {
   constructor(iterator, controller, client) {
@@ -93618,7 +94516,7 @@ var Stream = class _Stream {
   }
   static fromSSEResponse(response, controller, client, synthesizeEventData) {
     let consumed = false;
-    const logger2 = client ? loggerFor(client) : console;
+    const logger3 = client ? loggerFor(client) : console;
     async function* iterator() {
       if (consumed) {
         throw new OpenAIError("Cannot iterate over a consumed stream, use `.tee()` to split the stream.");
@@ -93638,8 +94536,8 @@ var Stream = class _Stream {
             try {
               data = JSON.parse(sse.data);
             } catch (e) {
-              logger2.error(`Could not parse message into JSON:`, sse.data);
-              logger2.error(`From chunk:`, sse.raw);
+              logger3.error(`Could not parse message into JSON:`, sse.data);
+              logger3.error(`From chunk:`, sse.raw);
               throw e;
             }
             if (data && data.error) {
@@ -93865,7 +94763,7 @@ function partition(str2, delimiter) {
   return [str2, "", ""];
 }
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/internal/parse.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/parse.mjs
 async function defaultParseResponse(client, props) {
   const { response, requestLogID, retryOfRequestLogID, startTime } = props;
   const body = await (async () => {
@@ -93915,7 +94813,7 @@ function addRequestID(value, response) {
   });
 }
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/core/api-promise.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/core/api-promise.mjs
 var _APIPromise_client;
 var APIPromise = class _APIPromise extends Promise {
   constructor(client, responsePromise, parseResponse2 = defaultParseResponse) {
@@ -93978,7 +94876,7 @@ var APIPromise = class _APIPromise extends Promise {
 };
 _APIPromise_client = /* @__PURE__ */ new WeakMap();
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/core/pagination.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/core/pagination.mjs
 var _AbstractPage_client;
 var AbstractPage = class {
   constructor(client, response, body, options) {
@@ -94108,8 +95006,38 @@ var ConversationCursorPage = class extends AbstractPage {
     };
   }
 };
+var NextCursorPage = class extends AbstractPage {
+  constructor(client, response, body, options) {
+    super(client, response, body, options);
+    this.data = body.data || [];
+    this.has_more = body.has_more || false;
+    this.next = body.next || null;
+  }
+  getPaginatedItems() {
+    return this.data ?? [];
+  }
+  hasNextPage() {
+    if (this.has_more === false) {
+      return false;
+    }
+    return super.hasNextPage();
+  }
+  nextPageRequestOptions() {
+    const cursor = this.next;
+    if (!cursor) {
+      return null;
+    }
+    return {
+      ...this.options,
+      query: {
+        ...maybeObj(this.options.query),
+        after: cursor
+      }
+    };
+  }
+};
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/auth/workload-identity-auth.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/auth/workload-identity-auth.mjs
 var SUBJECT_TOKEN_TYPES = {
   jwt: "urn:ietf:params:oauth:token-type:jwt",
   id: "urn:ietf:params:oauth:token-type:id_token"
@@ -94145,31 +95073,34 @@ var WorkloadIdentityAuth = class {
   }
   async refreshToken() {
     const subjectToken = await this.config.provider.getToken();
+    const body = {
+      grant_type: TOKEN_EXCHANGE_GRANT_TYPE,
+      subject_token: subjectToken,
+      subject_token_type: SUBJECT_TOKEN_TYPES[this.config.provider.tokenType],
+      identity_provider_id: this.config.identityProviderId,
+      service_account_id: this.config.serviceAccountId
+    };
+    if (this.config.clientId) {
+      body["client_id"] = this.config.clientId;
+    }
     const response = await this.fetch(this.tokenExchangeUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        grant_type: TOKEN_EXCHANGE_GRANT_TYPE,
-        client_id: this.config.clientId,
-        subject_token: subjectToken,
-        subject_token_type: SUBJECT_TOKEN_TYPES[this.config.provider.tokenType],
-        identity_provider_id: this.config.identityProviderId,
-        service_account_id: this.config.serviceAccountId
-      })
+      body: JSON.stringify(body)
     });
     if (!response.ok) {
       const errorText = await response.text();
-      let body = void 0;
+      let body2 = void 0;
       try {
-        body = JSON.parse(errorText);
+        body2 = JSON.parse(errorText);
       } catch {
       }
       if (response.status === 400 || response.status === 401 || response.status === 403) {
-        throw new OAuthError(response.status, body, response.headers);
+        throw new OAuthError(response.status, body2, response.headers);
       }
-      throw APIError.generate(response.status, body, `Token exchange failed with status ${response.status}`, response.headers);
+      throw APIError.generate(response.status, body2, `Token exchange failed with status ${response.status}`, response.headers);
     }
     const tokenResponse = await response.json();
     const expiresIn = tokenResponse.expires_in || 3600;
@@ -94194,7 +95125,7 @@ var WorkloadIdentityAuth = class {
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/internal/uploads.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/uploads.mjs
 var checkFileSupport = () => {
   if (typeof File === "undefined") {
     const { process: process2 } = globalThis;
@@ -94285,7 +95216,7 @@ var addFormValue = async (form, key, value) => {
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/internal/to-file.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/to-file.mjs
 var isBlobLike = (value) => value != null && typeof value === "object" && typeof value.size === "number" && typeof value.type === "string" && typeof value.text === "function" && typeof value.slice === "function" && typeof value.arrayBuffer === "function";
 var isFileLike = (value) => value != null && typeof value === "object" && typeof value.name === "string" && typeof value.lastModified === "number" && isBlobLike(value);
 var isResponseLike = (value) => value != null && typeof value === "object" && typeof value.url === "string" && typeof value.blob === "function";
@@ -94337,14 +95268,14 @@ function propsForError(value) {
   return `; props: [${props.map((p) => `"${p}"`).join(", ")}]`;
 }
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/core/resource.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/core/resource.mjs
 var APIResource = class {
   constructor(client) {
     this._client = client;
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/internal/utils/path.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/utils/path.mjs
 function encodeURIPath(str2) {
   return str2.replace(/[^A-Za-z0-9\-._~!$&'()*+,;=:@]+/g, encodeURIComponent);
 }
@@ -94399,7 +95330,7 @@ ${underline}`);
 };
 var path = /* @__PURE__ */ createPathTagFunction(encodeURIPath);
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/chat/completions/messages.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/chat/completions/messages.mjs
 var Messages = class extends APIResource {
   /**
    * Get the messages in a stored chat completion. Only Chat Completions that have
@@ -94416,11 +95347,11 @@ var Messages = class extends APIResource {
    * ```
    */
   list(completionID, query = {}, options) {
-    return this._client.getAPIList(path`/chat/completions/${completionID}/messages`, CursorPage, { query, ...options });
+    return this._client.getAPIList(path`/chat/completions/${completionID}/messages`, CursorPage, { query, ...options, __security: { bearerAuth: true } });
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/lib/parser.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/lib/parser.mjs
 function isChatCompletionFunctionTool(tool) {
   return tool !== void 0 && "function" in tool && tool.function !== void 0;
 }
@@ -94527,7 +95458,7 @@ function validateInputTools(tools) {
   }
 }
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/lib/chatCompletionUtils.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/lib/chatCompletionUtils.mjs
 var isAssistantMessage = (message) => {
   return message?.role === "assistant";
 };
@@ -94535,7 +95466,7 @@ var isToolMessage = (message) => {
   return message?.role === "tool";
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/lib/EventStream.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/lib/EventStream.mjs
 var _EventStream_instances;
 var _EventStream_connectedPromise;
 var _EventStream_resolveConnectedPromise;
@@ -94724,12 +95655,12 @@ _EventStream_connectedPromise = /* @__PURE__ */ new WeakMap(), _EventStream_reso
   return this._emit("error", new OpenAIError(String(error40)));
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/lib/RunnableFunction.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/lib/RunnableFunction.mjs
 function isRunnableFunctionWithParse(fn) {
   return typeof fn.parse === "function";
 }
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/lib/AbstractChatCompletionRunner.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/lib/AbstractChatCompletionRunner.mjs
 var _AbstractChatCompletionRunner_instances;
 var _AbstractChatCompletionRunner_getFinalContent;
 var _AbstractChatCompletionRunner_getFinalMessage;
@@ -94999,7 +95930,7 @@ _AbstractChatCompletionRunner_instances = /* @__PURE__ */ new WeakSet(), _Abstra
   return typeof rawContent === "string" ? rawContent : rawContent === void 0 ? "undefined" : JSON.stringify(rawContent);
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/lib/ChatCompletionRunner.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/lib/ChatCompletionRunner.mjs
 var ChatCompletionRunner = class _ChatCompletionRunner extends AbstractChatCompletionRunner {
   static runTools(client, params, options) {
     const runner = new _ChatCompletionRunner();
@@ -95018,7 +95949,7 @@ var ChatCompletionRunner = class _ChatCompletionRunner extends AbstractChatCompl
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/_vendor/partial-json-parser/parser.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/_vendor/partial-json-parser/parser.mjs
 var STR = 1;
 var NUM = 2;
 var ARR = 4;
@@ -95230,7 +96161,7 @@ var _parseJSON = (jsonString, allow) => {
 };
 var partialParse = (input) => parseJSON(input, Allow.ALL ^ Allow.NUM);
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/lib/ChatCompletionStream.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/lib/ChatCompletionStream.mjs
 var _ChatCompletionStream_instances;
 var _ChatCompletionStream_params;
 var _ChatCompletionStream_choiceEventStates;
@@ -95710,7 +96641,7 @@ function assertIsEmpty(obj) {
 function assertNever2(_x) {
 }
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/lib/ChatCompletionStreamingRunner.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/lib/ChatCompletionStreamingRunner.mjs
 var ChatCompletionStreamingRunner = class _ChatCompletionStreamingRunner extends ChatCompletionStream {
   static fromReadableStream(stream) {
     const runner = new _ChatCompletionStreamingRunner(null);
@@ -95731,14 +96662,19 @@ var ChatCompletionStreamingRunner = class _ChatCompletionStreamingRunner extends
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/chat/completions/completions.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/chat/completions/completions.mjs
 var Completions = class extends APIResource {
   constructor() {
     super(...arguments);
     this.messages = new Messages(this._client);
   }
   create(body, options) {
-    return this._client.post("/chat/completions", { body, ...options, stream: body.stream ?? false });
+    return this._client.post("/chat/completions", {
+      body,
+      ...options,
+      stream: body.stream ?? false,
+      __security: { bearerAuth: true }
+    });
   }
   /**
    * Get a stored chat completion. Only Chat Completions that have been created with
@@ -95751,7 +96687,10 @@ var Completions = class extends APIResource {
    * ```
    */
   retrieve(completionID, options) {
-    return this._client.get(path`/chat/completions/${completionID}`, options);
+    return this._client.get(path`/chat/completions/${completionID}`, {
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
   /**
    * Modify a stored chat completion. Only Chat Completions that have been created
@@ -95767,7 +96706,11 @@ var Completions = class extends APIResource {
    * ```
    */
   update(completionID, body, options) {
-    return this._client.post(path`/chat/completions/${completionID}`, { body, ...options });
+    return this._client.post(path`/chat/completions/${completionID}`, {
+      body,
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
   /**
    * List stored Chat Completions. Only Chat Completions that have been stored with
@@ -95782,7 +96725,11 @@ var Completions = class extends APIResource {
    * ```
    */
   list(query = {}, options) {
-    return this._client.getAPIList("/chat/completions", CursorPage, { query, ...options });
+    return this._client.getAPIList("/chat/completions", CursorPage, {
+      query,
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
   /**
    * Delete a stored chat completion. Only Chat Completions that have been created
@@ -95795,7 +96742,10 @@ var Completions = class extends APIResource {
    * ```
    */
   delete(completionID, options) {
-    return this._client.delete(path`/chat/completions/${completionID}`, options);
+    return this._client.delete(path`/chat/completions/${completionID}`, {
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
   parse(body, options) {
     validateInputTools(body.tools);
@@ -95822,7 +96772,7 @@ var Completions = class extends APIResource {
 };
 Completions.Messages = Messages;
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/chat/chat.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/chat/chat.mjs
 var Chat = class extends APIResource {
   constructor() {
     super(...arguments);
@@ -95831,7 +96781,2222 @@ var Chat = class extends APIResource {
 };
 Chat.Completions = Completions;
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/internal/headers.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/admin-api-keys.mjs
+var AdminAPIKeys = class extends APIResource {
+  /**
+   * Create an organization admin API key
+   *
+   * @example
+   * ```ts
+   * const adminAPIKey =
+   *   await client.admin.organization.adminAPIKeys.create({
+   *     name: 'New Admin Key',
+   *   });
+   * ```
+   */
+  create(body, options) {
+    return this._client.post("/organization/admin_api_keys", {
+      body,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Retrieve a single organization API key
+   *
+   * @example
+   * ```ts
+   * const adminAPIKey =
+   *   await client.admin.organization.adminAPIKeys.retrieve(
+   *     'key_id',
+   *   );
+   * ```
+   */
+  retrieve(keyID, options) {
+    return this._client.get(path`/organization/admin_api_keys/${keyID}`, {
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * List organization API keys
+   *
+   * @example
+   * ```ts
+   * // Automatically fetches more pages as needed.
+   * for await (const adminAPIKey of client.admin.organization.adminAPIKeys.list()) {
+   *   // ...
+   * }
+   * ```
+   */
+  list(query = {}, options) {
+    return this._client.getAPIList("/organization/admin_api_keys", CursorPage, {
+      query,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Delete an organization admin API key
+   *
+   * @example
+   * ```ts
+   * const adminAPIKey =
+   *   await client.admin.organization.adminAPIKeys.delete(
+   *     'key_id',
+   *   );
+   * ```
+   */
+  delete(keyID, options) {
+    return this._client.delete(path`/organization/admin_api_keys/${keyID}`, {
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+};
+
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/audit-logs.mjs
+var AuditLogs = class extends APIResource {
+  /**
+   * List user actions and configuration changes within this organization.
+   *
+   * @example
+   * ```ts
+   * // Automatically fetches more pages as needed.
+   * for await (const auditLogListResponse of client.admin.organization.auditLogs.list()) {
+   *   // ...
+   * }
+   * ```
+   */
+  list(query = {}, options) {
+    return this._client.getAPIList("/organization/audit_logs", ConversationCursorPage, {
+      query,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+};
+
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/certificates.mjs
+var Certificates = class extends APIResource {
+  /**
+   * Upload a certificate to the organization. This does **not** automatically
+   * activate the certificate.
+   *
+   * Organizations can upload up to 50 certificates.
+   *
+   * @example
+   * ```ts
+   * const certificate =
+   *   await client.admin.organization.certificates.create({
+   *     certificate: 'certificate',
+   *   });
+   * ```
+   */
+  create(body, options) {
+    return this._client.post("/organization/certificates", {
+      body,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Get a certificate that has been uploaded to the organization.
+   *
+   * You can get a certificate regardless of whether it is active or not.
+   *
+   * @example
+   * ```ts
+   * const certificate =
+   *   await client.admin.organization.certificates.retrieve(
+   *     'certificate_id',
+   *   );
+   * ```
+   */
+  retrieve(certificateID, query = {}, options) {
+    return this._client.get(path`/organization/certificates/${certificateID}`, {
+      query,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Modify a certificate. Note that only the name can be modified.
+   *
+   * @example
+   * ```ts
+   * const certificate =
+   *   await client.admin.organization.certificates.update(
+   *     'certificate_id',
+   *   );
+   * ```
+   */
+  update(certificateID, body, options) {
+    return this._client.post(path`/organization/certificates/${certificateID}`, {
+      body,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * List uploaded certificates for this organization.
+   *
+   * @example
+   * ```ts
+   * // Automatically fetches more pages as needed.
+   * for await (const certificateListResponse of client.admin.organization.certificates.list()) {
+   *   // ...
+   * }
+   * ```
+   */
+  list(query = {}, options) {
+    return this._client.getAPIList("/organization/certificates", ConversationCursorPage, { query, ...options, __security: { adminAPIKeyAuth: true } });
+  }
+  /**
+   * Delete a certificate from the organization.
+   *
+   * The certificate must be inactive for the organization and all projects.
+   *
+   * @example
+   * ```ts
+   * const certificate =
+   *   await client.admin.organization.certificates.delete(
+   *     'certificate_id',
+   *   );
+   * ```
+   */
+  delete(certificateID, options) {
+    return this._client.delete(path`/organization/certificates/${certificateID}`, {
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Activate certificates at the organization level.
+   *
+   * You can atomically and idempotently activate up to 10 certificates at a time.
+   *
+   * @example
+   * ```ts
+   * // Automatically fetches more pages as needed.
+   * for await (const certificateActivateResponse of client.admin.organization.certificates.activate(
+   *   { certificate_ids: ['cert_abc'] },
+   * )) {
+   *   // ...
+   * }
+   * ```
+   */
+  activate(body, options) {
+    return this._client.getAPIList("/organization/certificates/activate", Page, {
+      body,
+      method: "post",
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Deactivate certificates at the organization level.
+   *
+   * You can atomically and idempotently deactivate up to 10 certificates at a time.
+   *
+   * @example
+   * ```ts
+   * // Automatically fetches more pages as needed.
+   * for await (const certificateDeactivateResponse of client.admin.organization.certificates.deactivate(
+   *   { certificate_ids: ['cert_abc'] },
+   * )) {
+   *   // ...
+   * }
+   * ```
+   */
+  deactivate(body, options) {
+    return this._client.getAPIList("/organization/certificates/deactivate", Page, { body, method: "post", ...options, __security: { adminAPIKeyAuth: true } });
+  }
+};
+
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/data-retention.mjs
+var DataRetention = class extends APIResource {
+  /**
+   * Retrieves organization data retention controls.
+   *
+   * @example
+   * ```ts
+   * const organizationDataRetention =
+   *   await client.admin.organization.dataRetention.retrieve();
+   * ```
+   */
+  retrieve(options) {
+    return this._client.get("/organization/data_retention", {
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Updates organization data retention controls.
+   *
+   * @example
+   * ```ts
+   * const organizationDataRetention =
+   *   await client.admin.organization.dataRetention.update({
+   *     retention_type: 'zero_data_retention',
+   *   });
+   * ```
+   */
+  update(body, options) {
+    return this._client.post("/organization/data_retention", {
+      body,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+};
+
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/invites.mjs
+var Invites = class extends APIResource {
+  /**
+   * Create an invite for a user to the organization. The invite must be accepted by
+   * the user before they have access to the organization.
+   *
+   * @example
+   * ```ts
+   * const invite =
+   *   await client.admin.organization.invites.create({
+   *     email: 'email',
+   *     role: 'reader',
+   *   });
+   * ```
+   */
+  create(body, options) {
+    return this._client.post("/organization/invites", {
+      body,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Retrieves an invite.
+   *
+   * @example
+   * ```ts
+   * const invite =
+   *   await client.admin.organization.invites.retrieve(
+   *     'invite_id',
+   *   );
+   * ```
+   */
+  retrieve(inviteID, options) {
+    return this._client.get(path`/organization/invites/${inviteID}`, {
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Returns a list of invites in the organization.
+   *
+   * @example
+   * ```ts
+   * // Automatically fetches more pages as needed.
+   * for await (const invite of client.admin.organization.invites.list()) {
+   *   // ...
+   * }
+   * ```
+   */
+  list(query = {}, options) {
+    return this._client.getAPIList("/organization/invites", ConversationCursorPage, {
+      query,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Delete an invite. If the invite has already been accepted, it cannot be deleted.
+   *
+   * @example
+   * ```ts
+   * const invite =
+   *   await client.admin.organization.invites.delete(
+   *     'invite_id',
+   *   );
+   * ```
+   */
+  delete(inviteID, options) {
+    return this._client.delete(path`/organization/invites/${inviteID}`, {
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+};
+
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/roles.mjs
+var Roles = class extends APIResource {
+  /**
+   * Creates a custom role for the organization.
+   *
+   * @example
+   * ```ts
+   * const role = await client.admin.organization.roles.create({
+   *   permissions: ['string'],
+   *   role_name: 'role_name',
+   * });
+   * ```
+   */
+  create(body, options) {
+    return this._client.post("/organization/roles", {
+      body,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Retrieves an organization role.
+   *
+   * @example
+   * ```ts
+   * const role = await client.admin.organization.roles.retrieve(
+   *   'role_id',
+   * );
+   * ```
+   */
+  retrieve(roleID, options) {
+    return this._client.get(path`/organization/roles/${roleID}`, {
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Updates an existing organization role.
+   *
+   * @example
+   * ```ts
+   * const role = await client.admin.organization.roles.update(
+   *   'role_id',
+   * );
+   * ```
+   */
+  update(roleID, body, options) {
+    return this._client.post(path`/organization/roles/${roleID}`, {
+      body,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Lists the roles configured for the organization.
+   *
+   * @example
+   * ```ts
+   * // Automatically fetches more pages as needed.
+   * for await (const role of client.admin.organization.roles.list()) {
+   *   // ...
+   * }
+   * ```
+   */
+  list(query = {}, options) {
+    return this._client.getAPIList("/organization/roles", NextCursorPage, {
+      query,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Deletes a custom role from the organization.
+   *
+   * @example
+   * ```ts
+   * const role = await client.admin.organization.roles.delete(
+   *   'role_id',
+   * );
+   * ```
+   */
+  delete(roleID, options) {
+    return this._client.delete(path`/organization/roles/${roleID}`, {
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+};
+
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/spend-alerts.mjs
+var SpendAlerts = class extends APIResource {
+  /**
+   * Creates an organization spend alert.
+   *
+   * @example
+   * ```ts
+   * const organizationSpendAlert =
+   *   await client.admin.organization.spendAlerts.create({
+   *     currency: 'USD',
+   *     interval: 'month',
+   *     notification_channel: {
+   *       recipients: ['string'],
+   *       type: 'email',
+   *     },
+   *     threshold_amount: 0,
+   *   });
+   * ```
+   */
+  create(body, options) {
+    return this._client.post("/organization/spend_alerts", {
+      body,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Updates an organization spend alert.
+   *
+   * @example
+   * ```ts
+   * const organizationSpendAlert =
+   *   await client.admin.organization.spendAlerts.update(
+   *     'alert_id',
+   *     {
+   *       currency: 'USD',
+   *       interval: 'month',
+   *       notification_channel: {
+   *         recipients: ['string'],
+   *         type: 'email',
+   *       },
+   *       threshold_amount: 0,
+   *     },
+   *   );
+   * ```
+   */
+  update(alertID, body, options) {
+    return this._client.post(path`/organization/spend_alerts/${alertID}`, {
+      body,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Lists organization spend alerts.
+   *
+   * @example
+   * ```ts
+   * // Automatically fetches more pages as needed.
+   * for await (const organizationSpendAlert of client.admin.organization.spendAlerts.list()) {
+   *   // ...
+   * }
+   * ```
+   */
+  list(query = {}, options) {
+    return this._client.getAPIList("/organization/spend_alerts", ConversationCursorPage, { query, ...options, __security: { adminAPIKeyAuth: true } });
+  }
+  /**
+   * Deletes an organization spend alert.
+   *
+   * @example
+   * ```ts
+   * const organizationSpendAlertDeleted =
+   *   await client.admin.organization.spendAlerts.delete(
+   *     'alert_id',
+   *   );
+   * ```
+   */
+  delete(alertID, options) {
+    return this._client.delete(path`/organization/spend_alerts/${alertID}`, {
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+};
+
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/usage.mjs
+var Usage = class extends APIResource {
+  /**
+   * Get audio speeches usage details for the organization.
+   *
+   * @example
+   * ```ts
+   * const response =
+   *   await client.admin.organization.usage.audioSpeeches({
+   *     start_time: 0,
+   *   });
+   * ```
+   */
+  audioSpeeches(query, options) {
+    return this._client.get("/organization/usage/audio_speeches", {
+      query,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Get audio transcriptions usage details for the organization.
+   *
+   * @example
+   * ```ts
+   * const response =
+   *   await client.admin.organization.usage.audioTranscriptions(
+   *     { start_time: 0 },
+   *   );
+   * ```
+   */
+  audioTranscriptions(query, options) {
+    return this._client.get("/organization/usage/audio_transcriptions", {
+      query,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Get code interpreter sessions usage details for the organization.
+   *
+   * @example
+   * ```ts
+   * const response =
+   *   await client.admin.organization.usage.codeInterpreterSessions(
+   *     { start_time: 0 },
+   *   );
+   * ```
+   */
+  codeInterpreterSessions(query, options) {
+    return this._client.get("/organization/usage/code_interpreter_sessions", {
+      query,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Get completions usage details for the organization.
+   *
+   * @example
+   * ```ts
+   * const response =
+   *   await client.admin.organization.usage.completions({
+   *     start_time: 0,
+   *   });
+   * ```
+   */
+  completions(query, options) {
+    return this._client.get("/organization/usage/completions", {
+      query,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Get costs details for the organization.
+   *
+   * @example
+   * ```ts
+   * const response =
+   *   await client.admin.organization.usage.costs({
+   *     start_time: 0,
+   *   });
+   * ```
+   */
+  costs(query, options) {
+    return this._client.get("/organization/costs", {
+      query,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Get embeddings usage details for the organization.
+   *
+   * @example
+   * ```ts
+   * const response =
+   *   await client.admin.organization.usage.embeddings({
+   *     start_time: 0,
+   *   });
+   * ```
+   */
+  embeddings(query, options) {
+    return this._client.get("/organization/usage/embeddings", {
+      query,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Get file search calls usage details for the organization.
+   *
+   * @example
+   * ```ts
+   * const response =
+   *   await client.admin.organization.usage.fileSearchCalls({
+   *     start_time: 0,
+   *   });
+   * ```
+   */
+  fileSearchCalls(query, options) {
+    return this._client.get("/organization/usage/file_search_calls", {
+      query,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Get images usage details for the organization.
+   *
+   * @example
+   * ```ts
+   * const response =
+   *   await client.admin.organization.usage.images({
+   *     start_time: 0,
+   *   });
+   * ```
+   */
+  images(query, options) {
+    return this._client.get("/organization/usage/images", {
+      query,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Get moderations usage details for the organization.
+   *
+   * @example
+   * ```ts
+   * const response =
+   *   await client.admin.organization.usage.moderations({
+   *     start_time: 0,
+   *   });
+   * ```
+   */
+  moderations(query, options) {
+    return this._client.get("/organization/usage/moderations", {
+      query,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Get vector stores usage details for the organization.
+   *
+   * @example
+   * ```ts
+   * const response =
+   *   await client.admin.organization.usage.vectorStores({
+   *     start_time: 0,
+   *   });
+   * ```
+   */
+  vectorStores(query, options) {
+    return this._client.get("/organization/usage/vector_stores", {
+      query,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Get web search calls usage details for the organization.
+   *
+   * @example
+   * ```ts
+   * const response =
+   *   await client.admin.organization.usage.webSearchCalls({
+   *     start_time: 0,
+   *   });
+   * ```
+   */
+  webSearchCalls(query, options) {
+    return this._client.get("/organization/usage/web_search_calls", {
+      query,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+};
+
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/groups/roles.mjs
+var Roles2 = class extends APIResource {
+  /**
+   * Assigns an organization role to a group within the organization.
+   *
+   * @example
+   * ```ts
+   * const role =
+   *   await client.admin.organization.groups.roles.create(
+   *     'group_id',
+   *     { role_id: 'role_id' },
+   *   );
+   * ```
+   */
+  create(groupID, body, options) {
+    return this._client.post(path`/organization/groups/${groupID}/roles`, {
+      body,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Retrieves an organization role assigned to a group.
+   *
+   * @example
+   * ```ts
+   * const role =
+   *   await client.admin.organization.groups.roles.retrieve(
+   *     'role_id',
+   *     { group_id: 'group_id' },
+   *   );
+   * ```
+   */
+  retrieve(roleID, params, options) {
+    const { group_id } = params;
+    return this._client.get(path`/organization/groups/${group_id}/roles/${roleID}`, {
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Lists the organization roles assigned to a group within the organization.
+   *
+   * @example
+   * ```ts
+   * // Automatically fetches more pages as needed.
+   * for await (const roleListResponse of client.admin.organization.groups.roles.list(
+   *   'group_id',
+   * )) {
+   *   // ...
+   * }
+   * ```
+   */
+  list(groupID, query = {}, options) {
+    return this._client.getAPIList(path`/organization/groups/${groupID}/roles`, NextCursorPage, { query, ...options, __security: { adminAPIKeyAuth: true } });
+  }
+  /**
+   * Unassigns an organization role from a group within the organization.
+   *
+   * @example
+   * ```ts
+   * const role =
+   *   await client.admin.organization.groups.roles.delete(
+   *     'role_id',
+   *     { group_id: 'group_id' },
+   *   );
+   * ```
+   */
+  delete(roleID, params, options) {
+    const { group_id } = params;
+    return this._client.delete(path`/organization/groups/${group_id}/roles/${roleID}`, {
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+};
+
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/groups/users.mjs
+var Users = class extends APIResource {
+  /**
+   * Adds a user to a group.
+   *
+   * @example
+   * ```ts
+   * const user =
+   *   await client.admin.organization.groups.users.create(
+   *     'group_id',
+   *     { user_id: 'user_id' },
+   *   );
+   * ```
+   */
+  create(groupID, body, options) {
+    return this._client.post(path`/organization/groups/${groupID}/users`, {
+      body,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Retrieves a user in a group.
+   *
+   * @example
+   * ```ts
+   * const user =
+   *   await client.admin.organization.groups.users.retrieve(
+   *     'user_id',
+   *     { group_id: 'group_id' },
+   *   );
+   * ```
+   */
+  retrieve(userID, params, options) {
+    const { group_id } = params;
+    return this._client.get(path`/organization/groups/${group_id}/users/${userID}`, {
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Lists the users assigned to a group.
+   *
+   * @example
+   * ```ts
+   * // Automatically fetches more pages as needed.
+   * for await (const organizationGroupUser of client.admin.organization.groups.users.list(
+   *   'group_id',
+   * )) {
+   *   // ...
+   * }
+   * ```
+   */
+  list(groupID, query = {}, options) {
+    return this._client.getAPIList(path`/organization/groups/${groupID}/users`, NextCursorPage, { query, ...options, __security: { adminAPIKeyAuth: true } });
+  }
+  /**
+   * Removes a user from a group.
+   *
+   * @example
+   * ```ts
+   * const user =
+   *   await client.admin.organization.groups.users.delete(
+   *     'user_id',
+   *     { group_id: 'group_id' },
+   *   );
+   * ```
+   */
+  delete(userID, params, options) {
+    const { group_id } = params;
+    return this._client.delete(path`/organization/groups/${group_id}/users/${userID}`, {
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+};
+
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/groups/groups.mjs
+var Groups = class extends APIResource {
+  constructor() {
+    super(...arguments);
+    this.users = new Users(this._client);
+    this.roles = new Roles2(this._client);
+  }
+  /**
+   * Creates a new group in the organization.
+   *
+   * @example
+   * ```ts
+   * const group = await client.admin.organization.groups.create(
+   *   { name: 'x' },
+   * );
+   * ```
+   */
+  create(body, options) {
+    return this._client.post("/organization/groups", {
+      body,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Retrieves a group.
+   *
+   * @example
+   * ```ts
+   * const group =
+   *   await client.admin.organization.groups.retrieve(
+   *     'group_id',
+   *   );
+   * ```
+   */
+  retrieve(groupID, options) {
+    return this._client.get(path`/organization/groups/${groupID}`, {
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Updates a group's information.
+   *
+   * @example
+   * ```ts
+   * const group = await client.admin.organization.groups.update(
+   *   'group_id',
+   *   { name: 'x' },
+   * );
+   * ```
+   */
+  update(groupID, body, options) {
+    return this._client.post(path`/organization/groups/${groupID}`, {
+      body,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Lists all groups in the organization.
+   *
+   * @example
+   * ```ts
+   * // Automatically fetches more pages as needed.
+   * for await (const group of client.admin.organization.groups.list()) {
+   *   // ...
+   * }
+   * ```
+   */
+  list(query = {}, options) {
+    return this._client.getAPIList("/organization/groups", NextCursorPage, {
+      query,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Deletes a group from the organization.
+   *
+   * @example
+   * ```ts
+   * const group = await client.admin.organization.groups.delete(
+   *   'group_id',
+   * );
+   * ```
+   */
+  delete(groupID, options) {
+    return this._client.delete(path`/organization/groups/${groupID}`, {
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+};
+Groups.Users = Users;
+Groups.Roles = Roles2;
+
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/projects/api-keys.mjs
+var APIKeys = class extends APIResource {
+  /**
+   * Retrieves an API key in the project.
+   *
+   * @example
+   * ```ts
+   * const projectAPIKey =
+   *   await client.admin.organization.projects.apiKeys.retrieve(
+   *     'api_key_id',
+   *     { project_id: 'project_id' },
+   *   );
+   * ```
+   */
+  retrieve(apiKeyID, params, options) {
+    const { project_id } = params;
+    return this._client.get(path`/organization/projects/${project_id}/api_keys/${apiKeyID}`, {
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Returns a list of API keys in the project.
+   *
+   * @example
+   * ```ts
+   * // Automatically fetches more pages as needed.
+   * for await (const projectAPIKey of client.admin.organization.projects.apiKeys.list(
+   *   'project_id',
+   * )) {
+   *   // ...
+   * }
+   * ```
+   */
+  list(projectID, query = {}, options) {
+    return this._client.getAPIList(path`/organization/projects/${projectID}/api_keys`, ConversationCursorPage, { query, ...options, __security: { adminAPIKeyAuth: true } });
+  }
+  /**
+   * Deletes an API key from the project.
+   *
+   * Returns confirmation of the key deletion, or an error if the key belonged to a
+   * service account.
+   *
+   * @example
+   * ```ts
+   * const apiKey =
+   *   await client.admin.organization.projects.apiKeys.delete(
+   *     'api_key_id',
+   *     { project_id: 'project_id' },
+   *   );
+   * ```
+   */
+  delete(apiKeyID, params, options) {
+    const { project_id } = params;
+    return this._client.delete(path`/organization/projects/${project_id}/api_keys/${apiKeyID}`, {
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+};
+
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/projects/certificates.mjs
+var Certificates2 = class extends APIResource {
+  /**
+   * List certificates for this project.
+   *
+   * @example
+   * ```ts
+   * // Automatically fetches more pages as needed.
+   * for await (const certificateListResponse of client.admin.organization.projects.certificates.list(
+   *   'project_id',
+   * )) {
+   *   // ...
+   * }
+   * ```
+   */
+  list(projectID, query = {}, options) {
+    return this._client.getAPIList(path`/organization/projects/${projectID}/certificates`, ConversationCursorPage, { query, ...options, __security: { adminAPIKeyAuth: true } });
+  }
+  /**
+   * Activate certificates at the project level.
+   *
+   * You can atomically and idempotently activate up to 10 certificates at a time.
+   *
+   * @example
+   * ```ts
+   * // Automatically fetches more pages as needed.
+   * for await (const certificateActivateResponse of client.admin.organization.projects.certificates.activate(
+   *   'project_id',
+   *   { certificate_ids: ['cert_abc'] },
+   * )) {
+   *   // ...
+   * }
+   * ```
+   */
+  activate(projectID, body, options) {
+    return this._client.getAPIList(path`/organization/projects/${projectID}/certificates/activate`, Page, { body, method: "post", ...options, __security: { adminAPIKeyAuth: true } });
+  }
+  /**
+   * Deactivate certificates at the project level. You can atomically and
+   * idempotently deactivate up to 10 certificates at a time.
+   *
+   * @example
+   * ```ts
+   * // Automatically fetches more pages as needed.
+   * for await (const certificateDeactivateResponse of client.admin.organization.projects.certificates.deactivate(
+   *   'project_id',
+   *   { certificate_ids: ['cert_abc'] },
+   * )) {
+   *   // ...
+   * }
+   * ```
+   */
+  deactivate(projectID, body, options) {
+    return this._client.getAPIList(path`/organization/projects/${projectID}/certificates/deactivate`, Page, { body, method: "post", ...options, __security: { adminAPIKeyAuth: true } });
+  }
+};
+
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/projects/data-retention.mjs
+var DataRetention2 = class extends APIResource {
+  /**
+   * Retrieves project data retention controls.
+   *
+   * @example
+   * ```ts
+   * const projectDataRetention =
+   *   await client.admin.organization.projects.dataRetention.retrieve(
+   *     'project_id',
+   *   );
+   * ```
+   */
+  retrieve(projectID, options) {
+    return this._client.get(path`/organization/projects/${projectID}/data_retention`, {
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Updates project data retention controls.
+   *
+   * @example
+   * ```ts
+   * const projectDataRetention =
+   *   await client.admin.organization.projects.dataRetention.update(
+   *     'project_id',
+   *     { retention_type: 'organization_default' },
+   *   );
+   * ```
+   */
+  update(projectID, body, options) {
+    return this._client.post(path`/organization/projects/${projectID}/data_retention`, {
+      body,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+};
+
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/projects/hosted-tool-permissions.mjs
+var HostedToolPermissions = class extends APIResource {
+  /**
+   * Returns hosted tool permissions for a project.
+   *
+   * @example
+   * ```ts
+   * const projectHostedToolPermissions =
+   *   await client.admin.organization.projects.hostedToolPermissions.retrieve(
+   *     'project_id',
+   *   );
+   * ```
+   */
+  retrieve(projectID, options) {
+    return this._client.get(path`/organization/projects/${projectID}/hosted_tool_permissions`, {
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Updates hosted tool permissions for a project.
+   *
+   * @example
+   * ```ts
+   * const projectHostedToolPermissions =
+   *   await client.admin.organization.projects.hostedToolPermissions.update(
+   *     'project_id',
+   *   );
+   * ```
+   */
+  update(projectID, body, options) {
+    return this._client.post(path`/organization/projects/${projectID}/hosted_tool_permissions`, {
+      body,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+};
+
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/projects/model-permissions.mjs
+var ModelPermissions = class extends APIResource {
+  /**
+   * Returns model permissions for a project.
+   *
+   * @example
+   * ```ts
+   * const projectModelPermissions =
+   *   await client.admin.organization.projects.modelPermissions.retrieve(
+   *     'project_id',
+   *   );
+   * ```
+   */
+  retrieve(projectID, options) {
+    return this._client.get(path`/organization/projects/${projectID}/model_permissions`, {
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Updates model permissions for a project.
+   *
+   * @example
+   * ```ts
+   * const projectModelPermissions =
+   *   await client.admin.organization.projects.modelPermissions.update(
+   *     'project_id',
+   *     { mode: 'allow_list', model_ids: ['string'] },
+   *   );
+   * ```
+   */
+  update(projectID, body, options) {
+    return this._client.post(path`/organization/projects/${projectID}/model_permissions`, {
+      body,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Deletes model permissions for a project.
+   *
+   * @example
+   * ```ts
+   * const projectModelPermissionsDeleted =
+   *   await client.admin.organization.projects.modelPermissions.delete(
+   *     'project_id',
+   *   );
+   * ```
+   */
+  delete(projectID, options) {
+    return this._client.delete(path`/organization/projects/${projectID}/model_permissions`, {
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+};
+
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/projects/rate-limits.mjs
+var RateLimits = class extends APIResource {
+  /**
+   * Returns the rate limits per model for a project.
+   *
+   * @example
+   * ```ts
+   * // Automatically fetches more pages as needed.
+   * for await (const projectRateLimit of client.admin.organization.projects.rateLimits.listRateLimits(
+   *   'project_id',
+   * )) {
+   *   // ...
+   * }
+   * ```
+   */
+  listRateLimits(projectID, query = {}, options) {
+    return this._client.getAPIList(path`/organization/projects/${projectID}/rate_limits`, ConversationCursorPage, { query, ...options, __security: { adminAPIKeyAuth: true } });
+  }
+  /**
+   * Updates a project rate limit.
+   *
+   * @example
+   * ```ts
+   * const projectRateLimit =
+   *   await client.admin.organization.projects.rateLimits.updateRateLimit(
+   *     'rate_limit_id',
+   *     { project_id: 'project_id' },
+   *   );
+   * ```
+   */
+  updateRateLimit(rateLimitID, params, options) {
+    const { project_id, ...body } = params;
+    return this._client.post(path`/organization/projects/${project_id}/rate_limits/${rateLimitID}`, {
+      body,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+};
+
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/projects/roles.mjs
+var Roles3 = class extends APIResource {
+  /**
+   * Creates a custom role for a project.
+   *
+   * @example
+   * ```ts
+   * const role =
+   *   await client.admin.organization.projects.roles.create(
+   *     'project_id',
+   *     { permissions: ['string'], role_name: 'role_name' },
+   *   );
+   * ```
+   */
+  create(projectID, body, options) {
+    return this._client.post(path`/projects/${projectID}/roles`, {
+      body,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Retrieves a project role.
+   *
+   * @example
+   * ```ts
+   * const role =
+   *   await client.admin.organization.projects.roles.retrieve(
+   *     'role_id',
+   *     { project_id: 'project_id' },
+   *   );
+   * ```
+   */
+  retrieve(roleID, params, options) {
+    const { project_id } = params;
+    return this._client.get(path`/projects/${project_id}/roles/${roleID}`, {
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Updates an existing project role.
+   *
+   * @example
+   * ```ts
+   * const role =
+   *   await client.admin.organization.projects.roles.update(
+   *     'role_id',
+   *     { project_id: 'project_id' },
+   *   );
+   * ```
+   */
+  update(roleID, params, options) {
+    const { project_id, ...body } = params;
+    return this._client.post(path`/projects/${project_id}/roles/${roleID}`, {
+      body,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Lists the roles configured for a project.
+   *
+   * @example
+   * ```ts
+   * // Automatically fetches more pages as needed.
+   * for await (const role of client.admin.organization.projects.roles.list(
+   *   'project_id',
+   * )) {
+   *   // ...
+   * }
+   * ```
+   */
+  list(projectID, query = {}, options) {
+    return this._client.getAPIList(path`/projects/${projectID}/roles`, NextCursorPage, {
+      query,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Deletes a custom role from a project.
+   *
+   * @example
+   * ```ts
+   * const role =
+   *   await client.admin.organization.projects.roles.delete(
+   *     'role_id',
+   *     { project_id: 'project_id' },
+   *   );
+   * ```
+   */
+  delete(roleID, params, options) {
+    const { project_id } = params;
+    return this._client.delete(path`/projects/${project_id}/roles/${roleID}`, {
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+};
+
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/projects/service-accounts.mjs
+var ServiceAccounts = class extends APIResource {
+  /**
+   * Creates a new service account in the project. This also returns an unredacted
+   * API key for the service account.
+   *
+   * @example
+   * ```ts
+   * const serviceAccount =
+   *   await client.admin.organization.projects.serviceAccounts.create(
+   *     'project_id',
+   *     { name: 'name' },
+   *   );
+   * ```
+   */
+  create(projectID, body, options) {
+    return this._client.post(path`/organization/projects/${projectID}/service_accounts`, {
+      body,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Retrieves a service account in the project.
+   *
+   * @example
+   * ```ts
+   * const projectServiceAccount =
+   *   await client.admin.organization.projects.serviceAccounts.retrieve(
+   *     'service_account_id',
+   *     { project_id: 'project_id' },
+   *   );
+   * ```
+   */
+  retrieve(serviceAccountID, params, options) {
+    const { project_id } = params;
+    return this._client.get(path`/organization/projects/${project_id}/service_accounts/${serviceAccountID}`, {
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Updates a service account in the project.
+   *
+   * @example
+   * ```ts
+   * const projectServiceAccount =
+   *   await client.admin.organization.projects.serviceAccounts.update(
+   *     'service_account_id',
+   *     { project_id: 'project_id' },
+   *   );
+   * ```
+   */
+  update(serviceAccountID, params, options) {
+    const { project_id, ...body } = params;
+    return this._client.post(path`/organization/projects/${project_id}/service_accounts/${serviceAccountID}`, { body, ...options, __security: { adminAPIKeyAuth: true } });
+  }
+  /**
+   * Returns a list of service accounts in the project.
+   *
+   * @example
+   * ```ts
+   * // Automatically fetches more pages as needed.
+   * for await (const projectServiceAccount of client.admin.organization.projects.serviceAccounts.list(
+   *   'project_id',
+   * )) {
+   *   // ...
+   * }
+   * ```
+   */
+  list(projectID, query = {}, options) {
+    return this._client.getAPIList(path`/organization/projects/${projectID}/service_accounts`, ConversationCursorPage, { query, ...options, __security: { adminAPIKeyAuth: true } });
+  }
+  /**
+   * Deletes a service account from the project.
+   *
+   * Returns confirmation of service account deletion, or an error if the project is
+   * archived (archived projects have no service accounts).
+   *
+   * @example
+   * ```ts
+   * const serviceAccount =
+   *   await client.admin.organization.projects.serviceAccounts.delete(
+   *     'service_account_id',
+   *     { project_id: 'project_id' },
+   *   );
+   * ```
+   */
+  delete(serviceAccountID, params, options) {
+    const { project_id } = params;
+    return this._client.delete(path`/organization/projects/${project_id}/service_accounts/${serviceAccountID}`, { ...options, __security: { adminAPIKeyAuth: true } });
+  }
+};
+
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/projects/spend-alerts.mjs
+var SpendAlerts2 = class extends APIResource {
+  /**
+   * Creates a project spend alert.
+   *
+   * @example
+   * ```ts
+   * const projectSpendAlert =
+   *   await client.admin.organization.projects.spendAlerts.create(
+   *     'project_id',
+   *     {
+   *       currency: 'USD',
+   *       interval: 'month',
+   *       notification_channel: {
+   *         recipients: ['string'],
+   *         type: 'email',
+   *       },
+   *       threshold_amount: 0,
+   *     },
+   *   );
+   * ```
+   */
+  create(projectID, body, options) {
+    return this._client.post(path`/organization/projects/${projectID}/spend_alerts`, {
+      body,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Updates a project spend alert.
+   *
+   * @example
+   * ```ts
+   * const projectSpendAlert =
+   *   await client.admin.organization.projects.spendAlerts.update(
+   *     'alert_id',
+   *     {
+   *       project_id: 'project_id',
+   *       currency: 'USD',
+   *       interval: 'month',
+   *       notification_channel: {
+   *         recipients: ['string'],
+   *         type: 'email',
+   *       },
+   *       threshold_amount: 0,
+   *     },
+   *   );
+   * ```
+   */
+  update(alertID, params, options) {
+    const { project_id, ...body } = params;
+    return this._client.post(path`/organization/projects/${project_id}/spend_alerts/${alertID}`, {
+      body,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Lists project spend alerts.
+   *
+   * @example
+   * ```ts
+   * // Automatically fetches more pages as needed.
+   * for await (const projectSpendAlert of client.admin.organization.projects.spendAlerts.list(
+   *   'project_id',
+   * )) {
+   *   // ...
+   * }
+   * ```
+   */
+  list(projectID, query = {}, options) {
+    return this._client.getAPIList(path`/organization/projects/${projectID}/spend_alerts`, ConversationCursorPage, { query, ...options, __security: { adminAPIKeyAuth: true } });
+  }
+  /**
+   * Deletes a project spend alert.
+   *
+   * @example
+   * ```ts
+   * const projectSpendAlertDeleted =
+   *   await client.admin.organization.projects.spendAlerts.delete(
+   *     'alert_id',
+   *     { project_id: 'project_id' },
+   *   );
+   * ```
+   */
+  delete(alertID, params, options) {
+    const { project_id } = params;
+    return this._client.delete(path`/organization/projects/${project_id}/spend_alerts/${alertID}`, {
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+};
+
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/projects/groups/roles.mjs
+var Roles4 = class extends APIResource {
+  /**
+   * Assigns a project role to a group within a project.
+   *
+   * @example
+   * ```ts
+   * const role =
+   *   await client.admin.organization.projects.groups.roles.create(
+   *     'group_id',
+   *     { project_id: 'project_id', role_id: 'role_id' },
+   *   );
+   * ```
+   */
+  create(groupID, params, options) {
+    const { project_id, ...body } = params;
+    return this._client.post(path`/projects/${project_id}/groups/${groupID}/roles`, {
+      body,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Retrieves a project role assigned to a group.
+   *
+   * @example
+   * ```ts
+   * const role =
+   *   await client.admin.organization.projects.groups.roles.retrieve(
+   *     'role_id',
+   *     { project_id: 'project_id', group_id: 'group_id' },
+   *   );
+   * ```
+   */
+  retrieve(roleID, params, options) {
+    const { project_id, group_id } = params;
+    return this._client.get(path`/projects/${project_id}/groups/${group_id}/roles/${roleID}`, {
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Lists the project roles assigned to a group within a project.
+   *
+   * @example
+   * ```ts
+   * // Automatically fetches more pages as needed.
+   * for await (const roleListResponse of client.admin.organization.projects.groups.roles.list(
+   *   'group_id',
+   *   { project_id: 'project_id' },
+   * )) {
+   *   // ...
+   * }
+   * ```
+   */
+  list(groupID, params, options) {
+    const { project_id, ...query } = params;
+    return this._client.getAPIList(path`/projects/${project_id}/groups/${groupID}/roles`, NextCursorPage, { query, ...options, __security: { adminAPIKeyAuth: true } });
+  }
+  /**
+   * Unassigns a project role from a group within a project.
+   *
+   * @example
+   * ```ts
+   * const role =
+   *   await client.admin.organization.projects.groups.roles.delete(
+   *     'role_id',
+   *     { project_id: 'project_id', group_id: 'group_id' },
+   *   );
+   * ```
+   */
+  delete(roleID, params, options) {
+    const { project_id, group_id } = params;
+    return this._client.delete(path`/projects/${project_id}/groups/${group_id}/roles/${roleID}`, {
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+};
+
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/projects/groups/groups.mjs
+var Groups2 = class extends APIResource {
+  constructor() {
+    super(...arguments);
+    this.roles = new Roles4(this._client);
+  }
+  /**
+   * Grants a group access to a project.
+   *
+   * @example
+   * ```ts
+   * const projectGroup =
+   *   await client.admin.organization.projects.groups.create(
+   *     'project_id',
+   *     { group_id: 'group_id', role: 'role' },
+   *   );
+   * ```
+   */
+  create(projectID, body, options) {
+    return this._client.post(path`/organization/projects/${projectID}/groups`, {
+      body,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Retrieves a project's group.
+   *
+   * @example
+   * ```ts
+   * const projectGroup =
+   *   await client.admin.organization.projects.groups.retrieve(
+   *     'group_id',
+   *     { project_id: 'project_id' },
+   *   );
+   * ```
+   */
+  retrieve(groupID, params, options) {
+    const { project_id, ...query } = params;
+    return this._client.get(path`/organization/projects/${project_id}/groups/${groupID}`, {
+      query,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Lists the groups that have access to a project.
+   *
+   * @example
+   * ```ts
+   * // Automatically fetches more pages as needed.
+   * for await (const projectGroup of client.admin.organization.projects.groups.list(
+   *   'project_id',
+   * )) {
+   *   // ...
+   * }
+   * ```
+   */
+  list(projectID, query = {}, options) {
+    return this._client.getAPIList(path`/organization/projects/${projectID}/groups`, NextCursorPage, { query, ...options, __security: { adminAPIKeyAuth: true } });
+  }
+  /**
+   * Revokes a group's access to a project.
+   *
+   * @example
+   * ```ts
+   * const group =
+   *   await client.admin.organization.projects.groups.delete(
+   *     'group_id',
+   *     { project_id: 'project_id' },
+   *   );
+   * ```
+   */
+  delete(groupID, params, options) {
+    const { project_id } = params;
+    return this._client.delete(path`/organization/projects/${project_id}/groups/${groupID}`, {
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+};
+Groups2.Roles = Roles4;
+
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/projects/users/roles.mjs
+var Roles5 = class extends APIResource {
+  /**
+   * Assigns a project role to a user within a project.
+   *
+   * @example
+   * ```ts
+   * const role =
+   *   await client.admin.organization.projects.users.roles.create(
+   *     'user_id',
+   *     { project_id: 'project_id', role_id: 'role_id' },
+   *   );
+   * ```
+   */
+  create(userID, params, options) {
+    const { project_id, ...body } = params;
+    return this._client.post(path`/projects/${project_id}/users/${userID}/roles`, {
+      body,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Retrieves a project role assigned to a user.
+   *
+   * @example
+   * ```ts
+   * const role =
+   *   await client.admin.organization.projects.users.roles.retrieve(
+   *     'role_id',
+   *     { project_id: 'project_id', user_id: 'user_id' },
+   *   );
+   * ```
+   */
+  retrieve(roleID, params, options) {
+    const { project_id, user_id } = params;
+    return this._client.get(path`/projects/${project_id}/users/${user_id}/roles/${roleID}`, {
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Lists the project roles assigned to a user within a project.
+   *
+   * @example
+   * ```ts
+   * // Automatically fetches more pages as needed.
+   * for await (const roleListResponse of client.admin.organization.projects.users.roles.list(
+   *   'user_id',
+   *   { project_id: 'project_id' },
+   * )) {
+   *   // ...
+   * }
+   * ```
+   */
+  list(userID, params, options) {
+    const { project_id, ...query } = params;
+    return this._client.getAPIList(path`/projects/${project_id}/users/${userID}/roles`, NextCursorPage, { query, ...options, __security: { adminAPIKeyAuth: true } });
+  }
+  /**
+   * Unassigns a project role from a user within a project.
+   *
+   * @example
+   * ```ts
+   * const role =
+   *   await client.admin.organization.projects.users.roles.delete(
+   *     'role_id',
+   *     { project_id: 'project_id', user_id: 'user_id' },
+   *   );
+   * ```
+   */
+  delete(roleID, params, options) {
+    const { project_id, user_id } = params;
+    return this._client.delete(path`/projects/${project_id}/users/${user_id}/roles/${roleID}`, {
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+};
+
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/projects/users/users.mjs
+var Users2 = class extends APIResource {
+  constructor() {
+    super(...arguments);
+    this.roles = new Roles5(this._client);
+  }
+  /**
+   * Adds a user to the project. Users must already be members of the organization to
+   * be added to a project.
+   *
+   * @example
+   * ```ts
+   * const projectUser =
+   *   await client.admin.organization.projects.users.create(
+   *     'project_id',
+   *     { role: 'role' },
+   *   );
+   * ```
+   */
+  create(projectID, body, options) {
+    return this._client.post(path`/organization/projects/${projectID}/users`, {
+      body,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Retrieves a user in the project.
+   *
+   * @example
+   * ```ts
+   * const projectUser =
+   *   await client.admin.organization.projects.users.retrieve(
+   *     'user_id',
+   *     { project_id: 'project_id' },
+   *   );
+   * ```
+   */
+  retrieve(userID, params, options) {
+    const { project_id } = params;
+    return this._client.get(path`/organization/projects/${project_id}/users/${userID}`, {
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Modifies a user's role in the project.
+   *
+   * @example
+   * ```ts
+   * const projectUser =
+   *   await client.admin.organization.projects.users.update(
+   *     'user_id',
+   *     { project_id: 'project_id' },
+   *   );
+   * ```
+   */
+  update(userID, params, options) {
+    const { project_id, ...body } = params;
+    return this._client.post(path`/organization/projects/${project_id}/users/${userID}`, {
+      body,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Returns a list of users in the project.
+   *
+   * @example
+   * ```ts
+   * // Automatically fetches more pages as needed.
+   * for await (const projectUser of client.admin.organization.projects.users.list(
+   *   'project_id',
+   * )) {
+   *   // ...
+   * }
+   * ```
+   */
+  list(projectID, query = {}, options) {
+    return this._client.getAPIList(path`/organization/projects/${projectID}/users`, ConversationCursorPage, { query, ...options, __security: { adminAPIKeyAuth: true } });
+  }
+  /**
+   * Deletes a user from the project.
+   *
+   * Returns confirmation of project user deletion, or an error if the project is
+   * archived (archived projects have no users).
+   *
+   * @example
+   * ```ts
+   * const user =
+   *   await client.admin.organization.projects.users.delete(
+   *     'user_id',
+   *     { project_id: 'project_id' },
+   *   );
+   * ```
+   */
+  delete(userID, params, options) {
+    const { project_id } = params;
+    return this._client.delete(path`/organization/projects/${project_id}/users/${userID}`, {
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+};
+Users2.Roles = Roles5;
+
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/projects/projects.mjs
+var Projects = class extends APIResource {
+  constructor() {
+    super(...arguments);
+    this.users = new Users2(this._client);
+    this.serviceAccounts = new ServiceAccounts(this._client);
+    this.apiKeys = new APIKeys(this._client);
+    this.rateLimits = new RateLimits(this._client);
+    this.modelPermissions = new ModelPermissions(this._client);
+    this.hostedToolPermissions = new HostedToolPermissions(this._client);
+    this.groups = new Groups2(this._client);
+    this.roles = new Roles3(this._client);
+    this.dataRetention = new DataRetention2(this._client);
+    this.spendAlerts = new SpendAlerts2(this._client);
+    this.certificates = new Certificates2(this._client);
+  }
+  /**
+   * Create a new project in the organization. Projects can be created and archived,
+   * but cannot be deleted.
+   *
+   * @example
+   * ```ts
+   * const project =
+   *   await client.admin.organization.projects.create({
+   *     name: 'name',
+   *   });
+   * ```
+   */
+  create(body, options) {
+    return this._client.post("/organization/projects", {
+      body,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Retrieves a project.
+   *
+   * @example
+   * ```ts
+   * const project =
+   *   await client.admin.organization.projects.retrieve(
+   *     'project_id',
+   *   );
+   * ```
+   */
+  retrieve(projectID, options) {
+    return this._client.get(path`/organization/projects/${projectID}`, {
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Modifies a project in the organization.
+   *
+   * @example
+   * ```ts
+   * const project =
+   *   await client.admin.organization.projects.update(
+   *     'project_id',
+   *   );
+   * ```
+   */
+  update(projectID, body, options) {
+    return this._client.post(path`/organization/projects/${projectID}`, {
+      body,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Returns a list of projects.
+   *
+   * @example
+   * ```ts
+   * // Automatically fetches more pages as needed.
+   * for await (const project of client.admin.organization.projects.list()) {
+   *   // ...
+   * }
+   * ```
+   */
+  list(query = {}, options) {
+    return this._client.getAPIList("/organization/projects", ConversationCursorPage, {
+      query,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Archives a project in the organization. Archived projects cannot be used or
+   * updated.
+   *
+   * @example
+   * ```ts
+   * const project =
+   *   await client.admin.organization.projects.archive(
+   *     'project_id',
+   *   );
+   * ```
+   */
+  archive(projectID, options) {
+    return this._client.post(path`/organization/projects/${projectID}/archive`, {
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+};
+Projects.Users = Users2;
+Projects.ServiceAccounts = ServiceAccounts;
+Projects.APIKeys = APIKeys;
+Projects.RateLimits = RateLimits;
+Projects.ModelPermissions = ModelPermissions;
+Projects.HostedToolPermissions = HostedToolPermissions;
+Projects.Groups = Groups2;
+Projects.Roles = Roles3;
+Projects.DataRetention = DataRetention2;
+Projects.SpendAlerts = SpendAlerts2;
+Projects.Certificates = Certificates2;
+
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/users/roles.mjs
+var Roles6 = class extends APIResource {
+  /**
+   * Assigns an organization role to a user within the organization.
+   *
+   * @example
+   * ```ts
+   * const role =
+   *   await client.admin.organization.users.roles.create(
+   *     'user_id',
+   *     { role_id: 'role_id' },
+   *   );
+   * ```
+   */
+  create(userID, body, options) {
+    return this._client.post(path`/organization/users/${userID}/roles`, {
+      body,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Retrieves an organization role assigned to a user.
+   *
+   * @example
+   * ```ts
+   * const role =
+   *   await client.admin.organization.users.roles.retrieve(
+   *     'role_id',
+   *     { user_id: 'user_id' },
+   *   );
+   * ```
+   */
+  retrieve(roleID, params, options) {
+    const { user_id } = params;
+    return this._client.get(path`/organization/users/${user_id}/roles/${roleID}`, {
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Lists the organization roles assigned to a user within the organization.
+   *
+   * @example
+   * ```ts
+   * // Automatically fetches more pages as needed.
+   * for await (const roleListResponse of client.admin.organization.users.roles.list(
+   *   'user_id',
+   * )) {
+   *   // ...
+   * }
+   * ```
+   */
+  list(userID, query = {}, options) {
+    return this._client.getAPIList(path`/organization/users/${userID}/roles`, NextCursorPage, { query, ...options, __security: { adminAPIKeyAuth: true } });
+  }
+  /**
+   * Unassigns an organization role from a user within the organization.
+   *
+   * @example
+   * ```ts
+   * const role =
+   *   await client.admin.organization.users.roles.delete(
+   *     'role_id',
+   *     { user_id: 'user_id' },
+   *   );
+   * ```
+   */
+  delete(roleID, params, options) {
+    const { user_id } = params;
+    return this._client.delete(path`/organization/users/${user_id}/roles/${roleID}`, {
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+};
+
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/users/users.mjs
+var Users3 = class extends APIResource {
+  constructor() {
+    super(...arguments);
+    this.roles = new Roles6(this._client);
+  }
+  /**
+   * Retrieves a user by their identifier.
+   *
+   * @example
+   * ```ts
+   * const organizationUser =
+   *   await client.admin.organization.users.retrieve('user_id');
+   * ```
+   */
+  retrieve(userID, options) {
+    return this._client.get(path`/organization/users/${userID}`, {
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Modifies a user's role in the organization.
+   *
+   * @example
+   * ```ts
+   * const organizationUser =
+   *   await client.admin.organization.users.update('user_id');
+   * ```
+   */
+  update(userID, body, options) {
+    return this._client.post(path`/organization/users/${userID}`, {
+      body,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Lists all of the users in the organization.
+   *
+   * @example
+   * ```ts
+   * // Automatically fetches more pages as needed.
+   * for await (const organizationUser of client.admin.organization.users.list()) {
+   *   // ...
+   * }
+   * ```
+   */
+  list(query = {}, options) {
+    return this._client.getAPIList("/organization/users", ConversationCursorPage, {
+      query,
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+  /**
+   * Deletes a user from the organization.
+   *
+   * @example
+   * ```ts
+   * const user = await client.admin.organization.users.delete(
+   *   'user_id',
+   * );
+   * ```
+   */
+  delete(userID, options) {
+    return this._client.delete(path`/organization/users/${userID}`, {
+      ...options,
+      __security: { adminAPIKeyAuth: true }
+    });
+  }
+};
+Users3.Roles = Roles6;
+
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/organization.mjs
+var Organization2 = class extends APIResource {
+  constructor() {
+    super(...arguments);
+    this.auditLogs = new AuditLogs(this._client);
+    this.adminAPIKeys = new AdminAPIKeys(this._client);
+    this.usage = new Usage(this._client);
+    this.invites = new Invites(this._client);
+    this.users = new Users3(this._client);
+    this.groups = new Groups(this._client);
+    this.roles = new Roles(this._client);
+    this.dataRetention = new DataRetention(this._client);
+    this.spendAlerts = new SpendAlerts(this._client);
+    this.certificates = new Certificates(this._client);
+    this.projects = new Projects(this._client);
+  }
+};
+Organization2.AuditLogs = AuditLogs;
+Organization2.AdminAPIKeys = AdminAPIKeys;
+Organization2.Usage = Usage;
+Organization2.Invites = Invites;
+Organization2.Users = Users3;
+Organization2.Groups = Groups;
+Organization2.Roles = Roles;
+Organization2.DataRetention = DataRetention;
+Organization2.SpendAlerts = SpendAlerts;
+Organization2.Certificates = Certificates;
+Organization2.Projects = Projects;
+
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/admin.mjs
+var Admin = class extends APIResource {
+  constructor() {
+    super(...arguments);
+    this.organization = new Organization2(this._client);
+  }
+};
+Admin.Organization = Organization2;
+
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/headers.mjs
 var brand_privateNullableHeaders = /* @__PURE__ */ Symbol("brand.privateNullableHeaders");
 function* iterateHeaders(headers) {
   if (!headers)
@@ -95894,7 +99059,7 @@ var buildHeaders = (newHeaders) => {
   return { [brand_privateNullableHeaders]: true, values: targetHeaders, nulls: nullHeaders };
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/audio/speech.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/audio/speech.mjs
 var Speech = class extends APIResource {
   /**
    * Generates audio from the input text.
@@ -95905,8 +99070,8 @@ var Speech = class extends APIResource {
    * ```ts
    * const speech = await client.audio.speech.create({
    *   input: 'input',
-   *   model: 'string',
-   *   voice: 'string',
+   *   model: 'tts-1',
+   *   voice: 'alloy',
    * });
    *
    * const content = await speech.blob();
@@ -95918,31 +99083,33 @@ var Speech = class extends APIResource {
       body,
       ...options,
       headers: buildHeaders([{ Accept: "application/octet-stream" }, options?.headers]),
+      __security: { bearerAuth: true },
       __binaryResponse: true
     });
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/audio/transcriptions.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/audio/transcriptions.mjs
 var Transcriptions = class extends APIResource {
   create(body, options) {
     return this._client.post("/audio/transcriptions", multipartFormRequestOptions({
       body,
       ...options,
       stream: body.stream ?? false,
-      __metadata: { model: body.model }
+      __metadata: { model: body.model },
+      __security: { bearerAuth: true }
     }, this._client));
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/audio/translations.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/audio/translations.mjs
 var Translations = class extends APIResource {
   create(body, options) {
-    return this._client.post("/audio/translations", multipartFormRequestOptions({ body, ...options, __metadata: { model: body.model } }, this._client));
+    return this._client.post("/audio/translations", multipartFormRequestOptions({ body, ...options, __metadata: { model: body.model }, __security: { bearerAuth: true } }, this._client));
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/audio/audio.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/audio/audio.mjs
 var Audio = class extends APIResource {
   constructor() {
     super(...arguments);
@@ -95955,25 +99122,29 @@ Audio.Transcriptions = Transcriptions;
 Audio.Translations = Translations;
 Audio.Speech = Speech;
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/batches.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/batches.mjs
 var Batches = class extends APIResource {
   /**
    * Creates and executes a batch from an uploaded file of requests
    */
   create(body, options) {
-    return this._client.post("/batches", { body, ...options });
+    return this._client.post("/batches", { body, ...options, __security: { bearerAuth: true } });
   }
   /**
    * Retrieves a batch.
    */
   retrieve(batchID, options) {
-    return this._client.get(path`/batches/${batchID}`, options);
+    return this._client.get(path`/batches/${batchID}`, { ...options, __security: { bearerAuth: true } });
   }
   /**
    * List your organization's batches.
    */
   list(query = {}, options) {
-    return this._client.getAPIList("/batches", CursorPage, { query, ...options });
+    return this._client.getAPIList("/batches", CursorPage, {
+      query,
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
   /**
    * Cancels an in-progress batch. The batch will be in status `cancelling` for up to
@@ -95981,11 +99152,14 @@ var Batches = class extends APIResource {
    * (if any) available in the output file.
    */
   cancel(batchID, options) {
-    return this._client.post(path`/batches/${batchID}/cancel`, options);
+    return this._client.post(path`/batches/${batchID}/cancel`, {
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/beta/assistants.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/beta/assistants.mjs
 var Assistants = class extends APIResource {
   /**
    * Create an assistant with a model and instructions.
@@ -95996,7 +99170,8 @@ var Assistants = class extends APIResource {
     return this._client.post("/assistants", {
       body,
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -96007,7 +99182,8 @@ var Assistants = class extends APIResource {
   retrieve(assistantID, options) {
     return this._client.get(path`/assistants/${assistantID}`, {
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -96019,7 +99195,8 @@ var Assistants = class extends APIResource {
     return this._client.post(path`/assistants/${assistantID}`, {
       body,
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -96031,7 +99208,8 @@ var Assistants = class extends APIResource {
     return this._client.getAPIList("/assistants", CursorPage, {
       query,
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -96042,12 +99220,13 @@ var Assistants = class extends APIResource {
   delete(assistantID, options) {
     return this._client.delete(path`/assistants/${assistantID}`, {
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/beta/realtime/sessions.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/beta/realtime/sessions.mjs
 var Sessions = class extends APIResource {
   /**
    * Create an ephemeral API token for use in client-side applications with the
@@ -96068,12 +99247,13 @@ var Sessions = class extends APIResource {
     return this._client.post("/realtime/sessions", {
       body,
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/beta/realtime/transcription-sessions.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/beta/realtime/transcription-sessions.mjs
 var TranscriptionSessions = class extends APIResource {
   /**
    * Create an ephemeral API token for use in client-side applications with the
@@ -96094,12 +99274,13 @@ var TranscriptionSessions = class extends APIResource {
     return this._client.post("/realtime/transcription_sessions", {
       body,
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/beta/realtime/realtime.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/beta/realtime/realtime.mjs
 var Realtime = class extends APIResource {
   constructor() {
     super(...arguments);
@@ -96110,7 +99291,7 @@ var Realtime = class extends APIResource {
 Realtime.Sessions = Sessions;
 Realtime.TranscriptionSessions = TranscriptionSessions;
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/beta/chatkit/sessions.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/beta/chatkit/sessions.mjs
 var Sessions2 = class extends APIResource {
   /**
    * Create a ChatKit session.
@@ -96128,7 +99309,8 @@ var Sessions2 = class extends APIResource {
     return this._client.post("/chatkit/sessions", {
       body,
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "chatkit_beta=v1" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "chatkit_beta=v1" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -96145,12 +99327,13 @@ var Sessions2 = class extends APIResource {
   cancel(sessionID, options) {
     return this._client.post(path`/chatkit/sessions/${sessionID}/cancel`, {
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "chatkit_beta=v1" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "chatkit_beta=v1" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/beta/chatkit/threads.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/beta/chatkit/threads.mjs
 var Threads = class extends APIResource {
   /**
    * Retrieve a ChatKit thread by its identifier.
@@ -96164,7 +99347,8 @@ var Threads = class extends APIResource {
   retrieve(threadID, options) {
     return this._client.get(path`/chatkit/threads/${threadID}`, {
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "chatkit_beta=v1" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "chatkit_beta=v1" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -96182,7 +99366,8 @@ var Threads = class extends APIResource {
     return this._client.getAPIList("/chatkit/threads", ConversationCursorPage, {
       query,
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "chatkit_beta=v1" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "chatkit_beta=v1" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -96198,7 +99383,8 @@ var Threads = class extends APIResource {
   delete(threadID, options) {
     return this._client.delete(path`/chatkit/threads/${threadID}`, {
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "chatkit_beta=v1" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "chatkit_beta=v1" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -96215,11 +99401,16 @@ var Threads = class extends APIResource {
    * ```
    */
   listItems(threadID, query = {}, options) {
-    return this._client.getAPIList(path`/chatkit/threads/${threadID}/items`, ConversationCursorPage, { query, ...options, headers: buildHeaders([{ "OpenAI-Beta": "chatkit_beta=v1" }, options?.headers]) });
+    return this._client.getAPIList(path`/chatkit/threads/${threadID}/items`, ConversationCursorPage, {
+      query,
+      ...options,
+      headers: buildHeaders([{ "OpenAI-Beta": "chatkit_beta=v1" }, options?.headers]),
+      __security: { bearerAuth: true }
+    });
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/beta/chatkit/chatkit.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/beta/chatkit/chatkit.mjs
 var ChatKit = class extends APIResource {
   constructor() {
     super(...arguments);
@@ -96230,7 +99421,7 @@ var ChatKit = class extends APIResource {
 ChatKit.Sessions = Sessions2;
 ChatKit.Threads = Threads;
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/beta/threads/messages.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/beta/threads/messages.mjs
 var Messages2 = class extends APIResource {
   /**
    * Create a message.
@@ -96241,7 +99432,8 @@ var Messages2 = class extends APIResource {
     return this._client.post(path`/threads/${threadID}/messages`, {
       body,
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -96253,7 +99445,8 @@ var Messages2 = class extends APIResource {
     const { thread_id } = params;
     return this._client.get(path`/threads/${thread_id}/messages/${messageID}`, {
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -96266,7 +99459,8 @@ var Messages2 = class extends APIResource {
     return this._client.post(path`/threads/${thread_id}/messages/${messageID}`, {
       body,
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -96278,7 +99472,8 @@ var Messages2 = class extends APIResource {
     return this._client.getAPIList(path`/threads/${threadID}/messages`, CursorPage, {
       query,
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -96290,12 +99485,13 @@ var Messages2 = class extends APIResource {
     const { thread_id } = params;
     return this._client.delete(path`/threads/${thread_id}/messages/${messageID}`, {
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/beta/threads/runs/steps.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/beta/threads/runs/steps.mjs
 var Steps = class extends APIResource {
   /**
    * Retrieves a run step.
@@ -96307,7 +99503,8 @@ var Steps = class extends APIResource {
     return this._client.get(path`/threads/${thread_id}/runs/${run_id}/steps/${stepID}`, {
       query,
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -96320,12 +99517,13 @@ var Steps = class extends APIResource {
     return this._client.getAPIList(path`/threads/${thread_id}/runs/${runID}/steps`, CursorPage, {
       query,
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/internal/utils/base64.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/utils/base64.mjs
 var toFloat32Array = (base64Str) => {
   if (typeof Buffer !== "undefined") {
     const buf = Buffer.from(base64Str, "base64");
@@ -96341,18 +99539,18 @@ var toFloat32Array = (base64Str) => {
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/internal/utils/env.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/utils/env.mjs
 var readEnv = (env) => {
   if (typeof globalThis.process !== "undefined") {
-    return globalThis.process.env?.[env]?.trim() ?? void 0;
+    return globalThis.process.env?.[env]?.trim() || void 0;
   }
   if (typeof globalThis.Deno !== "undefined") {
-    return globalThis.Deno.env?.get?.(env)?.trim();
+    return globalThis.Deno.env?.get?.(env)?.trim() || void 0;
   }
   return void 0;
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/lib/AssistantStream.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/lib/AssistantStream.mjs
 var _AssistantStream_instances;
 var _a;
 var _AssistantStream_events;
@@ -96891,7 +100089,7 @@ _a = AssistantStream, _AssistantStream_addEvent = function _AssistantStream_addE
 function assertNever3(_x) {
 }
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/beta/threads/runs/runs.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/beta/threads/runs/runs.mjs
 var Runs = class extends APIResource {
   constructor() {
     super(...arguments);
@@ -96905,7 +100103,8 @@ var Runs = class extends APIResource {
       ...options,
       headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
       stream: params.stream ?? false,
-      __synthesizeEventData: true
+      __synthesizeEventData: true,
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -96917,7 +100116,8 @@ var Runs = class extends APIResource {
     const { thread_id } = params;
     return this._client.get(path`/threads/${thread_id}/runs/${runID}`, {
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -96930,7 +100130,8 @@ var Runs = class extends APIResource {
     return this._client.post(path`/threads/${thread_id}/runs/${runID}`, {
       body,
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -96942,7 +100143,8 @@ var Runs = class extends APIResource {
     return this._client.getAPIList(path`/threads/${threadID}/runs`, CursorPage, {
       query,
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -96954,7 +100156,8 @@ var Runs = class extends APIResource {
     const { thread_id } = params;
     return this._client.post(path`/threads/${thread_id}/runs/${runID}/cancel`, {
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -97035,7 +100238,8 @@ var Runs = class extends APIResource {
       ...options,
       headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
       stream: params.stream ?? false,
-      __synthesizeEventData: true
+      __synthesizeEventData: true,
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -97058,7 +100262,7 @@ var Runs = class extends APIResource {
 };
 Runs.Steps = Steps;
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/beta/threads/threads.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/beta/threads/threads.mjs
 var Threads2 = class extends APIResource {
   constructor() {
     super(...arguments);
@@ -97074,7 +100278,8 @@ var Threads2 = class extends APIResource {
     return this._client.post("/threads", {
       body,
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -97085,7 +100290,8 @@ var Threads2 = class extends APIResource {
   retrieve(threadID, options) {
     return this._client.get(path`/threads/${threadID}`, {
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -97097,7 +100303,8 @@ var Threads2 = class extends APIResource {
     return this._client.post(path`/threads/${threadID}`, {
       body,
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -97108,7 +100315,8 @@ var Threads2 = class extends APIResource {
   delete(threadID, options) {
     return this._client.delete(path`/threads/${threadID}`, {
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
   createAndRun(body, options) {
@@ -97117,7 +100325,8 @@ var Threads2 = class extends APIResource {
       ...options,
       headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
       stream: body.stream ?? false,
-      __synthesizeEventData: true
+      __synthesizeEventData: true,
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -97139,7 +100348,7 @@ var Threads2 = class extends APIResource {
 Threads2.Runs = Runs;
 Threads2.Messages = Messages2;
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/beta/beta.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/beta/beta.mjs
 var Beta = class extends APIResource {
   constructor() {
     super(...arguments);
@@ -97154,14 +100363,19 @@ Beta.ChatKit = ChatKit;
 Beta.Assistants = Assistants;
 Beta.Threads = Threads2;
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/completions.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/completions.mjs
 var Completions2 = class extends APIResource {
   create(body, options) {
-    return this._client.post("/completions", { body, ...options, stream: body.stream ?? false });
+    return this._client.post("/completions", {
+      body,
+      ...options,
+      stream: body.stream ?? false,
+      __security: { bearerAuth: true }
+    });
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/containers/files/content.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/containers/files/content.mjs
 var Content = class extends APIResource {
   /**
    * Retrieve Container File Content
@@ -97171,12 +100385,13 @@ var Content = class extends APIResource {
     return this._client.get(path`/containers/${container_id}/files/${fileID}/content`, {
       ...options,
       headers: buildHeaders([{ Accept: "application/binary" }, options?.headers]),
+      __security: { bearerAuth: true },
       __binaryResponse: true
     });
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/containers/files/files.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/containers/files/files.mjs
 var Files = class extends APIResource {
   constructor() {
     super(...arguments);
@@ -97189,14 +100404,17 @@ var Files = class extends APIResource {
    * a JSON request with a file ID.
    */
   create(containerID, body, options) {
-    return this._client.post(path`/containers/${containerID}/files`, maybeMultipartFormRequestOptions({ body, ...options }, this._client));
+    return this._client.post(path`/containers/${containerID}/files`, maybeMultipartFormRequestOptions({ body, ...options, __security: { bearerAuth: true } }, this._client));
   }
   /**
    * Retrieve Container File
    */
   retrieve(fileID, params, options) {
     const { container_id } = params;
-    return this._client.get(path`/containers/${container_id}/files/${fileID}`, options);
+    return this._client.get(path`/containers/${container_id}/files/${fileID}`, {
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
   /**
    * List Container files
@@ -97204,7 +100422,8 @@ var Files = class extends APIResource {
   list(containerID, query = {}, options) {
     return this._client.getAPIList(path`/containers/${containerID}/files`, CursorPage, {
       query,
-      ...options
+      ...options,
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -97214,13 +100433,14 @@ var Files = class extends APIResource {
     const { container_id } = params;
     return this._client.delete(path`/containers/${container_id}/files/${fileID}`, {
       ...options,
-      headers: buildHeaders([{ Accept: "*/*" }, options?.headers])
+      headers: buildHeaders([{ Accept: "*/*" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
 };
 Files.Content = Content;
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/containers/containers.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/containers/containers.mjs
 var Containers = class extends APIResource {
   constructor() {
     super(...arguments);
@@ -97230,19 +100450,26 @@ var Containers = class extends APIResource {
    * Create Container
    */
   create(body, options) {
-    return this._client.post("/containers", { body, ...options });
+    return this._client.post("/containers", { body, ...options, __security: { bearerAuth: true } });
   }
   /**
    * Retrieve Container
    */
   retrieve(containerID, options) {
-    return this._client.get(path`/containers/${containerID}`, options);
+    return this._client.get(path`/containers/${containerID}`, {
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
   /**
    * List Containers
    */
   list(query = {}, options) {
-    return this._client.getAPIList("/containers", CursorPage, { query, ...options });
+    return this._client.getAPIList("/containers", CursorPage, {
+      query,
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
   /**
    * Delete Container
@@ -97250,13 +100477,14 @@ var Containers = class extends APIResource {
   delete(containerID, options) {
     return this._client.delete(path`/containers/${containerID}`, {
       ...options,
-      headers: buildHeaders([{ Accept: "*/*" }, options?.headers])
+      headers: buildHeaders([{ Accept: "*/*" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
 };
 Containers.Files = Files;
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/conversations/items.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/conversations/items.mjs
 var Items = class extends APIResource {
   /**
    * Create items in a conversation with the given ID.
@@ -97266,7 +100494,8 @@ var Items = class extends APIResource {
     return this._client.post(path`/conversations/${conversationID}/items`, {
       query: { include },
       body,
-      ...options
+      ...options,
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -97274,24 +100503,31 @@ var Items = class extends APIResource {
    */
   retrieve(itemID, params, options) {
     const { conversation_id, ...query } = params;
-    return this._client.get(path`/conversations/${conversation_id}/items/${itemID}`, { query, ...options });
+    return this._client.get(path`/conversations/${conversation_id}/items/${itemID}`, {
+      query,
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
   /**
    * List all items for a conversation with the given ID.
    */
   list(conversationID, query = {}, options) {
-    return this._client.getAPIList(path`/conversations/${conversationID}/items`, ConversationCursorPage, { query, ...options });
+    return this._client.getAPIList(path`/conversations/${conversationID}/items`, ConversationCursorPage, { query, ...options, __security: { bearerAuth: true } });
   }
   /**
    * Delete an item from a conversation with the given IDs.
    */
   delete(itemID, params, options) {
     const { conversation_id } = params;
-    return this._client.delete(path`/conversations/${conversation_id}/items/${itemID}`, options);
+    return this._client.delete(path`/conversations/${conversation_id}/items/${itemID}`, {
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/conversations/conversations.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/conversations/conversations.mjs
 var Conversations = class extends APIResource {
   constructor() {
     super(...arguments);
@@ -97301,30 +100537,40 @@ var Conversations = class extends APIResource {
    * Create a conversation.
    */
   create(body = {}, options) {
-    return this._client.post("/conversations", { body, ...options });
+    return this._client.post("/conversations", { body, ...options, __security: { bearerAuth: true } });
   }
   /**
    * Get a conversation
    */
   retrieve(conversationID, options) {
-    return this._client.get(path`/conversations/${conversationID}`, options);
+    return this._client.get(path`/conversations/${conversationID}`, {
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
   /**
    * Update a conversation
    */
   update(conversationID, body, options) {
-    return this._client.post(path`/conversations/${conversationID}`, { body, ...options });
+    return this._client.post(path`/conversations/${conversationID}`, {
+      body,
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
   /**
    * Delete a conversation. Items in the conversation will not be deleted.
    */
   delete(conversationID, options) {
-    return this._client.delete(path`/conversations/${conversationID}`, options);
+    return this._client.delete(path`/conversations/${conversationID}`, {
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
 };
 Conversations.Items = Items;
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/embeddings.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/embeddings.mjs
 var Embeddings = class extends APIResource {
   /**
    * Creates an embedding vector representing the input text.
@@ -97349,7 +100595,8 @@ var Embeddings = class extends APIResource {
         ...body,
         encoding_format
       },
-      ...options
+      ...options,
+      __security: { bearerAuth: true }
     });
     if (hasUserProvidedEncodingFormat) {
       return response;
@@ -97367,25 +100614,28 @@ var Embeddings = class extends APIResource {
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/evals/runs/output-items.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/evals/runs/output-items.mjs
 var OutputItems = class extends APIResource {
   /**
    * Get an evaluation run output item by ID.
    */
   retrieve(outputItemID, params, options) {
     const { eval_id, run_id } = params;
-    return this._client.get(path`/evals/${eval_id}/runs/${run_id}/output_items/${outputItemID}`, options);
+    return this._client.get(path`/evals/${eval_id}/runs/${run_id}/output_items/${outputItemID}`, {
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
   /**
    * Get a list of output items for an evaluation run.
    */
   list(runID, params, options) {
     const { eval_id, ...query } = params;
-    return this._client.getAPIList(path`/evals/${eval_id}/runs/${runID}/output_items`, CursorPage, { query, ...options });
+    return this._client.getAPIList(path`/evals/${eval_id}/runs/${runID}/output_items`, CursorPage, { query, ...options, __security: { bearerAuth: true } });
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/evals/runs/runs.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/evals/runs/runs.mjs
 var Runs2 = class extends APIResource {
   constructor() {
     super(...arguments);
@@ -97397,14 +100647,21 @@ var Runs2 = class extends APIResource {
    * schema specified in the config of the evaluation.
    */
   create(evalID, body, options) {
-    return this._client.post(path`/evals/${evalID}/runs`, { body, ...options });
+    return this._client.post(path`/evals/${evalID}/runs`, {
+      body,
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
   /**
    * Get an evaluation run by ID.
    */
   retrieve(runID, params, options) {
     const { eval_id } = params;
-    return this._client.get(path`/evals/${eval_id}/runs/${runID}`, options);
+    return this._client.get(path`/evals/${eval_id}/runs/${runID}`, {
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
   /**
    * Get a list of runs for an evaluation.
@@ -97412,7 +100669,8 @@ var Runs2 = class extends APIResource {
   list(evalID, query = {}, options) {
     return this._client.getAPIList(path`/evals/${evalID}/runs`, CursorPage, {
       query,
-      ...options
+      ...options,
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -97420,19 +100678,25 @@ var Runs2 = class extends APIResource {
    */
   delete(runID, params, options) {
     const { eval_id } = params;
-    return this._client.delete(path`/evals/${eval_id}/runs/${runID}`, options);
+    return this._client.delete(path`/evals/${eval_id}/runs/${runID}`, {
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
   /**
    * Cancel an ongoing evaluation run.
    */
   cancel(runID, params, options) {
     const { eval_id } = params;
-    return this._client.post(path`/evals/${eval_id}/runs/${runID}`, options);
+    return this._client.post(path`/evals/${eval_id}/runs/${runID}`, {
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
 };
 Runs2.OutputItems = OutputItems;
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/evals/evals.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/evals/evals.mjs
 var Evals = class extends APIResource {
   constructor() {
     super(...arguments);
@@ -97447,41 +100711,46 @@ var Evals = class extends APIResource {
    * the [Evals guide](https://platform.openai.com/docs/guides/evals).
    */
   create(body, options) {
-    return this._client.post("/evals", { body, ...options });
+    return this._client.post("/evals", { body, ...options, __security: { bearerAuth: true } });
   }
   /**
    * Get an evaluation by ID.
    */
   retrieve(evalID, options) {
-    return this._client.get(path`/evals/${evalID}`, options);
+    return this._client.get(path`/evals/${evalID}`, { ...options, __security: { bearerAuth: true } });
   }
   /**
    * Update certain properties of an evaluation.
    */
   update(evalID, body, options) {
-    return this._client.post(path`/evals/${evalID}`, { body, ...options });
+    return this._client.post(path`/evals/${evalID}`, { body, ...options, __security: { bearerAuth: true } });
   }
   /**
    * List evaluations for a project.
    */
   list(query = {}, options) {
-    return this._client.getAPIList("/evals", CursorPage, { query, ...options });
+    return this._client.getAPIList("/evals", CursorPage, {
+      query,
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
   /**
    * Delete an evaluation.
    */
   delete(evalID, options) {
-    return this._client.delete(path`/evals/${evalID}`, options);
+    return this._client.delete(path`/evals/${evalID}`, { ...options, __security: { bearerAuth: true } });
   }
 };
 Evals.Runs = Runs2;
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/files.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/files.mjs
 var Files2 = class extends APIResource {
   /**
    * Upload a file that can be used across various endpoints. Individual files can be
    * up to 512 MB, and each project can store up to 2.5 TB of files in total. There
-   * is no organization-wide storage limit.
+   * is no organization-wide storage limit. Uploads to this endpoint are rate-limited
+   * to 1,000 requests per minute per authenticated user.
    *
    * - The Assistants API supports files up to 2 million tokens and of specific file
    *   types. See the
@@ -97496,30 +100765,40 @@ var Files2 = class extends APIResource {
    * - The Batch API only supports `.jsonl` files up to 200 MB in size. The input
    *   also has a specific required
    *   [format](https://platform.openai.com/docs/api-reference/batch/request-input).
+   * - For Retrieval or `file_search` ingestion, upload files here first. If you need
+   *   to attach multiple uploaded files to the same vector store, use
+   *   [`/vector_stores/{vector_store_id}/file_batches`](https://platform.openai.com/docs/api-reference/vector-stores-file-batches/createBatch)
+   *   instead of attaching them one by one. Vector store attachment has separate
+   *   limits from file upload, including 2,000 attached files per minute per
+   *   organization.
    *
    * Please [contact us](https://help.openai.com/) if you need to increase these
    * storage limits.
    */
   create(body, options) {
-    return this._client.post("/files", multipartFormRequestOptions({ body, ...options }, this._client));
+    return this._client.post("/files", multipartFormRequestOptions({ body, ...options, __security: { bearerAuth: true } }, this._client));
   }
   /**
    * Returns information about a specific file.
    */
   retrieve(fileID, options) {
-    return this._client.get(path`/files/${fileID}`, options);
+    return this._client.get(path`/files/${fileID}`, { ...options, __security: { bearerAuth: true } });
   }
   /**
    * Returns a list of files.
    */
   list(query = {}, options) {
-    return this._client.getAPIList("/files", CursorPage, { query, ...options });
+    return this._client.getAPIList("/files", CursorPage, {
+      query,
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
   /**
    * Delete a file and remove it from all vector stores.
    */
   delete(fileID, options) {
-    return this._client.delete(path`/files/${fileID}`, options);
+    return this._client.delete(path`/files/${fileID}`, { ...options, __security: { bearerAuth: true } });
   }
   /**
    * Returns the contents of the specified file.
@@ -97528,6 +100807,7 @@ var Files2 = class extends APIResource {
     return this._client.get(path`/files/${fileID}/content`, {
       ...options,
       headers: buildHeaders([{ Accept: "application/binary" }, options?.headers]),
+      __security: { bearerAuth: true },
       __binaryResponse: true
     });
   }
@@ -97551,11 +100831,11 @@ var Files2 = class extends APIResource {
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/fine-tuning/methods.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/fine-tuning/methods.mjs
 var Methods = class extends APIResource {
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/fine-tuning/alpha/graders.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/fine-tuning/alpha/graders.mjs
 var Graders = class extends APIResource {
   /**
    * Run a grader.
@@ -97575,7 +100855,11 @@ var Graders = class extends APIResource {
    * ```
    */
   run(body, options) {
-    return this._client.post("/fine_tuning/alpha/graders/run", { body, ...options });
+    return this._client.post("/fine_tuning/alpha/graders/run", {
+      body,
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
   /**
    * Validate a grader.
@@ -97595,11 +100879,15 @@ var Graders = class extends APIResource {
    * ```
    */
   validate(body, options) {
-    return this._client.post("/fine_tuning/alpha/graders/validate", { body, ...options });
+    return this._client.post("/fine_tuning/alpha/graders/validate", {
+      body,
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/fine-tuning/alpha/alpha.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/fine-tuning/alpha/alpha.mjs
 var Alpha = class extends APIResource {
   constructor() {
     super(...arguments);
@@ -97608,7 +100896,7 @@ var Alpha = class extends APIResource {
 };
 Alpha.Graders = Graders;
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/fine-tuning/checkpoints/permissions.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/fine-tuning/checkpoints/permissions.mjs
 var Permissions = class extends APIResource {
   /**
    * **NOTE:** Calling this endpoint requires an [admin API key](../admin-api-keys).
@@ -97628,7 +100916,7 @@ var Permissions = class extends APIResource {
    * ```
    */
   create(fineTunedModelCheckpoint, body, options) {
-    return this._client.getAPIList(path`/fine_tuning/checkpoints/${fineTunedModelCheckpoint}/permissions`, Page, { body, method: "post", ...options });
+    return this._client.getAPIList(path`/fine_tuning/checkpoints/${fineTunedModelCheckpoint}/permissions`, Page, { body, method: "post", ...options, __security: { adminAPIKeyAuth: true } });
   }
   /**
    * **NOTE:** This endpoint requires an [admin API key](../admin-api-keys).
@@ -97641,7 +100929,8 @@ var Permissions = class extends APIResource {
   retrieve(fineTunedModelCheckpoint, query = {}, options) {
     return this._client.get(path`/fine_tuning/checkpoints/${fineTunedModelCheckpoint}/permissions`, {
       query,
-      ...options
+      ...options,
+      __security: { adminAPIKeyAuth: true }
     });
   }
   /**
@@ -97661,7 +100950,7 @@ var Permissions = class extends APIResource {
    * ```
    */
   list(fineTunedModelCheckpoint, query = {}, options) {
-    return this._client.getAPIList(path`/fine_tuning/checkpoints/${fineTunedModelCheckpoint}/permissions`, ConversationCursorPage, { query, ...options });
+    return this._client.getAPIList(path`/fine_tuning/checkpoints/${fineTunedModelCheckpoint}/permissions`, ConversationCursorPage, { query, ...options, __security: { adminAPIKeyAuth: true } });
   }
   /**
    * **NOTE:** This endpoint requires an [admin API key](../admin-api-keys).
@@ -97683,11 +100972,11 @@ var Permissions = class extends APIResource {
    */
   delete(permissionID, params, options) {
     const { fine_tuned_model_checkpoint } = params;
-    return this._client.delete(path`/fine_tuning/checkpoints/${fine_tuned_model_checkpoint}/permissions/${permissionID}`, options);
+    return this._client.delete(path`/fine_tuning/checkpoints/${fine_tuned_model_checkpoint}/permissions/${permissionID}`, { ...options, __security: { adminAPIKeyAuth: true } });
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/fine-tuning/checkpoints/checkpoints.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/fine-tuning/checkpoints/checkpoints.mjs
 var Checkpoints = class extends APIResource {
   constructor() {
     super(...arguments);
@@ -97696,7 +100985,7 @@ var Checkpoints = class extends APIResource {
 };
 Checkpoints.Permissions = Permissions;
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/fine-tuning/jobs/checkpoints.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/fine-tuning/jobs/checkpoints.mjs
 var Checkpoints2 = class extends APIResource {
   /**
    * List checkpoints for a fine-tuning job.
@@ -97712,11 +101001,11 @@ var Checkpoints2 = class extends APIResource {
    * ```
    */
   list(fineTuningJobID, query = {}, options) {
-    return this._client.getAPIList(path`/fine_tuning/jobs/${fineTuningJobID}/checkpoints`, CursorPage, { query, ...options });
+    return this._client.getAPIList(path`/fine_tuning/jobs/${fineTuningJobID}/checkpoints`, CursorPage, { query, ...options, __security: { bearerAuth: true } });
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/fine-tuning/jobs/jobs.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/fine-tuning/jobs/jobs.mjs
 var Jobs = class extends APIResource {
   constructor() {
     super(...arguments);
@@ -97740,7 +101029,7 @@ var Jobs = class extends APIResource {
    * ```
    */
   create(body, options) {
-    return this._client.post("/fine_tuning/jobs", { body, ...options });
+    return this._client.post("/fine_tuning/jobs", { body, ...options, __security: { bearerAuth: true } });
   }
   /**
    * Get info about a fine-tuning job.
@@ -97755,7 +101044,10 @@ var Jobs = class extends APIResource {
    * ```
    */
   retrieve(fineTuningJobID, options) {
-    return this._client.get(path`/fine_tuning/jobs/${fineTuningJobID}`, options);
+    return this._client.get(path`/fine_tuning/jobs/${fineTuningJobID}`, {
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
   /**
    * List your organization's fine-tuning jobs
@@ -97769,7 +101061,11 @@ var Jobs = class extends APIResource {
    * ```
    */
   list(query = {}, options) {
-    return this._client.getAPIList("/fine_tuning/jobs", CursorPage, { query, ...options });
+    return this._client.getAPIList("/fine_tuning/jobs", CursorPage, {
+      query,
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
   /**
    * Immediately cancel a fine-tune job.
@@ -97782,7 +101078,10 @@ var Jobs = class extends APIResource {
    * ```
    */
   cancel(fineTuningJobID, options) {
-    return this._client.post(path`/fine_tuning/jobs/${fineTuningJobID}/cancel`, options);
+    return this._client.post(path`/fine_tuning/jobs/${fineTuningJobID}/cancel`, {
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
   /**
    * Get status updates for a fine-tuning job.
@@ -97798,7 +101097,7 @@ var Jobs = class extends APIResource {
    * ```
    */
   listEvents(fineTuningJobID, query = {}, options) {
-    return this._client.getAPIList(path`/fine_tuning/jobs/${fineTuningJobID}/events`, CursorPage, { query, ...options });
+    return this._client.getAPIList(path`/fine_tuning/jobs/${fineTuningJobID}/events`, CursorPage, { query, ...options, __security: { bearerAuth: true } });
   }
   /**
    * Pause a fine-tune job.
@@ -97811,7 +101110,10 @@ var Jobs = class extends APIResource {
    * ```
    */
   pause(fineTuningJobID, options) {
-    return this._client.post(path`/fine_tuning/jobs/${fineTuningJobID}/pause`, options);
+    return this._client.post(path`/fine_tuning/jobs/${fineTuningJobID}/pause`, {
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
   /**
    * Resume a fine-tune job.
@@ -97824,12 +101126,15 @@ var Jobs = class extends APIResource {
    * ```
    */
   resume(fineTuningJobID, options) {
-    return this._client.post(path`/fine_tuning/jobs/${fineTuningJobID}/resume`, options);
+    return this._client.post(path`/fine_tuning/jobs/${fineTuningJobID}/resume`, {
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
 };
 Jobs.Checkpoints = Checkpoints2;
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/fine-tuning/fine-tuning.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/fine-tuning/fine-tuning.mjs
 var FineTuning = class extends APIResource {
   constructor() {
     super(...arguments);
@@ -97844,11 +101149,11 @@ FineTuning.Jobs = Jobs;
 FineTuning.Checkpoints = Checkpoints;
 FineTuning.Alpha = Alpha;
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/graders/grader-models.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/graders/grader-models.mjs
 var GraderModels = class extends APIResource {
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/graders/graders.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/graders/graders.mjs
 var Graders2 = class extends APIResource {
   constructor() {
     super(...arguments);
@@ -97857,7 +101162,7 @@ var Graders2 = class extends APIResource {
 };
 Graders2.GraderModels = GraderModels;
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/images.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/images.mjs
 var Images = class extends APIResource {
   /**
    * Creates a variation of a given image. This endpoint only supports `dall-e-2`.
@@ -97870,53 +101175,58 @@ var Images = class extends APIResource {
    * ```
    */
   createVariation(body, options) {
-    return this._client.post("/images/variations", multipartFormRequestOptions({ body, ...options }, this._client));
+    return this._client.post("/images/variations", multipartFormRequestOptions({ body, ...options, __security: { bearerAuth: true } }, this._client));
   }
   edit(body, options) {
-    return this._client.post("/images/edits", multipartFormRequestOptions({ body, ...options, stream: body.stream ?? false }, this._client));
+    return this._client.post("/images/edits", multipartFormRequestOptions({ body, ...options, stream: body.stream ?? false, __security: { bearerAuth: true } }, this._client));
   }
   generate(body, options) {
-    return this._client.post("/images/generations", { body, ...options, stream: body.stream ?? false });
+    return this._client.post("/images/generations", {
+      body,
+      ...options,
+      stream: body.stream ?? false,
+      __security: { bearerAuth: true }
+    });
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/models.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/models.mjs
 var Models = class extends APIResource {
   /**
    * Retrieves a model instance, providing basic information about the model such as
    * the owner and permissioning.
    */
   retrieve(model, options) {
-    return this._client.get(path`/models/${model}`, options);
+    return this._client.get(path`/models/${model}`, { ...options, __security: { bearerAuth: true } });
   }
   /**
    * Lists the currently available models, and provides basic information about each
    * one such as the owner and availability.
    */
   list(options) {
-    return this._client.getAPIList("/models", Page, options);
+    return this._client.getAPIList("/models", Page, { ...options, __security: { bearerAuth: true } });
   }
   /**
    * Delete a fine-tuned model. You must have the Owner role in your organization to
    * delete a model.
    */
   delete(model, options) {
-    return this._client.delete(path`/models/${model}`, options);
+    return this._client.delete(path`/models/${model}`, { ...options, __security: { bearerAuth: true } });
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/moderations.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/moderations.mjs
 var Moderations = class extends APIResource {
   /**
    * Classifies if text and/or image inputs are potentially harmful. Learn more in
    * the [moderation guide](https://platform.openai.com/docs/guides/moderation).
    */
   create(body, options) {
-    return this._client.post("/moderations", { body, ...options });
+    return this._client.post("/moderations", { body, ...options, __security: { bearerAuth: true } });
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/realtime/calls.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/realtime/calls.mjs
 var Calls = class extends APIResource {
   /**
    * Accept an incoming SIP call and configure the realtime session that will handle
@@ -97933,7 +101243,8 @@ var Calls = class extends APIResource {
     return this._client.post(path`/realtime/calls/${callID}/accept`, {
       body,
       ...options,
-      headers: buildHeaders([{ Accept: "*/*" }, options?.headers])
+      headers: buildHeaders([{ Accept: "*/*" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -97947,7 +101258,8 @@ var Calls = class extends APIResource {
   hangup(callID, options) {
     return this._client.post(path`/realtime/calls/${callID}/hangup`, {
       ...options,
-      headers: buildHeaders([{ Accept: "*/*" }, options?.headers])
+      headers: buildHeaders([{ Accept: "*/*" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -97964,7 +101276,8 @@ var Calls = class extends APIResource {
     return this._client.post(path`/realtime/calls/${callID}/refer`, {
       body,
       ...options,
-      headers: buildHeaders([{ Accept: "*/*" }, options?.headers])
+      headers: buildHeaders([{ Accept: "*/*" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -97979,12 +101292,13 @@ var Calls = class extends APIResource {
     return this._client.post(path`/realtime/calls/${callID}/reject`, {
       body,
       ...options,
-      headers: buildHeaders([{ Accept: "*/*" }, options?.headers])
+      headers: buildHeaders([{ Accept: "*/*" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/realtime/client-secrets.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/realtime/client-secrets.mjs
 var ClientSecrets = class extends APIResource {
   /**
    * Create a Realtime client secret with an associated session configuration.
@@ -98010,11 +101324,15 @@ var ClientSecrets = class extends APIResource {
    * ```
    */
   create(body, options) {
-    return this._client.post("/realtime/client_secrets", { body, ...options });
+    return this._client.post("/realtime/client_secrets", {
+      body,
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/realtime/realtime.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/realtime/realtime.mjs
 var Realtime2 = class extends APIResource {
   constructor() {
     super(...arguments);
@@ -98025,7 +101343,7 @@ var Realtime2 = class extends APIResource {
 Realtime2.ClientSecrets = ClientSecrets;
 Realtime2.Calls = Calls;
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/lib/ResponsesParser.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/lib/ResponsesParser.mjs
 function maybeParseResponse(response, params) {
   if (!params || !hasAutoParseableInput2(params)) {
     return {
@@ -98146,7 +101464,7 @@ function addOutputText(rsp) {
   rsp.output_text = texts.join("");
 }
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/lib/responses/ResponseStream.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/lib/responses/ResponseStream.mjs
 var _ResponseStream_instances;
 var _ResponseStream_params;
 var _ResponseStream_currentResponseSnapshot;
@@ -98408,7 +101726,7 @@ function finalizeResponse(snapshot, params) {
   return maybeParseResponse(snapshot, params);
 }
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/responses/input-items.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/responses/input-items.mjs
 var InputItems = class extends APIResource {
   /**
    * Returns a list of input items for a given response.
@@ -98424,11 +101742,11 @@ var InputItems = class extends APIResource {
    * ```
    */
   list(responseID, query = {}, options) {
-    return this._client.getAPIList(path`/responses/${responseID}/input_items`, CursorPage, { query, ...options });
+    return this._client.getAPIList(path`/responses/${responseID}/input_items`, CursorPage, { query, ...options, __security: { bearerAuth: true } });
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/responses/input-tokens.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/responses/input-tokens.mjs
 var InputTokens = class extends APIResource {
   /**
    * Returns input token counts of the request.
@@ -98442,11 +101760,15 @@ var InputTokens = class extends APIResource {
    * ```
    */
   count(body = {}, options) {
-    return this._client.post("/responses/input_tokens", { body, ...options });
+    return this._client.post("/responses/input_tokens", {
+      body,
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/responses/responses.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/responses/responses.mjs
 var Responses = class extends APIResource {
   constructor() {
     super(...arguments);
@@ -98454,7 +101776,12 @@ var Responses = class extends APIResource {
     this.inputTokens = new InputTokens(this._client);
   }
   create(body, options) {
-    return this._client.post("/responses", { body, ...options, stream: body.stream ?? false })._thenUnwrap((rsp) => {
+    return this._client.post("/responses", {
+      body,
+      ...options,
+      stream: body.stream ?? false,
+      __security: { bearerAuth: true }
+    })._thenUnwrap((rsp) => {
       if ("object" in rsp && rsp.object === "response") {
         addOutputText(rsp);
       }
@@ -98465,7 +101792,8 @@ var Responses = class extends APIResource {
     return this._client.get(path`/responses/${responseID}`, {
       query,
       ...options,
-      stream: query?.stream ?? false
+      stream: query?.stream ?? false,
+      __security: { bearerAuth: true }
     })._thenUnwrap((rsp) => {
       if ("object" in rsp && rsp.object === "response") {
         addOutputText(rsp);
@@ -98486,7 +101814,8 @@ var Responses = class extends APIResource {
   delete(responseID, options) {
     return this._client.delete(path`/responses/${responseID}`, {
       ...options,
-      headers: buildHeaders([{ Accept: "*/*" }, options?.headers])
+      headers: buildHeaders([{ Accept: "*/*" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
   parse(body, options) {
@@ -98511,7 +101840,10 @@ var Responses = class extends APIResource {
    * ```
    */
   cancel(responseID, options) {
-    return this._client.post(path`/responses/${responseID}/cancel`, options);
+    return this._client.post(path`/responses/${responseID}/cancel`, {
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
   /**
    * Compact a conversation. Returns a compacted response object.
@@ -98529,13 +101861,13 @@ var Responses = class extends APIResource {
    * ```
    */
   compact(body, options) {
-    return this._client.post("/responses/compact", { body, ...options });
+    return this._client.post("/responses/compact", { body, ...options, __security: { bearerAuth: true } });
   }
 };
 Responses.InputItems = InputItems;
 Responses.InputTokens = InputTokens;
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/skills/content.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/skills/content.mjs
 var Content2 = class extends APIResource {
   /**
    * Download a skill zip bundle by its ID.
@@ -98544,12 +101876,13 @@ var Content2 = class extends APIResource {
     return this._client.get(path`/skills/${skillID}/content`, {
       ...options,
       headers: buildHeaders([{ Accept: "application/binary" }, options?.headers]),
+      __security: { bearerAuth: true },
       __binaryResponse: true
     });
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/skills/versions/content.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/skills/versions/content.mjs
 var Content3 = class extends APIResource {
   /**
    * Download a skill version zip bundle.
@@ -98559,12 +101892,13 @@ var Content3 = class extends APIResource {
     return this._client.get(path`/skills/${skill_id}/versions/${version5}/content`, {
       ...options,
       headers: buildHeaders([{ Accept: "application/binary" }, options?.headers]),
+      __security: { bearerAuth: true },
       __binaryResponse: true
     });
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/skills/versions/versions.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/skills/versions/versions.mjs
 var Versions = class extends APIResource {
   constructor() {
     super(...arguments);
@@ -98574,14 +101908,17 @@ var Versions = class extends APIResource {
    * Create a new immutable skill version.
    */
   create(skillID, body = {}, options) {
-    return this._client.post(path`/skills/${skillID}/versions`, maybeMultipartFormRequestOptions({ body, ...options }, this._client));
+    return this._client.post(path`/skills/${skillID}/versions`, maybeMultipartFormRequestOptions({ body, ...options, __security: { bearerAuth: true } }, this._client));
   }
   /**
    * Get a specific skill version.
    */
   retrieve(version5, params, options) {
     const { skill_id } = params;
-    return this._client.get(path`/skills/${skill_id}/versions/${version5}`, options);
+    return this._client.get(path`/skills/${skill_id}/versions/${version5}`, {
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
   /**
    * List skill versions for a skill.
@@ -98589,7 +101926,8 @@ var Versions = class extends APIResource {
   list(skillID, query = {}, options) {
     return this._client.getAPIList(path`/skills/${skillID}/versions`, CursorPage, {
       query,
-      ...options
+      ...options,
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -98597,12 +101935,15 @@ var Versions = class extends APIResource {
    */
   delete(version5, params, options) {
     const { skill_id } = params;
-    return this._client.delete(path`/skills/${skill_id}/versions/${version5}`, options);
+    return this._client.delete(path`/skills/${skill_id}/versions/${version5}`, {
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
 };
 Versions.Content = Content3;
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/skills/skills.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/skills/skills.mjs
 var Skills = class extends APIResource {
   constructor() {
     super(...arguments);
@@ -98613,37 +101954,45 @@ var Skills = class extends APIResource {
    * Create a new skill.
    */
   create(body = {}, options) {
-    return this._client.post("/skills", maybeMultipartFormRequestOptions({ body, ...options }, this._client));
+    return this._client.post("/skills", maybeMultipartFormRequestOptions({ body, ...options, __security: { bearerAuth: true } }, this._client));
   }
   /**
    * Get a skill by its ID.
    */
   retrieve(skillID, options) {
-    return this._client.get(path`/skills/${skillID}`, options);
+    return this._client.get(path`/skills/${skillID}`, { ...options, __security: { bearerAuth: true } });
   }
   /**
    * Update the default version pointer for a skill.
    */
   update(skillID, body, options) {
-    return this._client.post(path`/skills/${skillID}`, { body, ...options });
+    return this._client.post(path`/skills/${skillID}`, {
+      body,
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
   /**
    * List all skills for the current project.
    */
   list(query = {}, options) {
-    return this._client.getAPIList("/skills", CursorPage, { query, ...options });
+    return this._client.getAPIList("/skills", CursorPage, {
+      query,
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
   /**
    * Delete a skill by its ID.
    */
   delete(skillID, options) {
-    return this._client.delete(path`/skills/${skillID}`, options);
+    return this._client.delete(path`/skills/${skillID}`, { ...options, __security: { bearerAuth: true } });
   }
 };
 Skills.Content = Content2;
 Skills.Versions = Versions;
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/uploads/parts.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/uploads/parts.mjs
 var Parts = class extends APIResource {
   /**
    * Adds a
@@ -98659,11 +102008,11 @@ var Parts = class extends APIResource {
    * [complete the Upload](https://platform.openai.com/docs/api-reference/uploads/complete).
    */
   create(uploadID, body, options) {
-    return this._client.post(path`/uploads/${uploadID}/parts`, multipartFormRequestOptions({ body, ...options }, this._client));
+    return this._client.post(path`/uploads/${uploadID}/parts`, multipartFormRequestOptions({ body, ...options, __security: { bearerAuth: true } }, this._client));
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/uploads/uploads.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/uploads/uploads.mjs
 var Uploads = class extends APIResource {
   constructor() {
     super(...arguments);
@@ -98693,7 +102042,7 @@ var Uploads = class extends APIResource {
    * Returns the Upload object with status `pending`.
    */
   create(body, options) {
-    return this._client.post("/uploads", { body, ...options });
+    return this._client.post("/uploads", { body, ...options, __security: { bearerAuth: true } });
   }
   /**
    * Cancels the Upload. No Parts may be added after an Upload is cancelled.
@@ -98701,7 +102050,10 @@ var Uploads = class extends APIResource {
    * Returns the Upload object with status `cancelled`.
    */
   cancel(uploadID, options) {
-    return this._client.post(path`/uploads/${uploadID}/cancel`, options);
+    return this._client.post(path`/uploads/${uploadID}/cancel`, {
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
   /**
    * Completes the
@@ -98721,12 +102073,16 @@ var Uploads = class extends APIResource {
    * object.
    */
   complete(uploadID, body, options) {
-    return this._client.post(path`/uploads/${uploadID}/complete`, { body, ...options });
+    return this._client.post(path`/uploads/${uploadID}/complete`, {
+      body,
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
 };
 Uploads.Parts = Parts;
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/lib/Util.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/lib/Util.mjs
 var allSettledWithThrow = async (promises) => {
   const results = await Promise.allSettled(promises);
   const rejected = results.filter((result) => result.status === "rejected");
@@ -98745,7 +102101,7 @@ var allSettledWithThrow = async (promises) => {
   return values;
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/vector-stores/file-batches.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/vector-stores/file-batches.mjs
 var FileBatches = class extends APIResource {
   /**
    * Create a vector store file batch.
@@ -98754,7 +102110,8 @@ var FileBatches = class extends APIResource {
     return this._client.post(path`/vector_stores/${vectorStoreID}/file_batches`, {
       body,
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -98764,7 +102121,8 @@ var FileBatches = class extends APIResource {
     const { vector_store_id } = params;
     return this._client.get(path`/vector_stores/${vector_store_id}/file_batches/${batchID}`, {
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -98775,7 +102133,8 @@ var FileBatches = class extends APIResource {
     const { vector_store_id } = params;
     return this._client.post(path`/vector_stores/${vector_store_id}/file_batches/${batchID}/cancel`, {
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -98790,7 +102149,12 @@ var FileBatches = class extends APIResource {
    */
   listFiles(batchID, params, options) {
     const { vector_store_id, ...query } = params;
-    return this._client.getAPIList(path`/vector_stores/${vector_store_id}/file_batches/${batchID}/files`, CursorPage, { query, ...options, headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]) });
+    return this._client.getAPIList(path`/vector_stores/${vector_store_id}/file_batches/${batchID}/files`, CursorPage, {
+      query,
+      ...options,
+      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
+      __security: { bearerAuth: true }
+    });
   }
   /**
    * Wait for the given file batch to be processed.
@@ -98862,7 +102226,7 @@ var FileBatches = class extends APIResource {
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/vector-stores/files.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/vector-stores/files.mjs
 var Files3 = class extends APIResource {
   /**
    * Create a vector store file by attaching a
@@ -98873,7 +102237,8 @@ var Files3 = class extends APIResource {
     return this._client.post(path`/vector_stores/${vectorStoreID}/files`, {
       body,
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -98883,7 +102248,8 @@ var Files3 = class extends APIResource {
     const { vector_store_id } = params;
     return this._client.get(path`/vector_stores/${vector_store_id}/files/${fileID}`, {
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -98894,7 +102260,8 @@ var Files3 = class extends APIResource {
     return this._client.post(path`/vector_stores/${vector_store_id}/files/${fileID}`, {
       body,
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -98904,7 +102271,8 @@ var Files3 = class extends APIResource {
     return this._client.getAPIList(path`/vector_stores/${vectorStoreID}/files`, CursorPage, {
       query,
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -98917,7 +102285,8 @@ var Files3 = class extends APIResource {
     const { vector_store_id } = params;
     return this._client.delete(path`/vector_stores/${vector_store_id}/files/${fileID}`, {
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -98990,11 +102359,15 @@ var Files3 = class extends APIResource {
    */
   content(fileID, params, options) {
     const { vector_store_id } = params;
-    return this._client.getAPIList(path`/vector_stores/${vector_store_id}/files/${fileID}/content`, Page, { ...options, headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]) });
+    return this._client.getAPIList(path`/vector_stores/${vector_store_id}/files/${fileID}/content`, Page, {
+      ...options,
+      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
+      __security: { bearerAuth: true }
+    });
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/vector-stores/vector-stores.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/vector-stores/vector-stores.mjs
 var VectorStores = class extends APIResource {
   constructor() {
     super(...arguments);
@@ -99008,7 +102381,8 @@ var VectorStores = class extends APIResource {
     return this._client.post("/vector_stores", {
       body,
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -99017,7 +102391,8 @@ var VectorStores = class extends APIResource {
   retrieve(vectorStoreID, options) {
     return this._client.get(path`/vector_stores/${vectorStoreID}`, {
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -99027,7 +102402,8 @@ var VectorStores = class extends APIResource {
     return this._client.post(path`/vector_stores/${vectorStoreID}`, {
       body,
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -99037,7 +102413,8 @@ var VectorStores = class extends APIResource {
     return this._client.getAPIList("/vector_stores", CursorPage, {
       query,
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -99046,7 +102423,8 @@ var VectorStores = class extends APIResource {
   delete(vectorStoreID, options) {
     return this._client.delete(path`/vector_stores/${vectorStoreID}`, {
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
   /**
@@ -99058,44 +102436,49 @@ var VectorStores = class extends APIResource {
       body,
       method: "post",
       ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers])
+      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
+      __security: { bearerAuth: true }
     });
   }
 };
 VectorStores.Files = Files3;
 VectorStores.FileBatches = FileBatches;
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/videos.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/videos.mjs
 var Videos = class extends APIResource {
   /**
    * Create a new video generation job from a prompt and optional reference assets.
    */
   create(body, options) {
-    return this._client.post("/videos", multipartFormRequestOptions({ body, ...options }, this._client));
+    return this._client.post("/videos", multipartFormRequestOptions({ body, ...options, __security: { bearerAuth: true } }, this._client));
   }
   /**
    * Fetch the latest metadata for a generated video.
    */
   retrieve(videoID, options) {
-    return this._client.get(path`/videos/${videoID}`, options);
+    return this._client.get(path`/videos/${videoID}`, { ...options, __security: { bearerAuth: true } });
   }
   /**
    * List recently generated videos for the current project.
    */
   list(query = {}, options) {
-    return this._client.getAPIList("/videos", ConversationCursorPage, { query, ...options });
+    return this._client.getAPIList("/videos", ConversationCursorPage, {
+      query,
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
   /**
    * Permanently delete a completed or failed video and its stored assets.
    */
   delete(videoID, options) {
-    return this._client.delete(path`/videos/${videoID}`, options);
+    return this._client.delete(path`/videos/${videoID}`, { ...options, __security: { bearerAuth: true } });
   }
   /**
    * Create a character from an uploaded video.
    */
   createCharacter(body, options) {
-    return this._client.post("/videos/characters", multipartFormRequestOptions({ body, ...options }, this._client));
+    return this._client.post("/videos/characters", multipartFormRequestOptions({ body, ...options, __security: { bearerAuth: true } }, this._client));
   }
   /**
    * Download the generated video bytes or a derived preview asset.
@@ -99107,6 +102490,7 @@ var Videos = class extends APIResource {
       query,
       ...options,
       headers: buildHeaders([{ Accept: "application/binary" }, options?.headers]),
+      __security: { bearerAuth: true },
       __binaryResponse: true
     });
   }
@@ -99115,29 +102499,32 @@ var Videos = class extends APIResource {
    * generated video.
    */
   edit(body, options) {
-    return this._client.post("/videos/edits", multipartFormRequestOptions({ body, ...options }, this._client));
+    return this._client.post("/videos/edits", multipartFormRequestOptions({ body, ...options, __security: { bearerAuth: true } }, this._client));
   }
   /**
    * Create an extension of a completed video.
    */
   extend(body, options) {
-    return this._client.post("/videos/extensions", multipartFormRequestOptions({ body, ...options }, this._client));
+    return this._client.post("/videos/extensions", multipartFormRequestOptions({ body, ...options, __security: { bearerAuth: true } }, this._client));
   }
   /**
    * Fetch a character.
    */
   getCharacter(characterID, options) {
-    return this._client.get(path`/videos/characters/${characterID}`, options);
+    return this._client.get(path`/videos/characters/${characterID}`, {
+      ...options,
+      __security: { bearerAuth: true }
+    });
   }
   /**
    * Create a remix of a completed video using a refreshed prompt.
    */
   remix(videoID, body, options) {
-    return this._client.post(path`/videos/${videoID}/remix`, maybeMultipartFormRequestOptions({ body, ...options }, this._client));
+    return this._client.post(path`/videos/${videoID}/remix`, maybeMultipartFormRequestOptions({ body, ...options, __security: { bearerAuth: true } }, this._client));
   }
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/resources/webhooks/webhooks.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/webhooks/webhooks.mjs
 var _Webhooks_instances;
 var _Webhooks_validateSecret;
 var _Webhooks_getRequiredHeader;
@@ -99216,7 +102603,7 @@ _Webhooks_instances = /* @__PURE__ */ new WeakSet(), _Webhooks_validateSecret = 
   return value;
 };
 
-// ../../node_modules/.pnpm/openai@6.34.0_zod@4.3.6/node_modules/openai/client.mjs
+// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/client.mjs
 var _OpenAI_instances;
 var _a2;
 var _OpenAI_encoder;
@@ -99226,7 +102613,8 @@ var OpenAI = class {
   /**
    * API Client for interfacing with the OpenAI API.
    *
-   * @param {string | undefined} [opts.apiKey=process.env['OPENAI_API_KEY'] ?? undefined]
+   * @param {string | null | undefined} [opts.apiKey=process.env['OPENAI_API_KEY'] ?? null]
+   * @param {string | null | undefined} [opts.adminAPIKey=process.env['OPENAI_ADMIN_KEY'] ?? null]
    * @param {string | null | undefined} [opts.organization=process.env['OPENAI_ORG_ID'] ?? null]
    * @param {string | null | undefined} [opts.project=process.env['OPENAI_PROJECT_ID'] ?? null]
    * @param {string | null | undefined} [opts.webhookSecret=process.env['OPENAI_WEBHOOK_SECRET'] ?? null]
@@ -99239,7 +102627,7 @@ var OpenAI = class {
    * @param {Record<string, string | undefined>} opts.defaultQuery - Default query parameters to include with every request to the API.
    * @param {boolean} [opts.dangerouslyAllowBrowser=false] - By default, client-side use of this library is not allowed, as it risks exposing your secret API credentials to attackers.
    */
-  constructor({ baseURL = readEnv("OPENAI_BASE_URL"), apiKey = readEnv("OPENAI_API_KEY"), organization = readEnv("OPENAI_ORG_ID") ?? null, project = readEnv("OPENAI_PROJECT_ID") ?? null, webhookSecret = readEnv("OPENAI_WEBHOOK_SECRET") ?? null, workloadIdentity, ...opts } = {}) {
+  constructor({ baseURL = readEnv("OPENAI_BASE_URL"), apiKey = readEnv("OPENAI_API_KEY") ?? null, adminAPIKey = readEnv("OPENAI_ADMIN_KEY") ?? null, organization = readEnv("OPENAI_ORG_ID") ?? null, project = readEnv("OPENAI_PROJECT_ID") ?? null, webhookSecret = readEnv("OPENAI_WEBHOOK_SECRET") ?? null, workloadIdentity, ...opts } = {}) {
     _OpenAI_instances.add(this);
     _OpenAI_encoder.set(this, void 0);
     this.completions = new Completions2(this);
@@ -99257,6 +102645,7 @@ var OpenAI = class {
     this.beta = new Beta(this);
     this.batches = new Batches(this);
     this.uploads = new Uploads(this);
+    this.admin = new Admin(this);
     this.responses = new Responses(this);
     this.realtime = new Realtime2(this);
     this.conversations = new Conversations(this);
@@ -99264,16 +102653,9 @@ var OpenAI = class {
     this.containers = new Containers(this);
     this.skills = new Skills(this);
     this.videos = new Videos(this);
-    if (workloadIdentity) {
-      if (apiKey && apiKey !== WORKLOAD_IDENTITY_API_KEY_PLACEHOLDER) {
-        throw new OpenAIError("The `apiKey` and `workloadIdentity` arguments are mutually exclusive; only one can be passed at a time.");
-      }
-      apiKey = WORKLOAD_IDENTITY_API_KEY_PLACEHOLDER;
-    } else if (apiKey === void 0) {
-      throw new OpenAIError("Missing credentials. Please pass an `apiKey`, `workloadIdentity`, or set the `OPENAI_API_KEY` environment variable.");
-    }
     const options = {
       apiKey,
+      adminAPIKey,
       organization,
       project,
       webhookSecret,
@@ -99281,6 +102663,12 @@ var OpenAI = class {
       ...opts,
       baseURL: baseURL || `https://api.openai.com/v1`
     };
+    if (apiKey && workloadIdentity) {
+      throw new OpenAIError("The `apiKey` and `workloadIdentity` options are mutually exclusive");
+    }
+    if (!apiKey && !adminAPIKey && !workloadIdentity) {
+      throw new OpenAIError("Missing credentials. Please pass an `apiKey`, `workloadIdentity`, `adminAPIKey`, or set the `OPENAI_API_KEY` or `OPENAI_ADMIN_KEY` environment variable.");
+    }
     if (!options.dangerouslyAllowBrowser && isRunningInBrowser()) {
       throw new OpenAIError("It looks like you're running in a browser-like environment.\n\nThis is disabled by default, as it risks exposing your secret API credentials to attackers.\nIf you understand the risks and have appropriate mitigations in place,\nyou can set the `dangerouslyAllowBrowser` option to `true`, e.g.,\n\nnew OpenAI({ apiKey, dangerouslyAllowBrowser: true });\n\nhttps://help.openai.com/en/articles/5112595-best-practices-for-api-key-safety\n");
     }
@@ -99294,11 +102682,23 @@ var OpenAI = class {
     this.maxRetries = options.maxRetries ?? 2;
     this.fetch = options.fetch ?? getDefaultFetch();
     __classPrivateFieldSet2(this, _OpenAI_encoder, FallbackEncoder, "f");
+    const customHeadersEnv = readEnv("OPENAI_CUSTOM_HEADERS");
+    if (customHeadersEnv) {
+      const parsed = {};
+      for (const line2 of customHeadersEnv.split("\n")) {
+        const colon = line2.indexOf(":");
+        if (colon >= 0) {
+          parsed[line2.substring(0, colon).trim()] = line2.substring(colon + 1).trim();
+        }
+      }
+      options.defaultHeaders = buildHeaders([parsed, options.defaultHeaders]);
+    }
     this._options = options;
     if (workloadIdentity) {
       this._workloadIdentityAuth = new WorkloadIdentityAuth(workloadIdentity, this.fetch);
     }
-    this.apiKey = typeof apiKey === "string" ? apiKey : "Missing Key";
+    this.apiKey = typeof apiKey === "string" ? apiKey : null;
+    this.adminAPIKey = adminAPIKey;
     this.organization = organization;
     this.project = project;
     this.webhookSecret = webhookSecret;
@@ -99316,7 +102716,8 @@ var OpenAI = class {
       logLevel: this.logLevel,
       fetch: this.fetch,
       fetchOptions: this.fetchOptions,
-      apiKey: this.apiKey,
+      apiKey: this._options.apiKey,
+      adminAPIKey: this.adminAPIKey,
       workloadIdentity: this._options.workloadIdentity,
       organization: this.organization,
       project: this.project,
@@ -99328,11 +102729,44 @@ var OpenAI = class {
   defaultQuery() {
     return this._options.defaultQuery;
   }
-  validateHeaders({ values, nulls }) {
-    return;
+  validateHeaders({ values, nulls }, schemes = {
+    bearerAuth: true,
+    adminAPIKeyAuth: true
+  }) {
+    if (values.get("authorization") || values.get("api-key")) {
+      return;
+    }
+    if (nulls.has("authorization") || nulls.has("api-key")) {
+      return;
+    }
+    if (this._workloadIdentityAuth && schemes.bearerAuth) {
+      return;
+    }
+    throw new Error('Could not resolve authentication method. Expected either apiKey or adminAPIKey to be set. Or for one of the "Authorization" or "api-key" headers to be explicitly omitted');
   }
-  async authHeaders(opts) {
+  async authHeaders(opts, schemes = {
+    bearerAuth: true,
+    adminAPIKeyAuth: true
+  }) {
+    return buildHeaders([
+      schemes.bearerAuth ? await this.bearerAuth(opts) : null,
+      schemes.adminAPIKeyAuth ? await this.adminAPIKeyAuth(opts) : null
+    ]);
+  }
+  async bearerAuth(opts) {
+    if (this._workloadIdentityAuth) {
+      return buildHeaders([{ Authorization: `Bearer ${await this._workloadIdentityAuth.getToken()}` }]);
+    }
+    if (this.apiKey == null) {
+      return void 0;
+    }
     return buildHeaders([{ Authorization: `Bearer ${this.apiKey}` }]);
+  }
+  async adminAPIKeyAuth(opts) {
+    if (this.adminAPIKey == null) {
+      return void 0;
+    }
+    return buildHeaders([{ Authorization: `Bearer ${this.adminAPIKey}` }]);
   }
   stringifyQuery(query) {
     return stringifyQuery(query);
@@ -99385,7 +102819,10 @@ var OpenAI = class {
    * Used as a callback for mutating the given `FinalRequestOptions` object.
    */
   async prepareOptions(options) {
-    await this._callApiKey();
+    const security = options.__security ?? { bearerAuth: true };
+    if (security.bearerAuth) {
+      await this._callApiKey();
+    }
   }
   /**
    * Used as a callback for mutating the given `RequestInit` object.
@@ -99442,8 +102879,9 @@ var OpenAI = class {
     if (options.signal?.aborted) {
       throw new APIUserAbortError();
     }
+    const security = options.__security ?? { bearerAuth: true };
     const controller = new AbortController();
-    const response = await this.fetchWithAuth(url2, req, timeout, controller).catch(castToError);
+    const response = await this.fetchWithAuth(url2, req, timeout, controller, security).catch(castToError);
     const headersTime = Date.now();
     if (response instanceof globalThis.Error) {
       const retryMessage = `retrying, ${retriesRemaining} attempts remaining`;
@@ -99474,12 +102912,15 @@ var OpenAI = class {
       if (isTimeout) {
         throw new APIConnectionTimeoutError();
       }
-      throw new APIConnectionError({ cause: response });
+      throw new APIConnectionError({
+        message: getConnectionErrorMessage(response),
+        cause: response
+      });
     }
     const specialHeaders = [...response.headers.entries()].filter(([name]) => name === "x-request-id").map(([name, value]) => ", " + name + ": " + JSON.stringify(value)).join("");
     const responseInfo = `[${requestLogID}${retryLogStr}${specialHeaders}] ${req.method} ${url2} ${response.ok ? "succeeded" : "failed"} with status ${response.status} in ${headersTime - startTime}ms`;
     if (!response.ok) {
-      if (response.status === 401 && this._workloadIdentityAuth && !options.__metadata?.["hasStreamingBody"] && !options.__metadata?.["workloadIdentityTokenRefreshed"]) {
+      if (response.status === 401 && this._workloadIdentityAuth && security.bearerAuth && !options.__metadata?.["hasStreamingBody"] && !options.__metadata?.["workloadIdentityTokenRefreshed"]) {
         await CancelReadableStream(response.body);
         this._workloadIdentityAuth.invalidateToken();
         return this.makeRequest({
@@ -99537,8 +102978,11 @@ var OpenAI = class {
     const request = this.makeRequest(options, null, void 0);
     return new PagePromise(this, request, Page2);
   }
-  async fetchWithAuth(url2, init, timeout, controller) {
-    if (this._workloadIdentityAuth) {
+  async fetchWithAuth(url2, init, timeout, controller, schemes = {
+    bearerAuth: true,
+    adminAPIKeyAuth: true
+  }) {
+    if (this._workloadIdentityAuth && schemes.bearerAuth) {
       const headers = init.headers;
       const authHeader = headers.get("Authorization");
       if (!authHeader || authHeader === `Bearer ${WORKLOAD_IDENTITY_API_KEY_PLACEHOLDER}`) {
@@ -99664,12 +103108,12 @@ var OpenAI = class {
         "OpenAI-Organization": this.organization,
         "OpenAI-Project": this.project
       },
-      await this.authHeaders(options),
+      await this.authHeaders(options, options.__security ?? { bearerAuth: true }),
       this._options.defaultHeaders,
       bodyHeaders,
       options.headers
     ]);
-    this.validateHeaders(headers);
+    this.validateHeaders(headers, options.__security ?? { bearerAuth: true });
     return headers.values;
   }
   _makeAbort(controller) {
@@ -99744,6 +103188,7 @@ OpenAI.Webhooks = Webhooks;
 OpenAI.Beta = Beta;
 OpenAI.Batches = Batches;
 OpenAI.Uploads = Uploads;
+OpenAI.Admin = Admin;
 OpenAI.Responses = Responses;
 OpenAI.Realtime = Realtime2;
 OpenAI.Conversations = Conversations;
@@ -99751,6 +103196,23 @@ OpenAI.Evals = Evals;
 OpenAI.Containers = Containers;
 OpenAI.Skills = Skills;
 OpenAI.Videos = Videos;
+function getConnectionErrorMessage(error40) {
+  if (isUndiciDispatcherVersionMismatchError(error40)) {
+    return `Connection error. This may be caused by passing an undici dispatcher, such as ProxyAgent, that is incompatible with the fetch implementation. If you are using undici's ProxyAgent, pass the fetch implementation from the same undici package: import { fetch, ProxyAgent } from 'undici'; new OpenAI({ fetch, fetchOptions: { dispatcher: new ProxyAgent(...) } });`;
+  }
+  return void 0;
+}
+function isUndiciDispatcherVersionMismatchError(error40) {
+  let current = error40;
+  for (let i = 0; i < 8 && current && typeof current === "object"; i++) {
+    const err = current;
+    if (err.code === "UND_ERR_INVALID_ARG" && typeof err.message === "string" && err.message.includes("invalid onRequestStart method")) {
+      return true;
+    }
+    current = err.cause;
+  }
+  return false;
+}
 
 // src/routes/analyze-food.ts
 var router6 = (0, import_express6.Router)();
@@ -100514,7 +103976,7 @@ var routes_default = router12;
 // src/lib/logger.ts
 var import_pino = __toESM(require_pino(), 1);
 var isProduction = process.env.NODE_ENV === "production";
-var logger = (0, import_pino.default)({
+var logger2 = (0, import_pino.default)({
   level: process.env.LOG_LEVEL ?? "info",
   redact: [
     "req.headers.authorization",
@@ -100533,7 +103995,7 @@ var logger = (0, import_pino.default)({
 var app = (0, import_express13.default)();
 app.use(
   (0, import_pino_http.default)({
-    logger,
+    logger: logger2,
     serializers: {
       req(req) {
         return { id: req.id, method: req.method, url: req.url?.split("?")[0] };
@@ -100790,16 +104252,263 @@ app_default.post("/api/webhooks/clerk", import_express16.default.raw({ type: "ap
   }
 });
 console.log("=== BEFORE app.listen ===");
+app_default.get("/api/foods", async (req, res) => {
+  try {
+    const search = req.query.search || "";
+    let query = supabase.from("foods").select("*").order("name");
+    if (search && search.length > 0) {
+      query = query.ilike("name", `%${search}%`);
+    }
+    const { data, error: error40 } = await query.limit(20);
+    if (error40) {
+      console.error("Supabase error:", error40);
+      return res.status(500).json({ error: "Database error" });
+    }
+    res.json(data || []);
+  } catch (err) {
+    console.error("API error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+app_default.get("/api/meals", async (req, res) => {
+  try {
+    const userId = req.userId;
+    const date6 = req.query.date;
+    const mealType = req.query.mealType;
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    if (!date6) {
+      return res.status(400).json({ error: "Date is required" });
+    }
+    let query = supabase.from("meals").select("*").eq("user_id", userId).eq("date", date6);
+    if (mealType) {
+      query = query.eq("meal_type", mealType);
+    }
+    const { data, error: error40 } = await query.order("created_at", { ascending: false });
+    if (error40) {
+      console.error("Supabase error:", error40);
+      return res.status(500).json({ error: "Database error" });
+    }
+    if (mealType && data && data.length > 0) {
+      return res.json(data[0]);
+    }
+    res.json(data || []);
+  } catch (err) {
+    console.error("API error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+app_default.post("/api/meals", async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { meal_type, foods, date: date6 } = req.body;
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    if (!meal_type || !foods || !date6) {
+      return res.status(400).json({ error: "meal_type, foods, and date are required" });
+    }
+    await supabase.from("meals").delete().eq("user_id", userId).eq("date", date6).eq("meal_type", meal_type);
+    const mealData = {
+      user_id: userId,
+      meal_type,
+      date: date6,
+      foods: foods.map((f) => ({
+        food_id: f.food_id,
+        food_name: f.food_name,
+        servings: f.servings,
+        calories: f.calories,
+        protein: f.protein,
+        carbs: f.carbs,
+        fat: f.fat
+      }))
+    };
+    const { data, error: error40 } = await supabase.from("meals").insert(mealData).select().single();
+    if (error40) {
+      console.error("Supabase error:", error40);
+      return res.status(500).json({ error: "Database error" });
+    }
+    res.json(data);
+  } catch (err) {
+    console.error("API error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+app_default.get("/api/daily-summary", async (req, res) => {
+  try {
+    const userId = req.userId;
+    const date6 = req.query.date;
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    if (!date6) {
+      return res.status(400).json({ error: "Date is required" });
+    }
+    const { data: meals, error: error40 } = await supabase.from("meals").select("foods").eq("user_id", userId).eq("date", date6);
+    if (error40) {
+      console.error("Supabase error:", error40);
+      return res.status(500).json({ error: "Database error" });
+    }
+    const summary = {
+      totalCalories: 0,
+      totalProtein: 0,
+      totalCarbs: 0,
+      totalFat: 0,
+      goalCalories: 2e3,
+      goalProtein: 150,
+      goalCarbs: 250,
+      goalFat: 65
+    };
+    if (meals) {
+      for (const meal of meals) {
+        const foods = meal.foods || [];
+        for (const food of foods) {
+          summary.totalCalories += food.calories || 0;
+          summary.totalProtein += food.protein || 0;
+          summary.totalCarbs += food.carbs || 0;
+          summary.totalFat += food.fat || 0;
+        }
+      }
+    }
+    res.json(summary);
+  } catch (err) {
+    console.error("API error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+app_default.get("/api/weekly-stats", async (req, res) => {
+  try {
+    const userId = req.userId;
+    const date6 = req.query.date;
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    if (!date6) {
+      return res.status(400).json({ error: "Date is required" });
+    }
+    const currentDate = /* @__PURE__ */ new Date(date6 + "T12:00:00");
+    const startDate = new Date(currentDate);
+    startDate.setDate(startDate.getDate() - 6);
+    const startDateStr = startDate.toISOString().split("T")[0];
+    const endDateStr = date6;
+    const { data: meals, error: error40 } = await supabase.from("meals").select("date, foods").eq("user_id", userId).gte("date", startDateStr).lte("date", endDateStr).order("date", { ascending: true });
+    if (error40) {
+      console.error("Supabase error:", error40);
+      return res.status(500).json({ error: "Database error" });
+    }
+    const dailyData = {};
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(startDate);
+      d.setDate(d.getDate() + i);
+      const dStr = d.toISOString().split("T")[0];
+      dailyData[dStr] = { totalCalories: 0, goalCalories: 2e3 };
+    }
+    if (meals) {
+      for (const meal of meals) {
+        const mealDate = meal.date;
+        if (dailyData[mealDate]) {
+          const foods = meal.foods || [];
+          let totalCalories = 0;
+          for (const food of foods) {
+            totalCalories += food.calories || 0;
+          }
+          dailyData[mealDate].totalCalories += totalCalories;
+        }
+      }
+    }
+    const result = Object.entries(dailyData).map(([date7, data]) => ({
+      date: date7,
+      totalCalories: data.totalCalories,
+      goalCalories: data.goalCalories
+    }));
+    res.json(result);
+  } catch (err) {
+    console.error("API error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+app_default.get("/api/recent-meals", async (req, res) => {
+  try {
+    const userId = req.userId;
+    const limit2 = parseInt(req.query.limit) || 5;
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    const { data, error: error40 } = await supabase.from("meals").select("id, date, meal_type, foods").eq("user_id", userId).order("date", { ascending: false }).limit(limit2);
+    if (error40) {
+      console.error("Supabase error:", error40);
+      return res.status(500).json({ error: "Database error" });
+    }
+    const meals = data || [];
+    const result = [];
+    for (const meal of meals) {
+      const foods = meal.foods || [];
+      for (const food of foods) {
+        result.push({
+          id: `${meal.id}_${food.food_id}`,
+          meal_id: meal.id,
+          meal_type: meal.meal_type,
+          date: meal.date,
+          foodName: food.food_name || "Unknown",
+          servings: food.servings || 1,
+          calories: food.calories || 0,
+          protein: food.protein || 0,
+          carbs: food.carbs || 0,
+          fat: food.fat || 0
+        });
+      }
+    }
+    res.json(result.slice(0, limit2));
+  } catch (err) {
+    console.error("API error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+app_default.get("/api/meal-breakdown", async (req, res) => {
+  try {
+    const userId = req.userId;
+    const date6 = req.query.date;
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    if (!date6) {
+      return res.status(400).json({ error: "Date is required" });
+    }
+    const { data: meals, error: error40 } = await supabase.from("meals").select("meal_type, foods").eq("user_id", userId).eq("date", date6);
+    if (error40) {
+      console.error("Supabase error:", error40);
+      return res.status(500).json({ error: "Database error" });
+    }
+    const breakdown = {};
+    if (meals) {
+      for (const meal of meals) {
+        const mealType = meal.meal_type || "unknown";
+        if (!breakdown[mealType]) {
+          breakdown[mealType] = { mealType, totalCalories: 0 };
+        }
+        const foods = meal.foods || [];
+        for (const food of foods) {
+          breakdown[mealType].totalCalories += food.calories || 0;
+        }
+      }
+    }
+    res.json(Object.values(breakdown));
+  } catch (err) {
+    console.error("API error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
 app_default.listen(port, (err) => {
   if (err) {
     console.error("Error in app.listen:", err);
-    logger.error({ err }, "Error listening on port");
+    logger2.error({ err }, "Error listening on port");
     process.exit(1);
   }
   console.log(`\u2705 Server is running on port ${port}`);
-  logger.info({ port }, "Server listening");
+  logger2.info({ port }, "Server listening");
   seedFoodsIfEmpty().catch((e) => {
-    logger.error({ err: e }, "Failed to seed foods");
+    logger2.error({ err: e }, "Failed to seed foods");
   });
 });
 console.log("=== AFTER app.listen (this may appear before server starts) ===");
@@ -100873,6 +104582,7 @@ on-finished/index.js:
    * MIT Licensed
    *)
 
+content-type/dist/index.js:
 content-type/index.js:
   (*!
    * content-type
