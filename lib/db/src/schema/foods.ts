@@ -1,16 +1,17 @@
-import { pgTable, text, serial, timestamp, real } from "drizzle-orm/pg-core";
+import { pgTable, uuid, text, numeric, timestamp, real } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
 export const foodsTable = pgTable("foods", {
-  id: serial("id").primaryKey(),
+  id: uuid("id").defaultRandom().primaryKey(),
   name: text("name").notNull(),
-  calories: real("calories").notNull(),
-  protein: real("protein").notNull(),
-  carbs: real("carbs").notNull(),
-  fat: real("fat").notNull(),
-  servingSize: text("serving_size").notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  calories: real("calories"),
+  protein: real("protein"),
+  carbs: real("carbs"),
+  fat: real("fat"),
+  servingSize: text("serving_size"),
+  default_servings: numeric("default_servings").default("1"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
 
 export const insertFoodSchema = createInsertSchema(foodsTable).omit({ id: true, createdAt: true });
