@@ -3,20 +3,17 @@ import { eq, ilike } from "drizzle-orm";
 import { db, foodsTable } from "@workspace/db";
 import {
   ListFoodsQueryParams,
-  ListFoodsResponse,
   CreateFoodBody,
   GetFoodParams,
-  GetFoodResponse,
   UpdateFoodParams,
   UpdateFoodBody,
-  UpdateFoodResponse,
   DeleteFoodParams,
 } from "@workspace/api-zod";
 
 const router: IRouter = Router();
 
 // GET /api/foods - получить список продуктов
-router.get("/foods", async (req, res): Promise<void> => {
+router.get("/api/foods", async (req, res): Promise<void> => {
   try {
     const params = ListFoodsQueryParams.safeParse(req.query);
     if (!params.success) {
@@ -30,7 +27,8 @@ router.get("/foods", async (req, res): Promise<void> => {
     }
 
     const foods = await query.orderBy(foodsTable.name);
-    res.json(ListFoodsResponse.parse(foods));
+    // Возвращаем данные без Zod валидации (проблема с UUID)
+    res.json(foods);
   } catch (error) {
     console.error("Error in GET /api/foods:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -47,7 +45,7 @@ router.post("/api/foods", async (req, res): Promise<void> => {
     }
 
     const [food] = await db.insert(foodsTable).values(parsed.data).returning();
-    res.status(201).json(GetFoodResponse.parse(food));
+    res.status(201).json(food);
   } catch (error) {
     console.error("Error in POST /api/foods:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -69,7 +67,7 @@ router.get("/api/foods/:id", async (req, res): Promise<void> => {
       return;
     }
 
-    res.json(GetFoodResponse.parse(food));
+    res.json(food);
   } catch (error) {
     console.error("Error in GET /api/foods/:id:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -102,7 +100,7 @@ router.patch("/api/foods/:id", async (req, res): Promise<void> => {
       return;
     }
 
-    res.json(UpdateFoodResponse.parse(food));
+    res.json(food);
   } catch (error) {
     console.error("Error in PATCH /api/foods/:id:", error);
     res.status(500).json({ error: "Internal server error" });

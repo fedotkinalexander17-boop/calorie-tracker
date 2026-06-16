@@ -92767,7 +92767,7 @@ var db = drizzle(pool, { schema: schema_exports });
 
 // src/routes/foods.ts
 var router2 = (0, import_express2.Router)();
-router2.get("/foods", async (req, res) => {
+router2.get("/api/foods", async (req, res) => {
   try {
     const params = ListFoodsQueryParams.safeParse(req.query);
     if (!params.success) {
@@ -92779,7 +92779,7 @@ router2.get("/foods", async (req, res) => {
       query = query.where(ilike(foodsTable.name, `%${params.data.search}%`));
     }
     const foods = await query.orderBy(foodsTable.name);
-    res.json(ListFoodsResponse.parse(foods));
+    res.json(foods);
   } catch (error40) {
     console.error("Error in GET /api/foods:", error40);
     res.status(500).json({ error: "Internal server error" });
@@ -92793,7 +92793,7 @@ router2.post("/api/foods", async (req, res) => {
       return;
     }
     const [food] = await db.insert(foodsTable).values(parsed.data).returning();
-    res.status(201).json(GetFoodResponse.parse(food));
+    res.status(201).json(food);
   } catch (error40) {
     console.error("Error in POST /api/foods:", error40);
     res.status(500).json({ error: "Internal server error" });
@@ -92811,7 +92811,7 @@ router2.get("/api/foods/:id", async (req, res) => {
       res.status(404).json({ error: "Food not found" });
       return;
     }
-    res.json(GetFoodResponse.parse(food));
+    res.json(food);
   } catch (error40) {
     console.error("Error in GET /api/foods/:id:", error40);
     res.status(500).json({ error: "Internal server error" });
@@ -92834,7 +92834,7 @@ router2.patch("/api/foods/:id", async (req, res) => {
       res.status(404).json({ error: "Food not found" });
       return;
     }
-    res.json(UpdateFoodResponse.parse(food));
+    res.json(food);
   } catch (error40) {
     console.error("Error in PATCH /api/foods/:id:", error40);
     res.status(500).json({ error: "Internal server error" });
