@@ -57,8 +57,10 @@ export default function Log() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFoods, setSelectedFoods] = useState<MealFood[]>([]);
 
+  console.log("🔄 Log component rendering, searchQuery:", searchQuery);
+
   // Получение списка продуктов
-  const { data: foods, isLoading: foodsLoading } = useQuery({
+  const { data: foods, isLoading: foodsLoading, error: foodsError } = useQuery({
     queryKey: ["foods", searchQuery],
     queryFn: async () => {
       console.log("🔍 Fetching foods with search:", searchQuery);
@@ -82,12 +84,22 @@ export default function Log() {
       
       const data = await res.json();
       console.log("✅ Foods data:", data);
+      console.log("📦 Type of data:", typeof data);
+      console.log("📦 Is array?", Array.isArray(data));
+      console.log("📦 Data length:", data?.length);
       
       // Гарантируем, что возвращаем массив
       return Array.isArray(data) ? data : [];
     },
     enabled: searchQuery.length > 1,
   });
+
+  // Добавляем лог для отслеживания изменения foods
+  useEffect(() => {
+    console.log("📦 foods state updated:", foods);
+    console.log("📦 foods is array?", Array.isArray(foods));
+    console.log("📦 foods length:", foods?.length);
+  }, [foods]);
 
   // Получение существующего приёма пищи за день
   const { data: existingMeal, isLoading: mealLoading } = useQuery({
@@ -214,6 +226,8 @@ export default function Log() {
     }),
     { calories: 0, protein: 0, carbs: 0, fat: 0 }
   );
+
+  console.log("🖥️ Rendering with foods:", foods);
 
   return (
     <div className="space-y-6">
