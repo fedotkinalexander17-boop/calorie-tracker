@@ -64,7 +64,7 @@ export default function Log() {
     queryKey: ["foods", searchQuery],
     queryFn: async () => {
       console.log("🔍 Fetching foods with search:", searchQuery);
-      const url = `/api/foods?search=${encodeURIComponent(searchQuery)}`;
+      const url = `https://calorie-tracker-3-2j7n.onrender.com/api/foods?search=${encodeURIComponent(searchQuery)}`;
       console.log("📡 Request URL:", url);
       
       const res = await fetch(url, {
@@ -113,7 +113,7 @@ export default function Log() {
   useEffect(() => {
     const testFetch = async () => {
       try {
-        const res = await fetch('/api/foods?search=яб', {
+        const res = await fetch('https://calorie-tracker-3-2j7n.onrender.com/api/foods?search=яб', {
           credentials: "include",
         });
         const data = await res.json();
@@ -131,7 +131,7 @@ export default function Log() {
     queryKey: ["meal", selectedDate, activeTab],
     queryFn: async () => {
       console.log("🔍 Fetching meal for:", { date: selectedDate, mealType: activeTab });
-      const res = await fetch(`/api/meals?date=${selectedDate}&mealType=${activeTab}`, {
+      const res = await fetch(`https://calorie-tracker-3-2j7n.onrender.com/api/meals?date=${selectedDate}&mealType=${activeTab}`, {
         credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to fetch meal");
@@ -149,7 +149,7 @@ export default function Log() {
   const saveMealMutation = useMutation({
     mutationFn: async (meal: Meal) => {
       console.log("💾 Saving meal:", meal);
-      const res = await fetch("/api/meals", {
+      const res = await fetch("https://calorie-tracker-3-2j7n.onrender.com/api/meals", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(meal),
