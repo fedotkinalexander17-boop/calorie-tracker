@@ -68,13 +68,13 @@ var require_ms = __commonJS({
         "val is not a non-empty string or a valid number. val=" + JSON.stringify(val)
       );
     };
-    function parse4(str2) {
-      str2 = String(str2);
-      if (str2.length > 100) {
+    function parse4(str) {
+      str = String(str);
+      if (str.length > 100) {
         return;
       }
       var match2 = /^(-?(?:\d+)?\.?\d+) *(milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|weeks?|w|years?|yrs?|y)?$/i.exec(
-        str2
+        str
       );
       if (!match2) {
         return;
@@ -169,7 +169,7 @@ var require_common = __commonJS({
     function setup(env) {
       createDebug2.debug = createDebug2;
       createDebug2.default = createDebug2;
-      createDebug2.coerce = coerce2;
+      createDebug2.coerce = coerce;
       createDebug2.disable = disable;
       createDebug2.enable = enable;
       createDebug2.enabled = enabled;
@@ -324,7 +324,7 @@ var require_common = __commonJS({
         }
         return false;
       }
-      function coerce2(val) {
+      function coerce(val) {
         if (val instanceof Error) {
           return val.stack || val.message;
         }
@@ -499,8 +499,8 @@ var require_browser = __commonJS({
       }
     }
     module.exports = require_common()(exports);
-    var { formatters: formatters2 } = module.exports;
-    formatters2.j = function(v) {
+    var { formatters } = module.exports;
+    formatters.j = function(v) {
       try {
         return JSON.stringify(v);
       } catch (error40) {
@@ -514,14 +514,14 @@ var require_browser = __commonJS({
 var require_node = __commonJS({
   "../../node_modules/.pnpm/debug@4.4.3/node_modules/debug/src/node.js"(exports, module) {
     var tty = __require("tty");
-    var util2 = __require("util");
+    var util = __require("util");
     exports.init = init;
     exports.log = log;
     exports.formatArgs = formatArgs;
     exports.save = save;
     exports.load = load;
     exports.useColors = useColors;
-    exports.destroy = util2.deprecate(
+    exports.destroy = util.deprecate(
       () => {
       },
       "Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`."
@@ -652,7 +652,7 @@ var require_node = __commonJS({
       return (/* @__PURE__ */ new Date()).toISOString() + " ";
     }
     function log(...args) {
-      return process.stderr.write(util2.formatWithOptions(exports.inspectOpts, ...args) + "\n");
+      return process.stderr.write(util.formatWithOptions(exports.inspectOpts, ...args) + "\n");
     }
     function save(namespaces) {
       if (namespaces) {
@@ -672,14 +672,14 @@ var require_node = __commonJS({
       }
     }
     module.exports = require_common()(exports);
-    var { formatters: formatters2 } = module.exports;
-    formatters2.o = function(v) {
+    var { formatters } = module.exports;
+    formatters.o = function(v) {
       this.inspectOpts.colors = this.useColors;
-      return util2.inspect(v, this.inspectOpts).split("\n").map((str2) => str2.trim()).join(" ");
+      return util.inspect(v, this.inspectOpts).split("\n").map((str) => str.trim()).join(" ");
     };
-    formatters2.O = function(v) {
+    formatters.O = function(v) {
       this.inspectOpts.colors = this.useColors;
-      return util2.inspect(v, this.inspectOpts);
+      return util.inspect(v, this.inspectOpts);
     };
   }
 });
@@ -701,8 +701,8 @@ var require_depd = __commonJS({
     var relative = __require("path").relative;
     module.exports = depd;
     var basePath33 = process.cwd();
-    function containsNamespace(str2, namespace) {
-      var vals = str2.split(/[ ,]+/);
+    function containsNamespace(str, namespace) {
+      var vals = str.split(/[ ,]+/);
       var ns = String(namespace).toLowerCase();
       for (var i = 0; i < vals.length; i++) {
         var val = vals[i];
@@ -729,21 +729,21 @@ var require_depd = __commonJS({
       return descriptor;
     }
     function createArgumentsString(arity) {
-      var str2 = "";
+      var str = "";
       for (var i = 0; i < arity; i++) {
-        str2 += ", arg" + i;
+        str += ", arg" + i;
       }
-      return str2.substr(2);
+      return str.substr(2);
     }
     function createStackString(stack) {
-      var str2 = this.name + ": " + this.namespace;
+      var str = this.name + ": " + this.namespace;
       if (this.message) {
-        str2 += " deprecated " + this.message;
+        str += " deprecated " + this.message;
       }
       for (var i = 0; i < stack.length; i++) {
-        str2 += "\n    at " + stack[i].toString();
+        str += "\n    at " + stack[i].toString();
       }
-      return str2;
+      return str;
     }
     function depd(namespace) {
       if (!namespace) {
@@ -772,15 +772,15 @@ var require_depd = __commonJS({
       if (process.noDeprecation) {
         return true;
       }
-      var str2 = process.env.NO_DEPRECATION || "";
-      return containsNamespace(str2, namespace);
+      var str = process.env.NO_DEPRECATION || "";
+      return containsNamespace(str, namespace);
     }
     function istraced(namespace) {
       if (process.traceDeprecation) {
         return true;
       }
-      var str2 = process.env.TRACE_DEPRECATION || "";
-      return containsNamespace(str2, namespace);
+      var str = process.env.TRACE_DEPRECATION || "";
+      return containsNamespace(str, namespace);
     }
     function log(message, site) {
       var haslisteners = eehaslisteners(process, "deprecation");
@@ -893,15 +893,15 @@ var require_depd = __commonJS({
       return relative(basePath33, callSite[0]) + ":" + callSite[1] + ":" + callSite[2];
     }
     function getStack() {
-      var limit2 = Error.stackTraceLimit;
+      var limit = Error.stackTraceLimit;
       var obj = {};
       var prep = Error.prepareStackTrace;
       Error.prepareStackTrace = prepareObjectStackTrace;
-      Error.stackTraceLimit = Math.max(10, limit2);
+      Error.stackTraceLimit = Math.max(10, limit);
       Error.captureStackTrace(obj);
       var stack = obj.stack.slice(1);
       Error.prepareStackTrace = prep;
-      Error.stackTraceLimit = limit2;
+      Error.stackTraceLimit = limit;
       return stack;
     }
     function prepareObjectStackTrace(obj, stack) {
@@ -1199,13 +1199,13 @@ var require_inherits_browser = __commonJS({
 var require_inherits = __commonJS({
   "../../node_modules/.pnpm/inherits@2.0.4/node_modules/inherits/inherits.js"(exports, module) {
     try {
-      util2 = __require("util");
-      if (typeof util2.inherits !== "function") throw "";
-      module.exports = util2.inherits;
+      util = __require("util");
+      if (typeof util.inherits !== "function") throw "";
+      module.exports = util.inherits;
     } catch (e) {
       module.exports = require_inherits_browser();
     }
-    var util2;
+    var util;
   }
 });
 
@@ -1214,8 +1214,8 @@ var require_toidentifier = __commonJS({
   "../../node_modules/.pnpm/toidentifier@1.0.1/node_modules/toidentifier/index.js"(exports, module) {
     "use strict";
     module.exports = toIdentifier;
-    function toIdentifier(str2) {
-      return str2.split(" ").map(function(token) {
+    function toIdentifier(str) {
+      return str.split(" ").map(function(token) {
         return token.slice(0, 1).toUpperCase() + token.slice(1);
       }).join("").replace(/[^ _0-9a-z]/gi, "");
     }
@@ -1439,16 +1439,16 @@ var require_bytes = __commonJS({
         }
       }
       var val = value / map2[unit.toLowerCase()];
-      var str2 = val.toFixed(decimalPlaces);
+      var str = val.toFixed(decimalPlaces);
       if (!fixedDecimals) {
-        str2 = str2.replace(formatDecimalsRegExp, "$1");
+        str = str.replace(formatDecimalsRegExp, "$1");
       }
       if (thousandsSeparator) {
-        str2 = str2.split(".").map(function(s2, i) {
+        str = str.split(".").map(function(s2, i) {
           return i === 0 ? s2.replace(formatThousandsRegExp, thousandsSeparator) : s2;
         }).join(".");
       }
-      return str2 + unitSeparator + unit;
+      return str + unitSeparator + unit;
     }
     function parse4(val) {
       if (typeof val === "number" && !isNaN(val)) {
@@ -1553,12 +1553,12 @@ var require_bom_handling = __commonJS({
       this.encoder = encoder;
       this.addBOM = true;
     }
-    PrependBOMWrapper.prototype.write = function(str2) {
+    PrependBOMWrapper.prototype.write = function(str) {
       if (this.addBOM) {
-        str2 = BOMChar + str2;
+        str = BOMChar + str;
         this.addBOM = false;
       }
-      return this.encoder.write(str2);
+      return this.encoder.write(str);
     };
     PrependBOMWrapper.prototype.end = function() {
       return this.encoder.end();
@@ -1593,10 +1593,10 @@ var require_bom_handling = __commonJS({
 var require_merge_exports = __commonJS({
   "../../node_modules/.pnpm/iconv-lite@0.7.2/node_modules/iconv-lite/lib/helpers/merge-exports.js"(exports, module) {
     "use strict";
-    var hasOwn2 = typeof Object.hasOwn === "undefined" ? Function.call.bind(Object.prototype.hasOwnProperty) : Object.hasOwn;
+    var hasOwn = typeof Object.hasOwn === "undefined" ? Function.call.bind(Object.prototype.hasOwnProperty) : Object.hasOwn;
     function mergeModules(target, module2) {
       for (var key in module2) {
-        if (hasOwn2(module2, key)) {
+        if (hasOwn(module2, key)) {
           target[key] = module2[key];
         }
       }
@@ -1657,31 +1657,31 @@ var require_internal = __commonJS({
     function InternalEncoder(options, codec) {
       this.enc = codec.enc;
     }
-    InternalEncoder.prototype.write = function(str2) {
-      return Buffer2.from(str2, this.enc);
+    InternalEncoder.prototype.write = function(str) {
+      return Buffer2.from(str, this.enc);
     };
     InternalEncoder.prototype.end = function() {
     };
     function InternalEncoderBase64(options, codec) {
       this.prevStr = "";
     }
-    InternalEncoderBase64.prototype.write = function(str2) {
-      str2 = this.prevStr + str2;
-      var completeQuads = str2.length - str2.length % 4;
-      this.prevStr = str2.slice(completeQuads);
-      str2 = str2.slice(0, completeQuads);
-      return Buffer2.from(str2, "base64");
+    InternalEncoderBase64.prototype.write = function(str) {
+      str = this.prevStr + str;
+      var completeQuads = str.length - str.length % 4;
+      this.prevStr = str.slice(completeQuads);
+      str = str.slice(0, completeQuads);
+      return Buffer2.from(str, "base64");
     };
     InternalEncoderBase64.prototype.end = function() {
       return Buffer2.from(this.prevStr, "base64");
     };
     function InternalEncoderCesu8(options, codec) {
     }
-    InternalEncoderCesu8.prototype.write = function(str2) {
-      var buf = Buffer2.alloc(str2.length * 3);
+    InternalEncoderCesu8.prototype.write = function(str) {
+      var buf = Buffer2.alloc(str.length * 3);
       var bufIdx = 0;
-      for (var i = 0; i < str2.length; i++) {
-        var charCode = str2.charCodeAt(i);
+      for (var i = 0; i < str.length; i++) {
+        var charCode = str.charCodeAt(i);
         if (charCode < 128) {
           buf[bufIdx++] = charCode;
         } else if (charCode < 2048) {
@@ -1762,25 +1762,25 @@ var require_internal = __commonJS({
     function InternalEncoderUtf8(options, codec) {
       this.highSurrogate = "";
     }
-    InternalEncoderUtf8.prototype.write = function(str2) {
+    InternalEncoderUtf8.prototype.write = function(str) {
       if (this.highSurrogate) {
-        str2 = this.highSurrogate + str2;
+        str = this.highSurrogate + str;
         this.highSurrogate = "";
       }
-      if (str2.length > 0) {
-        var charCode = str2.charCodeAt(str2.length - 1);
+      if (str.length > 0) {
+        var charCode = str.charCodeAt(str.length - 1);
         if (charCode >= 55296 && charCode < 56320) {
-          this.highSurrogate = str2[str2.length - 1];
-          str2 = str2.slice(0, str2.length - 1);
+          this.highSurrogate = str[str.length - 1];
+          str = str.slice(0, str.length - 1);
         }
       }
-      return Buffer2.from(str2, this.enc);
+      return Buffer2.from(str, this.enc);
     };
     InternalEncoderUtf8.prototype.end = function() {
       if (this.highSurrogate) {
-        var str2 = this.highSurrogate;
+        var str = this.highSurrogate;
         this.highSurrogate = "";
-        return Buffer2.from(str2, this.enc);
+        return Buffer2.from(str, this.enc);
       }
     };
   }
@@ -1807,8 +1807,8 @@ var require_utf32 = __commonJS({
       this.isLE = codec.isLE;
       this.highSurrogate = 0;
     }
-    Utf32Encoder.prototype.write = function(str2) {
-      var src = Buffer2.from(str2, "ucs2");
+    Utf32Encoder.prototype.write = function(str) {
+      var src = Buffer2.from(str, "ucs2");
       var dst = Buffer2.alloc(src.length * 2);
       var write32 = this.isLE ? dst.writeUInt32LE : dst.writeUInt32BE;
       var offset = 0;
@@ -1929,8 +1929,8 @@ var require_utf32 = __commonJS({
       }
       this.encoder = codec.iconv.getEncoder(options.defaultEncoding || "utf-32le", options);
     }
-    Utf32AutoEncoder.prototype.write = function(str2) {
-      return this.encoder.write(str2);
+    Utf32AutoEncoder.prototype.write = function(str) {
+      return this.encoder.write(str);
     };
     Utf32AutoEncoder.prototype.end = function() {
       return this.encoder.end();
@@ -2030,8 +2030,8 @@ var require_utf16 = __commonJS({
     Utf16BECodec.prototype.bomAware = true;
     function Utf16BEEncoder() {
     }
-    Utf16BEEncoder.prototype.write = function(str2) {
-      var buf = Buffer2.from(str2, "ucs2");
+    Utf16BEEncoder.prototype.write = function(str) {
+      var buf = Buffer2.from(str, "ucs2");
       for (var i = 0; i < buf.length; i += 2) {
         var tmp = buf[i];
         buf[i] = buf[i + 1];
@@ -2080,8 +2080,8 @@ var require_utf16 = __commonJS({
       }
       this.encoder = codec.iconv.getEncoder("utf-16le", options);
     }
-    Utf16Encoder.prototype.write = function(str2) {
-      return this.encoder.write(str2);
+    Utf16Encoder.prototype.write = function(str) {
+      return this.encoder.write(str);
     };
     Utf16Encoder.prototype.end = function() {
       return this.encoder.end();
@@ -2177,8 +2177,8 @@ var require_utf7 = __commonJS({
     function Utf7Encoder(options, codec) {
       this.iconv = codec.iconv;
     }
-    Utf7Encoder.prototype.write = function(str2) {
-      return Buffer2.from(str2.replace(nonDirectChars, function(chunk) {
+    Utf7Encoder.prototype.write = function(str) {
+      return Buffer2.from(str.replace(nonDirectChars, function(chunk) {
         return "+" + (chunk === "+" ? "" : this.iconv.encode(chunk, "utf16-be").toString("base64").replace(/=+$/, "")) + "-";
       }.bind(this)));
     };
@@ -2189,10 +2189,10 @@ var require_utf7 = __commonJS({
       this.inBase64 = false;
       this.base64Accum = "";
     }
-    var base64Regex2 = /[A-Za-z0-9\/+]/;
+    var base64Regex = /[A-Za-z0-9\/+]/;
     var base64Chars = [];
     for (i = 0; i < 256; i++) {
-      base64Chars[i] = base64Regex2.test(String.fromCharCode(i));
+      base64Chars[i] = base64Regex.test(String.fromCharCode(i));
     }
     var i;
     var plusChar = "+".charCodeAt(0);
@@ -2262,14 +2262,14 @@ var require_utf7 = __commonJS({
       this.base64Accum = Buffer2.alloc(6);
       this.base64AccumIdx = 0;
     }
-    Utf7IMAPEncoder.prototype.write = function(str2) {
+    Utf7IMAPEncoder.prototype.write = function(str) {
       var inBase64 = this.inBase64;
       var base64Accum = this.base64Accum;
       var base64AccumIdx = this.base64AccumIdx;
-      var buf = Buffer2.alloc(str2.length * 5 + 10);
+      var buf = Buffer2.alloc(str.length * 5 + 10);
       var bufIdx = 0;
-      for (var i2 = 0; i2 < str2.length; i2++) {
-        var uChar = str2.charCodeAt(i2);
+      for (var i2 = 0; i2 < str.length; i2++) {
+        var uChar = str.charCodeAt(i2);
         if (uChar >= 32 && uChar <= 126) {
           if (inBase64) {
             if (base64AccumIdx > 0) {
@@ -2410,10 +2410,10 @@ var require_sbcs_codec = __commonJS({
     function SBCSEncoder(options, codec) {
       this.encodeBuf = codec.encodeBuf;
     }
-    SBCSEncoder.prototype.write = function(str2) {
-      var buf = Buffer2.alloc(str2.length);
-      for (var i = 0; i < str2.length; i++) {
-        buf[i] = this.encodeBuf[str2.charCodeAt(i)];
+    SBCSEncoder.prototype.write = function(str) {
+      var buf = Buffer2.alloc(str.length);
+      for (var i = 0; i < str.length; i++) {
+        buf[i] = this.encodeBuf[str.charCodeAt(i)];
       }
       return buf;
     };
@@ -3287,8 +3287,8 @@ var require_dbcs_codec = __commonJS({
       this.defaultCharSingleByte = codec.defCharSB;
       this.gb18030 = codec.gb18030;
     }
-    DBCSEncoder.prototype.write = function(str2) {
-      var newBuf = Buffer2.alloc(str2.length * (this.gb18030 ? 4 : 3));
+    DBCSEncoder.prototype.write = function(str) {
+      var newBuf = Buffer2.alloc(str.length * (this.gb18030 ? 4 : 3));
       var leadSurrogate = this.leadSurrogate;
       var seqObj = this.seqObj;
       var nextChar = -1;
@@ -3296,8 +3296,8 @@ var require_dbcs_codec = __commonJS({
       var j = 0;
       while (true) {
         if (nextChar === -1) {
-          if (i2 == str2.length) break;
-          var uCode = str2.charCodeAt(i2++);
+          if (i2 == str.length) break;
+          var uCode = str.charCodeAt(i2++);
         } else {
           var uCode = nextChar;
           nextChar = -1;
@@ -5135,10 +5135,10 @@ var require_lib = __commonJS({
     module.exports.encodings = null;
     module.exports.defaultCharUnicode = "\uFFFD";
     module.exports.defaultCharSingleByte = "?";
-    module.exports.encode = function encode2(str2, encoding, options) {
-      str2 = "" + (str2 || "");
+    module.exports.encode = function encode(str, encoding, options) {
+      str = "" + (str || "");
       var encoder = module.exports.getEncoder(encoding, options);
-      var res = encoder.write(str2);
+      var res = encoder.write(str);
       var trail = encoder.end();
       return trail && trail.length > 0 ? Buffer2.concat([res, trail]) : res;
     };
@@ -5342,13 +5342,13 @@ var require_raw_body = __commonJS({
         throw new TypeError("argument callback is required");
       }
       var encoding = opts.encoding !== true ? opts.encoding : "utf-8";
-      var limit2 = bytes.parse(opts.limit);
+      var limit = bytes.parse(opts.limit);
       var length = opts.length != null && !isNaN(opts.length) ? parseInt(opts.length, 10) : null;
       if (done) {
-        return readStream(stream, encoding, length, limit2, wrap(done));
+        return readStream(stream, encoding, length, limit, wrap(done));
       }
       return new Promise(function executor(resolve, reject) {
-        readStream(stream, encoding, length, limit2, function onRead(err, buf) {
+        readStream(stream, encoding, length, limit, function onRead(err, buf) {
           if (err) return reject(err);
           resolve(buf);
         });
@@ -5360,14 +5360,14 @@ var require_raw_body = __commonJS({
         stream.pause();
       }
     }
-    function readStream(stream, encoding, length, limit2, callback) {
+    function readStream(stream, encoding, length, limit, callback) {
       var complete = false;
       var sync = true;
-      if (limit2 !== null && length !== null && length > limit2) {
+      if (limit !== null && length !== null && length > limit) {
         return done(createError(413, "request entity too large", {
           expected: length,
           length,
-          limit: limit2,
+          limit,
           type: "entity.too.large"
         }));
       }
@@ -5428,9 +5428,9 @@ var require_raw_body = __commonJS({
       function onData(chunk) {
         if (complete) return;
         received += chunk.length;
-        if (limit2 !== null && received > limit2) {
+        if (limit !== null && received > limit) {
           done(createError(413, "request entity too large", {
-            limit: limit2,
+            limit,
             received,
             type: "entity.too.large"
           }));
@@ -5738,9 +5738,9 @@ var require_dist = __commonJS({
       }
       return parameters;
     }
-    function skipValue(str2, index, len) {
+    function skipValue(str, index, len) {
       while (index < len) {
-        const char2 = str2.charCodeAt(index);
+        const char2 = str.charCodeAt(index);
         if (char2 === SEMI)
           break;
         index++;
@@ -5765,12 +5765,12 @@ var require_dist = __commonJS({
       }
       return end;
     }
-    function qstring(str2) {
-      if (TOKEN_REGEXP.test(str2))
-        return str2;
-      if (TEXT_REGEXP.test(str2))
-        return `"${str2.replace(QUOTE_REGEXP, "\\$&")}"`;
-      throw new TypeError(`Invalid parameter value: ${str2}`);
+    function qstring(str) {
+      if (TOKEN_REGEXP.test(str))
+        return str;
+      if (TEXT_REGEXP.test(str))
+        return `"${str.replace(QUOTE_REGEXP, "\\$&")}"`;
+      throw new TypeError(`Invalid parameter value: ${str}`);
     }
   }
 });
@@ -15206,11 +15206,11 @@ var require_mime_types = __commonJS({
       }
       return false;
     }
-    function contentType(str2) {
-      if (!str2 || typeof str2 !== "string") {
+    function contentType(str) {
+      if (!str || typeof str !== "string") {
         return false;
       }
-      var mime = str2.indexOf("/") === -1 ? exports.lookup(str2) : str2;
+      var mime = str.indexOf("/") === -1 ? exports.lookup(str) : str;
       if (!mime) {
         return false;
       }
@@ -15231,11 +15231,11 @@ var require_mime_types = __commonJS({
       }
       return exts[0];
     }
-    function lookup(path2) {
-      if (!path2 || typeof path2 !== "string") {
+    function lookup(path) {
+      if (!path || typeof path !== "string") {
         return false;
       }
-      var extension2 = extname("x." + path2).toLowerCase().slice(1);
+      var extension2 = extname("x." + path).toLowerCase().slice(1);
       if (!extension2) {
         return false;
       }
@@ -15529,14 +15529,14 @@ var require_content_type = __commonJS({
       return header;
     }
     function qstring(val) {
-      var str2 = String(val);
-      if (TOKEN_REGEXP.test(str2)) {
-        return str2;
+      var str = String(val);
+      if (TOKEN_REGEXP.test(str)) {
+        return str;
       }
-      if (str2.length > 0 && !TEXT_REGEXP.test(str2)) {
+      if (str.length > 0 && !TEXT_REGEXP.test(str)) {
         throw new TypeError("invalid parameter value");
       }
-      return '"' + str2.replace(QUOTE_REGEXP, "\\$1") + '"';
+      return '"' + str.replace(QUOTE_REGEXP, "\\$1") + '"';
     }
     function ContentType(type) {
       this.parameters = /* @__PURE__ */ Object.create(null);
@@ -15574,7 +15574,7 @@ var require_utils = __commonJS({
         throw new TypeError("defaultType must be provided");
       }
       var inflate = options?.inflate !== false;
-      var limit2 = typeof options?.limit !== "number" ? bytes.parse(options?.limit || "100kb") : options?.limit;
+      var limit = typeof options?.limit !== "number" ? bytes.parse(options?.limit || "100kb") : options?.limit;
       var type = options?.type || defaultType;
       var verify = options?.verify || false;
       var defaultCharset = options?.defaultCharset || "utf-8";
@@ -15584,7 +15584,7 @@ var require_utils = __commonJS({
       var shouldParse = typeof type !== "function" ? typeChecker(type) : type;
       return {
         inflate,
-        limit: limit2,
+        limit,
         verify,
         defaultCharset,
         shouldParse
@@ -15692,14 +15692,14 @@ var require_read = __commonJS({
             return;
           }
         }
-        var str2 = body;
+        var str = body;
         try {
           debug("parse body");
-          str2 = typeof body !== "string" && encoding !== null ? iconv.decode(body, encoding) : body;
-          req.body = parse4(str2, encoding);
+          str = typeof body !== "string" && encoding !== null ? iconv.decode(body, encoding) : body;
+          req.body = parse4(str, encoding);
         } catch (err) {
           next(createError(400, err, {
-            body: str2,
+            body: str,
             type: err.type || "entity.parse.failed"
           }));
           return;
@@ -15799,11 +15799,11 @@ var require_json = __commonJS({
         read(req, res, next, parse4, debug, readOptions);
       };
     }
-    function createStrictSyntaxError(str2, char2) {
-      var index = str2.indexOf(char2);
+    function createStrictSyntaxError(str, char2) {
+      var index = str.indexOf(char2);
       var partial2 = "";
       if (index !== -1) {
-        partial2 = str2.substring(0, index) + JSON_SYNTAX_CHAR.repeat(str2.length - index);
+        partial2 = str.substring(0, index) + JSON_SYNTAX_CHAR.repeat(str.length - index);
       }
       try {
         JSON.parse(partial2);
@@ -15811,14 +15811,14 @@ var require_json = __commonJS({
       } catch (e) {
         return normalizeJsonSyntaxError(e, {
           message: e.message.replace(JSON_SYNTAX_REGEXP, function(placeholder) {
-            return str2.substring(index, index + placeholder.length);
+            return str.substring(index, index + placeholder.length);
           }),
           stack: e.stack
         });
       }
     }
-    function firstchar(str2) {
-      var match2 = FIRST_CHAR_REGEXP.exec(str2);
+    function firstchar(str) {
+      var match2 = FIRST_CHAR_REGEXP.exec(str);
       return match2 ? match2[1] : void 0;
     }
     function normalizeJsonSyntaxError(error40, obj) {
@@ -15929,20 +15929,20 @@ var require_object_inspect = __commonJS({
     var gPO = (typeof Reflect === "function" ? Reflect.getPrototypeOf : Object.getPrototypeOf) || ([].__proto__ === Array.prototype ? function(O) {
       return O.__proto__;
     } : null);
-    function addNumericSeparator(num, str2) {
-      if (num === Infinity || num === -Infinity || num !== num || num && num > -1e3 && num < 1e3 || $test.call(/e/, str2)) {
-        return str2;
+    function addNumericSeparator(num, str) {
+      if (num === Infinity || num === -Infinity || num !== num || num && num > -1e3 && num < 1e3 || $test.call(/e/, str)) {
+        return str;
       }
       var sepRegex = /[0-9](?=(?:[0-9]{3})+(?![0-9]))/g;
       if (typeof num === "number") {
         var int2 = num < 0 ? -$floor(-num) : $floor(num);
         if (int2 !== num) {
           var intStr = String(int2);
-          var dec = $slice.call(str2, intStr.length + 1);
+          var dec = $slice.call(str, intStr.length + 1);
           return $replace.call(intStr, sepRegex, "$&_") + "." + $replace.call($replace.call(dec, /([0-9]{3})/g, "$&_"), /_$/, "");
         }
       }
-      return $replace.call(str2, sepRegex, "$&_");
+      return $replace.call(str, sepRegex, "$&_");
     }
     var utilInspect = require_util_inspect();
     var inspectCustom = utilInspect.custom;
@@ -15959,20 +15959,20 @@ var require_object_inspect = __commonJS({
     };
     module.exports = function inspect_(obj, options, depth, seen) {
       var opts = options || {};
-      if (has2(opts, "quoteStyle") && !has2(quotes, opts.quoteStyle)) {
+      if (has(opts, "quoteStyle") && !has(quotes, opts.quoteStyle)) {
         throw new TypeError('option "quoteStyle" must be "single" or "double"');
       }
-      if (has2(opts, "maxStringLength") && (typeof opts.maxStringLength === "number" ? opts.maxStringLength < 0 && opts.maxStringLength !== Infinity : opts.maxStringLength !== null)) {
+      if (has(opts, "maxStringLength") && (typeof opts.maxStringLength === "number" ? opts.maxStringLength < 0 && opts.maxStringLength !== Infinity : opts.maxStringLength !== null)) {
         throw new TypeError('option "maxStringLength", if provided, must be a positive integer, Infinity, or `null`');
       }
-      var customInspect = has2(opts, "customInspect") ? opts.customInspect : true;
+      var customInspect = has(opts, "customInspect") ? opts.customInspect : true;
       if (typeof customInspect !== "boolean" && customInspect !== "symbol") {
         throw new TypeError("option \"customInspect\", if provided, must be `true`, `false`, or `'symbol'`");
       }
-      if (has2(opts, "indent") && opts.indent !== null && opts.indent !== "	" && !(parseInt(opts.indent, 10) === opts.indent && opts.indent > 0)) {
+      if (has(opts, "indent") && opts.indent !== null && opts.indent !== "	" && !(parseInt(opts.indent, 10) === opts.indent && opts.indent > 0)) {
         throw new TypeError('option "indent" must be "\\t", an integer > 0, or `null`');
       }
-      if (has2(opts, "numericSeparator") && typeof opts.numericSeparator !== "boolean") {
+      if (has(opts, "numericSeparator") && typeof opts.numericSeparator !== "boolean") {
         throw new TypeError('option "numericSeparator", if provided, must be `true` or `false`');
       }
       var numericSeparator = opts.numericSeparator;
@@ -15992,8 +15992,8 @@ var require_object_inspect = __commonJS({
         if (obj === 0) {
           return Infinity / obj > 0 ? "0" : "-0";
         }
-        var str2 = String(obj);
-        return numericSeparator ? addNumericSeparator(obj, str2) : str2;
+        var str = String(obj);
+        return numericSeparator ? addNumericSeparator(obj, str) : str;
       }
       if (typeof obj === "bigint") {
         var bigIntStr = String(obj) + "n";
@@ -16004,7 +16004,7 @@ var require_object_inspect = __commonJS({
         depth = 0;
       }
       if (depth >= maxDepth && maxDepth > 0 && typeof obj === "object") {
-        return isArray2(obj) ? "[Array]" : "[Object]";
+        return isArray(obj) ? "[Array]" : "[Object]";
       }
       var indent = getIndent(opts, depth);
       if (typeof seen === "undefined") {
@@ -16021,7 +16021,7 @@ var require_object_inspect = __commonJS({
           var newOpts = {
             depth: opts.depth
           };
-          if (has2(opts, "quoteStyle")) {
+          if (has(opts, "quoteStyle")) {
             newOpts.quoteStyle = opts.quoteStyle;
           }
           return inspect_(value, newOpts, depth + 1, seen);
@@ -16050,7 +16050,7 @@ var require_object_inspect = __commonJS({
         s2 += "</" + $toLowerCase.call(String(obj.nodeName)) + ">";
         return s2;
       }
-      if (isArray2(obj)) {
+      if (isArray(obj)) {
         if (obj.length === 0) {
           return "[]";
         }
@@ -16150,7 +16150,7 @@ var require_object_inspect = __commonJS({
     function canTrustToString(obj) {
       return !toStringTag || !(typeof obj === "object" && (toStringTag in obj || typeof obj[toStringTag] !== "undefined"));
     }
-    function isArray2(obj) {
+    function isArray(obj) {
       return toStr(obj) === "[object Array]" && canTrustToString(obj);
     }
     function isDate(obj) {
@@ -16199,11 +16199,11 @@ var require_object_inspect = __commonJS({
       }
       return false;
     }
-    var hasOwn2 = Object.prototype.hasOwnProperty || function(key) {
+    var hasOwn = Object.prototype.hasOwnProperty || function(key) {
       return key in this;
     };
-    function has2(obj, key) {
-      return hasOwn2.call(obj, key);
+    function has(obj, key) {
+      return hasOwn.call(obj, key);
     }
     function toStr(obj) {
       return objectToString.call(obj);
@@ -16313,15 +16313,15 @@ var require_object_inspect = __commonJS({
       }
       return typeof x.nodeName === "string" && typeof x.getAttribute === "function";
     }
-    function inspectString(str2, opts) {
-      if (str2.length > opts.maxStringLength) {
-        var remaining = str2.length - opts.maxStringLength;
+    function inspectString(str, opts) {
+      if (str.length > opts.maxStringLength) {
+        var remaining = str.length - opts.maxStringLength;
         var trailer = "... " + remaining + " more character" + (remaining > 1 ? "s" : "");
-        return inspectString($slice.call(str2, 0, opts.maxStringLength), opts) + trailer;
+        return inspectString($slice.call(str, 0, opts.maxStringLength), opts) + trailer;
       }
       var quoteRE = quoteREs[opts.quoteStyle || "single"];
       quoteRE.lastIndex = 0;
-      var s2 = $replace.call($replace.call(str2, quoteRE, "\\$1"), /[\x00-\x1f]/g, lowbyte);
+      var s2 = $replace.call($replace.call(str, quoteRE, "\\$1"), /[\x00-\x1f]/g, lowbyte);
       return wrapQuotes(s2, "single", opts);
     }
     function lowbyte(c) {
@@ -16338,8 +16338,8 @@ var require_object_inspect = __commonJS({
       }
       return "\\x" + (n < 16 ? "0" : "") + $toUpperCase.call(n.toString(16));
     }
-    function markBoxed(str2) {
-      return "Object(" + str2 + ")";
+    function markBoxed(str) {
+      return "Object(" + str + ")";
     }
     function weakCollectionOf(type) {
       return type + " { ? }";
@@ -16378,12 +16378,12 @@ var require_object_inspect = __commonJS({
       return lineJoiner + $join.call(xs, "," + lineJoiner) + "\n" + indent.prev;
     }
     function arrObjKeys(obj, inspect) {
-      var isArr = isArray2(obj);
+      var isArr = isArray(obj);
       var xs = [];
       if (isArr) {
         xs.length = obj.length;
         for (var i = 0; i < obj.length; i++) {
-          xs[i] = has2(obj, i) ? inspect(obj[i], obj) : "";
+          xs[i] = has(obj, i) ? inspect(obj[i], obj) : "";
         }
       }
       var syms = typeof gOPS === "function" ? gOPS(obj) : [];
@@ -16395,7 +16395,7 @@ var require_object_inspect = __commonJS({
         }
       }
       for (var key in obj) {
-        if (!has2(obj, key)) {
+        if (!has(obj, key)) {
           continue;
         }
         if (isArr && String(Number(key)) === key && key < obj.length) {
@@ -16804,14 +16804,14 @@ var require_implementation = __commonJS({
       return arr;
     };
     var joiny = function(arr, joiner) {
-      var str2 = "";
+      var str = "";
       for (var i = 0; i < arr.length; i += 1) {
-        str2 += arr[i];
+        str += arr[i];
         if (i + 1 < arr.length) {
-          str2 += joiner;
+          str += joiner;
         }
       }
-      return str2;
+      return str;
     };
     module.exports = function bind(that) {
       var target = this;
@@ -17200,7 +17200,7 @@ var require_get_intrinsic = __commonJS({
       "%WeakSetPrototype%": ["WeakSet", "prototype"]
     };
     var bind = require_function_bind();
-    var hasOwn2 = require_hasown();
+    var hasOwn = require_hasown();
     var $concat = bind.call($call, Array.prototype.concat);
     var $spliceApply = bind.call($apply, Array.prototype.splice);
     var $replace = bind.call($call, String.prototype.replace);
@@ -17225,11 +17225,11 @@ var require_get_intrinsic = __commonJS({
     var getBaseIntrinsic = function getBaseIntrinsic2(name, allowMissing) {
       var intrinsicName = name;
       var alias;
-      if (hasOwn2(LEGACY_ALIASES, intrinsicName)) {
+      if (hasOwn(LEGACY_ALIASES, intrinsicName)) {
         alias = LEGACY_ALIASES[intrinsicName];
         intrinsicName = "%" + alias[0] + "%";
       }
-      if (hasOwn2(INTRINSICS, intrinsicName)) {
+      if (hasOwn(INTRINSICS, intrinsicName)) {
         var value = INTRINSICS[intrinsicName];
         if (value === needsEval) {
           value = doEval(intrinsicName);
@@ -17278,7 +17278,7 @@ var require_get_intrinsic = __commonJS({
         }
         intrinsicBaseName += "." + part;
         intrinsicRealName = "%" + intrinsicBaseName + "%";
-        if (hasOwn2(INTRINSICS, intrinsicRealName)) {
+        if (hasOwn(INTRINSICS, intrinsicRealName)) {
           value = INTRINSICS[intrinsicRealName];
         } else if (value != null) {
           if (!(part in value)) {
@@ -17296,7 +17296,7 @@ var require_get_intrinsic = __commonJS({
               value = value[part];
             }
           } else {
-            isOwn = hasOwn2(value, part);
+            isOwn = hasOwn(value, part);
             value = value[part];
           }
           if (isOwn && !skipFurtherCaching) {
@@ -17533,8 +17533,8 @@ var require_utils2 = __commonJS({
     "use strict";
     var formats = require_formats();
     var getSideChannel = require_side_channel();
-    var has2 = Object.prototype.hasOwnProperty;
-    var isArray2 = Array.isArray;
+    var has = Object.prototype.hasOwnProperty;
+    var isArray = Array.isArray;
     var overflowChannel = getSideChannel();
     var markOverflow = function markOverflow2(obj, maxIndex) {
       overflowChannel.set(obj, maxIndex);
@@ -17560,7 +17560,7 @@ var require_utils2 = __commonJS({
       while (queue.length > 1) {
         var item = queue.pop();
         var obj = item.obj[item.prop];
-        if (isArray2(obj)) {
+        if (isArray(obj)) {
           var compacted = [];
           for (var j = 0; j < obj.length; ++j) {
             if (typeof obj[j] !== "undefined") {
@@ -17585,7 +17585,7 @@ var require_utils2 = __commonJS({
         return target;
       }
       if (typeof source !== "object" && typeof source !== "function") {
-        if (isArray2(target)) {
+        if (isArray(target)) {
           var nextIndex = target.length;
           if (options && typeof options.arrayLimit === "number" && nextIndex > options.arrayLimit) {
             return markOverflow(arrayToObject(target.concat(source), options), nextIndex);
@@ -17598,7 +17598,7 @@ var require_utils2 = __commonJS({
             setMaxIndex(target, newIndex);
           } else if (options && options.strictMerge) {
             return [target, source];
-          } else if (options && (options.plainObjects || options.allowPrototypes) || !has2.call(Object.prototype, source)) {
+          } else if (options && (options.plainObjects || options.allowPrototypes) || !has.call(Object.prototype, source)) {
             target[source] = true;
           }
         } else {
@@ -17623,12 +17623,12 @@ var require_utils2 = __commonJS({
         return combined;
       }
       var mergeTarget = target;
-      if (isArray2(target) && !isArray2(source)) {
+      if (isArray(target) && !isArray(source)) {
         mergeTarget = arrayToObject(target, options);
       }
-      if (isArray2(target) && isArray2(source)) {
+      if (isArray(target) && isArray(source)) {
         source.forEach(function(item, i) {
-          if (has2.call(target, i)) {
+          if (has.call(target, i)) {
             var targetItem = target[i];
             if (targetItem && typeof targetItem === "object" && item && typeof item === "object") {
               target[i] = merge3(targetItem, item, options);
@@ -17643,7 +17643,7 @@ var require_utils2 = __commonJS({
       }
       return Object.keys(source).reduce(function(acc, key) {
         var value = source[key];
-        if (has2.call(acc, key)) {
+        if (has.call(acc, key)) {
           acc[key] = merge3(acc[key], value, options);
         } else {
           acc[key] = value;
@@ -17666,8 +17666,8 @@ var require_utils2 = __commonJS({
         return acc;
       }, target);
     };
-    var decode = function(str2, defaultDecoder, charset) {
-      var strWithoutPlus = str2.replace(/\+/g, " ");
+    var decode = function(str, defaultDecoder, charset) {
+      var strWithoutPlus = str.replace(/\+/g, " ");
       if (charset === "iso-8859-1") {
         return strWithoutPlus.replace(/%[0-9a-f]{2}/gi, unescape);
       }
@@ -17677,16 +17677,16 @@ var require_utils2 = __commonJS({
         return strWithoutPlus;
       }
     };
-    var limit2 = 1024;
-    var encode2 = function encode3(str2, defaultEncoder, charset, kind, format) {
-      if (str2.length === 0) {
-        return str2;
+    var limit = 1024;
+    var encode = function encode2(str, defaultEncoder, charset, kind, format) {
+      if (str.length === 0) {
+        return str;
       }
-      var string4 = str2;
-      if (typeof str2 === "symbol") {
-        string4 = Symbol.prototype.toString.call(str2);
-      } else if (typeof str2 !== "string") {
-        string4 = String(str2);
+      var string4 = str;
+      if (typeof str === "symbol") {
+        string4 = Symbol.prototype.toString.call(str);
+      } else if (typeof str !== "string") {
+        string4 = String(str);
       }
       if (charset === "iso-8859-1") {
         return escape(string4).replace(/%u[0-9a-f]{4}/gi, function($0) {
@@ -17694,8 +17694,8 @@ var require_utils2 = __commonJS({
         });
       }
       var out = "";
-      for (var j = 0; j < string4.length; j += limit2) {
-        var segment = string4.length >= limit2 ? string4.slice(j, j + limit2) : string4;
+      for (var j = 0; j < string4.length; j += limit) {
+        var segment = string4.length >= limit ? string4.slice(j, j + limit) : string4;
         var arr = [];
         for (var i = 0; i < segment.length; ++i) {
           var c = segment.charCodeAt(i);
@@ -17765,7 +17765,7 @@ var require_utils2 = __commonJS({
       return result;
     };
     var maybeMap = function maybeMap2(val, fn) {
-      if (isArray2(val)) {
+      if (isArray(val)) {
         var mapped = [];
         for (var i = 0; i < val.length; i += 1) {
           mapped[mapped.length] = fn(val[i]);
@@ -17780,7 +17780,7 @@ var require_utils2 = __commonJS({
       combine: combine2,
       compact,
       decode,
-      encode: encode2,
+      encode,
       isBuffer,
       isOverflow,
       isRegExp,
@@ -17798,7 +17798,7 @@ var require_stringify = __commonJS({
     var getSideChannel = require_side_channel();
     var utils = require_utils2();
     var formats = require_formats();
-    var has2 = Object.prototype.hasOwnProperty;
+    var has = Object.prototype.hasOwnProperty;
     var arrayPrefixGenerators = {
       brackets: function brackets(prefix) {
         return prefix + "[]";
@@ -17811,14 +17811,14 @@ var require_stringify = __commonJS({
         return prefix;
       }
     };
-    var isArray2 = Array.isArray;
+    var isArray = Array.isArray;
     var push = Array.prototype.push;
     var pushToArray = function(arr, valueOrArray) {
-      push.apply(arr, isArray2(valueOrArray) ? valueOrArray : [valueOrArray]);
+      push.apply(arr, isArray(valueOrArray) ? valueOrArray : [valueOrArray]);
     };
     var toISO = Date.prototype.toISOString;
     var defaultFormat = formats["default"];
-    var defaults3 = {
+    var defaults2 = {
       addQueryPrefix: false,
       allowDots: false,
       allowEmptyArrays: false,
@@ -17845,13 +17845,13 @@ var require_stringify = __commonJS({
     var isNonNullishPrimitive = function isNonNullishPrimitive2(v) {
       return typeof v === "string" || typeof v === "number" || typeof v === "boolean" || typeof v === "symbol" || typeof v === "bigint";
     };
-    var sentinel2 = {};
-    var stringify3 = function stringify4(object2, prefix, generateArrayPrefix, commaRoundTrip, allowEmptyArrays, strictNullHandling, skipNulls, encodeDotInKeys, encoder, filter, sort, allowDots, serializeDate, format, formatter, encodeValuesOnly, charset, sideChannel) {
+    var sentinel = {};
+    var stringify2 = function stringify3(object2, prefix, generateArrayPrefix, commaRoundTrip, allowEmptyArrays, strictNullHandling, skipNulls, encodeDotInKeys, encoder, filter, sort, allowDots, serializeDate, format, formatter, encodeValuesOnly, charset, sideChannel) {
       var obj = object2;
       var tmpSc = sideChannel;
       var step = 0;
       var findFlag = false;
-      while ((tmpSc = tmpSc.get(sentinel2)) !== void 0 && !findFlag) {
+      while ((tmpSc = tmpSc.get(sentinel)) !== void 0 && !findFlag) {
         var pos = tmpSc.get(object2);
         step += 1;
         if (typeof pos !== "undefined") {
@@ -17861,7 +17861,7 @@ var require_stringify = __commonJS({
             findFlag = true;
           }
         }
-        if (typeof tmpSc.get(sentinel2) === "undefined") {
+        if (typeof tmpSc.get(sentinel) === "undefined") {
           step = 0;
         }
       }
@@ -17869,7 +17869,7 @@ var require_stringify = __commonJS({
         obj = filter(prefix, obj);
       } else if (obj instanceof Date) {
         obj = serializeDate(obj);
-      } else if (generateArrayPrefix === "comma" && isArray2(obj)) {
+      } else if (generateArrayPrefix === "comma" && isArray(obj)) {
         obj = utils.maybeMap(obj, function(value2) {
           if (value2 instanceof Date) {
             return serializeDate(value2);
@@ -17879,14 +17879,14 @@ var require_stringify = __commonJS({
       }
       if (obj === null) {
         if (strictNullHandling) {
-          return formatter(encoder && !encodeValuesOnly ? encoder(prefix, defaults3.encoder, charset, "key", format) : prefix);
+          return formatter(encoder && !encodeValuesOnly ? encoder(prefix, defaults2.encoder, charset, "key", format) : prefix);
         }
         obj = "";
       }
       if (isNonNullishPrimitive(obj) || utils.isBuffer(obj)) {
         if (encoder) {
-          var keyValue = encodeValuesOnly ? prefix : encoder(prefix, defaults3.encoder, charset, "key", format);
-          return [formatter(keyValue) + "=" + formatter(encoder(obj, defaults3.encoder, charset, "value", format))];
+          var keyValue = encodeValuesOnly ? prefix : encoder(prefix, defaults2.encoder, charset, "key", format);
+          return [formatter(keyValue) + "=" + formatter(encoder(obj, defaults2.encoder, charset, "value", format))];
         }
         return [formatter(prefix) + "=" + formatter(String(obj))];
       }
@@ -17895,22 +17895,22 @@ var require_stringify = __commonJS({
         return values;
       }
       var objKeys;
-      if (generateArrayPrefix === "comma" && isArray2(obj)) {
+      if (generateArrayPrefix === "comma" && isArray(obj)) {
         if (encodeValuesOnly && encoder) {
           obj = utils.maybeMap(obj, function(v) {
             return v == null ? v : encoder(v);
           });
         }
         objKeys = [{ value: obj.length > 0 ? obj.join(",") || null : void 0 }];
-      } else if (isArray2(filter)) {
+      } else if (isArray(filter)) {
         objKeys = filter;
       } else {
         var keys = Object.keys(obj);
         objKeys = sort ? keys.sort(sort) : keys;
       }
       var encodedPrefix = encodeDotInKeys ? String(prefix).replace(/\./g, "%2E") : String(prefix);
-      var adjustedPrefix = commaRoundTrip && isArray2(obj) && obj.length === 1 ? encodedPrefix + "[]" : encodedPrefix;
-      if (allowEmptyArrays && isArray2(obj) && obj.length === 0) {
+      var adjustedPrefix = commaRoundTrip && isArray(obj) && obj.length === 1 ? encodedPrefix + "[]" : encodedPrefix;
+      if (allowEmptyArrays && isArray(obj) && obj.length === 0) {
         return adjustedPrefix + "[]";
       }
       for (var j = 0; j < objKeys.length; ++j) {
@@ -17920,11 +17920,11 @@ var require_stringify = __commonJS({
           continue;
         }
         var encodedKey = allowDots && encodeDotInKeys ? String(key).replace(/\./g, "%2E") : String(key);
-        var keyPrefix = isArray2(obj) ? typeof generateArrayPrefix === "function" ? generateArrayPrefix(adjustedPrefix, encodedKey) : adjustedPrefix : adjustedPrefix + (allowDots ? "." + encodedKey : "[" + encodedKey + "]");
+        var keyPrefix = isArray(obj) ? typeof generateArrayPrefix === "function" ? generateArrayPrefix(adjustedPrefix, encodedKey) : adjustedPrefix : adjustedPrefix + (allowDots ? "." + encodedKey : "[" + encodedKey + "]");
         sideChannel.set(object2, step);
         var valueSideChannel = getSideChannel();
-        valueSideChannel.set(sentinel2, sideChannel);
-        pushToArray(values, stringify4(
+        valueSideChannel.set(sentinel, sideChannel);
+        pushToArray(values, stringify3(
           value,
           keyPrefix,
           generateArrayPrefix,
@@ -17933,7 +17933,7 @@ var require_stringify = __commonJS({
           strictNullHandling,
           skipNulls,
           encodeDotInKeys,
-          generateArrayPrefix === "comma" && encodeValuesOnly && isArray2(obj) ? null : encoder,
+          generateArrayPrefix === "comma" && encodeValuesOnly && isArray(obj) ? null : encoder,
           filter,
           sort,
           allowDots,
@@ -17949,7 +17949,7 @@ var require_stringify = __commonJS({
     };
     var normalizeStringifyOptions = function normalizeStringifyOptions2(opts) {
       if (!opts) {
-        return defaults3;
+        return defaults2;
       }
       if (typeof opts.allowEmptyArrays !== "undefined" && typeof opts.allowEmptyArrays !== "boolean") {
         throw new TypeError("`allowEmptyArrays` option can only be `true` or `false`, when provided");
@@ -17960,20 +17960,20 @@ var require_stringify = __commonJS({
       if (opts.encoder !== null && typeof opts.encoder !== "undefined" && typeof opts.encoder !== "function") {
         throw new TypeError("Encoder has to be a function.");
       }
-      var charset = opts.charset || defaults3.charset;
+      var charset = opts.charset || defaults2.charset;
       if (typeof opts.charset !== "undefined" && opts.charset !== "utf-8" && opts.charset !== "iso-8859-1") {
         throw new TypeError("The charset option must be either utf-8, iso-8859-1, or undefined");
       }
       var format = formats["default"];
       if (typeof opts.format !== "undefined") {
-        if (!has2.call(formats.formatters, opts.format)) {
+        if (!has.call(formats.formatters, opts.format)) {
           throw new TypeError("Unknown format option provided.");
         }
         format = opts.format;
       }
       var formatter = formats.formatters[format];
-      var filter = defaults3.filter;
-      if (typeof opts.filter === "function" || isArray2(opts.filter)) {
+      var filter = defaults2.filter;
+      if (typeof opts.filter === "function" || isArray(opts.filter)) {
         filter = opts.filter;
       }
       var arrayFormat;
@@ -17982,32 +17982,32 @@ var require_stringify = __commonJS({
       } else if ("indices" in opts) {
         arrayFormat = opts.indices ? "indices" : "repeat";
       } else {
-        arrayFormat = defaults3.arrayFormat;
+        arrayFormat = defaults2.arrayFormat;
       }
       if ("commaRoundTrip" in opts && typeof opts.commaRoundTrip !== "boolean") {
         throw new TypeError("`commaRoundTrip` must be a boolean, or absent");
       }
-      var allowDots = typeof opts.allowDots === "undefined" ? opts.encodeDotInKeys === true ? true : defaults3.allowDots : !!opts.allowDots;
+      var allowDots = typeof opts.allowDots === "undefined" ? opts.encodeDotInKeys === true ? true : defaults2.allowDots : !!opts.allowDots;
       return {
-        addQueryPrefix: typeof opts.addQueryPrefix === "boolean" ? opts.addQueryPrefix : defaults3.addQueryPrefix,
+        addQueryPrefix: typeof opts.addQueryPrefix === "boolean" ? opts.addQueryPrefix : defaults2.addQueryPrefix,
         allowDots,
-        allowEmptyArrays: typeof opts.allowEmptyArrays === "boolean" ? !!opts.allowEmptyArrays : defaults3.allowEmptyArrays,
+        allowEmptyArrays: typeof opts.allowEmptyArrays === "boolean" ? !!opts.allowEmptyArrays : defaults2.allowEmptyArrays,
         arrayFormat,
         charset,
-        charsetSentinel: typeof opts.charsetSentinel === "boolean" ? opts.charsetSentinel : defaults3.charsetSentinel,
+        charsetSentinel: typeof opts.charsetSentinel === "boolean" ? opts.charsetSentinel : defaults2.charsetSentinel,
         commaRoundTrip: !!opts.commaRoundTrip,
-        delimiter: typeof opts.delimiter === "undefined" ? defaults3.delimiter : opts.delimiter,
-        encode: typeof opts.encode === "boolean" ? opts.encode : defaults3.encode,
-        encodeDotInKeys: typeof opts.encodeDotInKeys === "boolean" ? opts.encodeDotInKeys : defaults3.encodeDotInKeys,
-        encoder: typeof opts.encoder === "function" ? opts.encoder : defaults3.encoder,
-        encodeValuesOnly: typeof opts.encodeValuesOnly === "boolean" ? opts.encodeValuesOnly : defaults3.encodeValuesOnly,
+        delimiter: typeof opts.delimiter === "undefined" ? defaults2.delimiter : opts.delimiter,
+        encode: typeof opts.encode === "boolean" ? opts.encode : defaults2.encode,
+        encodeDotInKeys: typeof opts.encodeDotInKeys === "boolean" ? opts.encodeDotInKeys : defaults2.encodeDotInKeys,
+        encoder: typeof opts.encoder === "function" ? opts.encoder : defaults2.encoder,
+        encodeValuesOnly: typeof opts.encodeValuesOnly === "boolean" ? opts.encodeValuesOnly : defaults2.encodeValuesOnly,
         filter,
         format,
         formatter,
-        serializeDate: typeof opts.serializeDate === "function" ? opts.serializeDate : defaults3.serializeDate,
-        skipNulls: typeof opts.skipNulls === "boolean" ? opts.skipNulls : defaults3.skipNulls,
+        serializeDate: typeof opts.serializeDate === "function" ? opts.serializeDate : defaults2.serializeDate,
+        skipNulls: typeof opts.skipNulls === "boolean" ? opts.skipNulls : defaults2.skipNulls,
         sort: typeof opts.sort === "function" ? opts.sort : null,
-        strictNullHandling: typeof opts.strictNullHandling === "boolean" ? opts.strictNullHandling : defaults3.strictNullHandling
+        strictNullHandling: typeof opts.strictNullHandling === "boolean" ? opts.strictNullHandling : defaults2.strictNullHandling
       };
     };
     module.exports = function(object2, opts) {
@@ -18018,7 +18018,7 @@ var require_stringify = __commonJS({
       if (typeof options.filter === "function") {
         filter = options.filter;
         obj = filter("", obj);
-      } else if (isArray2(options.filter)) {
+      } else if (isArray(options.filter)) {
         filter = options.filter;
         objKeys = filter;
       }
@@ -18044,7 +18044,7 @@ var require_stringify = __commonJS({
         if (options.skipNulls && value === null) {
           continue;
         }
-        pushToArray(keys, stringify3(
+        pushToArray(keys, stringify2(
           value,
           key,
           generateArrayPrefix,
@@ -18084,9 +18084,9 @@ var require_parse = __commonJS({
   "../../node_modules/.pnpm/qs@6.15.2/node_modules/qs/lib/parse.js"(exports, module) {
     "use strict";
     var utils = require_utils2();
-    var has2 = Object.prototype.hasOwnProperty;
-    var isArray2 = Array.isArray;
-    var defaults3 = {
+    var has = Object.prototype.hasOwnProperty;
+    var isArray = Array.isArray;
+    var defaults2 = {
       allowDots: false,
       allowEmptyArrays: false,
       allowPrototypes: false,
@@ -18110,8 +18110,8 @@ var require_parse = __commonJS({
       strictNullHandling: false,
       throwOnLimitExceeded: false
     };
-    var interpretNumericEntities = function(str2) {
-      return str2.replace(/&#(\d+);/g, function($0, numberStr) {
+    var interpretNumericEntities = function(str) {
+      return str.replace(/&#(\d+);/g, function($0, numberStr) {
         return String.fromCharCode(parseInt(numberStr, 10));
       });
     };
@@ -18126,17 +18126,17 @@ var require_parse = __commonJS({
     };
     var isoSentinel = "utf8=%26%2310003%3B";
     var charsetSentinel = "utf8=%E2%9C%93";
-    var parseValues = function parseQueryStringValues(str2, options) {
+    var parseValues = function parseQueryStringValues(str, options) {
       var obj = { __proto__: null };
-      var cleanStr = options.ignoreQueryPrefix ? str2.replace(/^\?/, "") : str2;
+      var cleanStr = options.ignoreQueryPrefix ? str.replace(/^\?/, "") : str;
       cleanStr = cleanStr.replace(/%5B/gi, "[").replace(/%5D/gi, "]");
-      var limit2 = options.parameterLimit === Infinity ? void 0 : options.parameterLimit;
+      var limit = options.parameterLimit === Infinity ? void 0 : options.parameterLimit;
       var parts = cleanStr.split(
         options.delimiter,
-        options.throwOnLimitExceeded && typeof limit2 !== "undefined" ? limit2 + 1 : limit2
+        options.throwOnLimitExceeded && typeof limit !== "undefined" ? limit + 1 : limit
       );
-      if (options.throwOnLimitExceeded && typeof limit2 !== "undefined" && parts.length > limit2) {
-        throw new RangeError("Parameter limit exceeded. Only " + limit2 + " parameter" + (limit2 === 1 ? "" : "s") + " allowed.");
+      if (options.throwOnLimitExceeded && typeof limit !== "undefined" && parts.length > limit) {
+        throw new RangeError("Parameter limit exceeded. Only " + limit + " parameter" + (limit === 1 ? "" : "s") + " allowed.");
       }
       var skipIndex = -1;
       var i;
@@ -18164,19 +18164,19 @@ var require_parse = __commonJS({
         var key;
         var val;
         if (pos === -1) {
-          key = options.decoder(part, defaults3.decoder, charset, "key");
+          key = options.decoder(part, defaults2.decoder, charset, "key");
           val = options.strictNullHandling ? null : "";
         } else {
-          key = options.decoder(part.slice(0, pos), defaults3.decoder, charset, "key");
+          key = options.decoder(part.slice(0, pos), defaults2.decoder, charset, "key");
           if (key !== null) {
             val = utils.maybeMap(
               parseArrayValue(
                 part.slice(pos + 1),
                 options,
-                isArray2(obj[key]) ? obj[key].length : 0
+                isArray(obj[key]) ? obj[key].length : 0
               ),
               function(encodedVal) {
-                return options.decoder(encodedVal, defaults3.decoder, charset, "value");
+                return options.decoder(encodedVal, defaults2.decoder, charset, "value");
               }
             );
           }
@@ -18185,16 +18185,16 @@ var require_parse = __commonJS({
           val = interpretNumericEntities(String(val));
         }
         if (part.indexOf("[]=") > -1) {
-          val = isArray2(val) ? [val] : val;
+          val = isArray(val) ? [val] : val;
         }
-        if (options.comma && isArray2(val) && val.length > options.arrayLimit) {
+        if (options.comma && isArray(val) && val.length > options.arrayLimit) {
           if (options.throwOnLimitExceeded) {
             throw new RangeError("Array limit exceeded. Only " + options.arrayLimit + " element" + (options.arrayLimit === 1 ? "" : "s") + " allowed in an array.");
           }
           val = utils.combine([], val, options.arrayLimit, options.plainObjects);
         }
         if (key !== null) {
-          var existing = has2.call(obj, key);
+          var existing = has.call(obj, key);
           if (existing && (options.duplicates === "combine" || part.indexOf("[]=") > -1)) {
             obj[key] = utils.combine(
               obj[key],
@@ -18257,7 +18257,7 @@ var require_parse = __commonJS({
     var splitKeyIntoSegments = function splitKeyIntoSegments2(originalKey, options) {
       var key = options.allowDots ? originalKey.replace(/\.([^.[]+)/g, "[$1]") : originalKey;
       if (options.depth <= 0) {
-        if (!options.plainObjects && has2.call(Object.prototype, key)) {
+        if (!options.plainObjects && has.call(Object.prototype, key)) {
           if (!options.allowPrototypes) {
             return;
           }
@@ -18268,7 +18268,7 @@ var require_parse = __commonJS({
       var first = key.indexOf("[");
       var parent = first >= 0 ? key.slice(0, first) : key;
       if (parent) {
-        if (!options.plainObjects && has2.call(Object.prototype, parent)) {
+        if (!options.plainObjects && has.call(Object.prototype, parent)) {
           if (!options.allowPrototypes) {
             return;
           }
@@ -18300,7 +18300,7 @@ var require_parse = __commonJS({
         }
         var seg = key.slice(open, close + 1);
         var content = seg.slice(1, -1);
-        if (!options.plainObjects && has2.call(Object.prototype, content) && !options.allowPrototypes) {
+        if (!options.plainObjects && has.call(Object.prototype, content) && !options.allowPrototypes) {
           return;
         }
         segments[segments.length] = seg;
@@ -18327,7 +18327,7 @@ var require_parse = __commonJS({
     };
     var normalizeParseOptions = function normalizeParseOptions2(opts) {
       if (!opts) {
-        return defaults3;
+        return defaults2;
       }
       if (typeof opts.allowEmptyArrays !== "undefined" && typeof opts.allowEmptyArrays !== "boolean") {
         throw new TypeError("`allowEmptyArrays` option can only be `true` or `false`, when provided");
@@ -18344,49 +18344,49 @@ var require_parse = __commonJS({
       if (typeof opts.throwOnLimitExceeded !== "undefined" && typeof opts.throwOnLimitExceeded !== "boolean") {
         throw new TypeError("`throwOnLimitExceeded` option must be a boolean");
       }
-      var charset = typeof opts.charset === "undefined" ? defaults3.charset : opts.charset;
-      var duplicates = typeof opts.duplicates === "undefined" ? defaults3.duplicates : opts.duplicates;
+      var charset = typeof opts.charset === "undefined" ? defaults2.charset : opts.charset;
+      var duplicates = typeof opts.duplicates === "undefined" ? defaults2.duplicates : opts.duplicates;
       if (duplicates !== "combine" && duplicates !== "first" && duplicates !== "last") {
         throw new TypeError("The duplicates option must be either combine, first, or last");
       }
-      var allowDots = typeof opts.allowDots === "undefined" ? opts.decodeDotInKeys === true ? true : defaults3.allowDots : !!opts.allowDots;
+      var allowDots = typeof opts.allowDots === "undefined" ? opts.decodeDotInKeys === true ? true : defaults2.allowDots : !!opts.allowDots;
       return {
         allowDots,
-        allowEmptyArrays: typeof opts.allowEmptyArrays === "boolean" ? !!opts.allowEmptyArrays : defaults3.allowEmptyArrays,
-        allowPrototypes: typeof opts.allowPrototypes === "boolean" ? opts.allowPrototypes : defaults3.allowPrototypes,
-        allowSparse: typeof opts.allowSparse === "boolean" ? opts.allowSparse : defaults3.allowSparse,
-        arrayLimit: typeof opts.arrayLimit === "number" ? opts.arrayLimit : defaults3.arrayLimit,
+        allowEmptyArrays: typeof opts.allowEmptyArrays === "boolean" ? !!opts.allowEmptyArrays : defaults2.allowEmptyArrays,
+        allowPrototypes: typeof opts.allowPrototypes === "boolean" ? opts.allowPrototypes : defaults2.allowPrototypes,
+        allowSparse: typeof opts.allowSparse === "boolean" ? opts.allowSparse : defaults2.allowSparse,
+        arrayLimit: typeof opts.arrayLimit === "number" ? opts.arrayLimit : defaults2.arrayLimit,
         charset,
-        charsetSentinel: typeof opts.charsetSentinel === "boolean" ? opts.charsetSentinel : defaults3.charsetSentinel,
-        comma: typeof opts.comma === "boolean" ? opts.comma : defaults3.comma,
-        decodeDotInKeys: typeof opts.decodeDotInKeys === "boolean" ? opts.decodeDotInKeys : defaults3.decodeDotInKeys,
-        decoder: typeof opts.decoder === "function" ? opts.decoder : defaults3.decoder,
-        delimiter: typeof opts.delimiter === "string" || utils.isRegExp(opts.delimiter) ? opts.delimiter : defaults3.delimiter,
+        charsetSentinel: typeof opts.charsetSentinel === "boolean" ? opts.charsetSentinel : defaults2.charsetSentinel,
+        comma: typeof opts.comma === "boolean" ? opts.comma : defaults2.comma,
+        decodeDotInKeys: typeof opts.decodeDotInKeys === "boolean" ? opts.decodeDotInKeys : defaults2.decodeDotInKeys,
+        decoder: typeof opts.decoder === "function" ? opts.decoder : defaults2.decoder,
+        delimiter: typeof opts.delimiter === "string" || utils.isRegExp(opts.delimiter) ? opts.delimiter : defaults2.delimiter,
         // eslint-disable-next-line no-implicit-coercion, no-extra-parens
-        depth: typeof opts.depth === "number" || opts.depth === false ? +opts.depth : defaults3.depth,
+        depth: typeof opts.depth === "number" || opts.depth === false ? +opts.depth : defaults2.depth,
         duplicates,
         ignoreQueryPrefix: opts.ignoreQueryPrefix === true,
-        interpretNumericEntities: typeof opts.interpretNumericEntities === "boolean" ? opts.interpretNumericEntities : defaults3.interpretNumericEntities,
-        parameterLimit: typeof opts.parameterLimit === "number" ? opts.parameterLimit : defaults3.parameterLimit,
+        interpretNumericEntities: typeof opts.interpretNumericEntities === "boolean" ? opts.interpretNumericEntities : defaults2.interpretNumericEntities,
+        parameterLimit: typeof opts.parameterLimit === "number" ? opts.parameterLimit : defaults2.parameterLimit,
         parseArrays: opts.parseArrays !== false,
-        plainObjects: typeof opts.plainObjects === "boolean" ? opts.plainObjects : defaults3.plainObjects,
-        strictDepth: typeof opts.strictDepth === "boolean" ? !!opts.strictDepth : defaults3.strictDepth,
-        strictMerge: typeof opts.strictMerge === "boolean" ? !!opts.strictMerge : defaults3.strictMerge,
-        strictNullHandling: typeof opts.strictNullHandling === "boolean" ? opts.strictNullHandling : defaults3.strictNullHandling,
+        plainObjects: typeof opts.plainObjects === "boolean" ? opts.plainObjects : defaults2.plainObjects,
+        strictDepth: typeof opts.strictDepth === "boolean" ? !!opts.strictDepth : defaults2.strictDepth,
+        strictMerge: typeof opts.strictMerge === "boolean" ? !!opts.strictMerge : defaults2.strictMerge,
+        strictNullHandling: typeof opts.strictNullHandling === "boolean" ? opts.strictNullHandling : defaults2.strictNullHandling,
         throwOnLimitExceeded: typeof opts.throwOnLimitExceeded === "boolean" ? opts.throwOnLimitExceeded : false
       };
     };
-    module.exports = function(str2, opts) {
+    module.exports = function(str, opts) {
       var options = normalizeParseOptions(opts);
-      if (str2 === "" || str2 === null || typeof str2 === "undefined") {
+      if (str === "" || str === null || typeof str === "undefined") {
         return options.plainObjects ? { __proto__: null } : {};
       }
-      var tempObj = typeof str2 === "string" ? parseValues(str2, options) : str2;
+      var tempObj = typeof str === "string" ? parseValues(str, options) : str;
       var obj = options.plainObjects ? { __proto__: null } : {};
       var keys = Object.keys(tempObj);
       for (var i = 0; i < keys.length; ++i) {
         var key = keys[i];
-        var newObj = parseKeys(key, tempObj[key], options, typeof str2 === "string");
+        var newObj = parseKeys(key, tempObj[key], options, typeof str === "string");
         obj = utils.merge(obj, newObj, options);
       }
       if (options.allowSparse === true) {
@@ -18401,13 +18401,13 @@ var require_parse = __commonJS({
 var require_lib2 = __commonJS({
   "../../node_modules/.pnpm/qs@6.15.2/node_modules/qs/lib/index.js"(exports, module) {
     "use strict";
-    var stringify3 = require_stringify();
+    var stringify2 = require_stringify();
     var parse4 = require_parse();
     var formats = require_formats();
     module.exports = {
       formats,
       parse: parse4,
-      stringify: stringify3
+      stringify: stringify2
     };
   }
 });
@@ -18487,12 +18487,12 @@ var require_urlencoded = __commonJS({
         }
       };
     }
-    function parameterCount(body, limit2) {
+    function parameterCount(body, limit) {
       let count = 0;
       let index = -1;
       do {
         count++;
-        if (count > limit2) return void 0;
+        if (count > limit) return void 0;
         index = body.indexOf("&", index + 1);
       } while (index !== -1);
       return count;
@@ -18576,17 +18576,17 @@ var require_escape_html = __commonJS({
     var matchHtmlRegExp = /["'&<>]/;
     module.exports = escapeHtml;
     function escapeHtml(string4) {
-      var str2 = "" + string4;
-      var match2 = matchHtmlRegExp.exec(str2);
+      var str = "" + string4;
+      var match2 = matchHtmlRegExp.exec(str);
       if (!match2) {
-        return str2;
+        return str;
       }
       var escape2;
       var html = "";
       var index = 0;
       var lastIndex = 0;
-      for (index = match2.index; index < str2.length; index++) {
-        switch (str2.charCodeAt(index)) {
+      for (index = match2.index; index < str.length; index++) {
+        switch (str.charCodeAt(index)) {
           case 34:
             escape2 = "&quot;";
             break;
@@ -18606,12 +18606,12 @@ var require_escape_html = __commonJS({
             continue;
         }
         if (lastIndex !== index) {
-          html += str2.substring(lastIndex, index);
+          html += str.substring(lastIndex, index);
         }
         lastIndex = index + 1;
         html += escape2;
       }
-      return lastIndex !== index ? html + str2.substring(lastIndex, index) : html;
+      return lastIndex !== index ? html + str.substring(lastIndex, index) : html;
     }
   }
 });
@@ -18651,20 +18651,20 @@ var require_parseurl = __commonJS({
       parsed._raw = url3;
       return req._parsedOriginalUrl = parsed;
     }
-    function fastparse(str2) {
-      if (typeof str2 !== "string" || str2.charCodeAt(0) !== 47) {
-        return parse4(str2);
+    function fastparse(str) {
+      if (typeof str !== "string" || str.charCodeAt(0) !== 47) {
+        return parse4(str);
       }
-      var pathname = str2;
+      var pathname = str;
       var query = null;
       var search = null;
-      for (var i = 1; i < str2.length; i++) {
-        switch (str2.charCodeAt(i)) {
+      for (var i = 1; i < str.length; i++) {
+        switch (str.charCodeAt(i)) {
           case 63:
             if (search === null) {
-              pathname = str2.substring(0, i);
-              query = str2.substring(i + 1);
-              search = str2.substring(i);
+              pathname = str.substring(0, i);
+              query = str.substring(i + 1);
+              search = str.substring(i);
             }
             break;
           case 9:
@@ -18681,12 +18681,12 @@ var require_parseurl = __commonJS({
           /* #  */
           case 160:
           case 65279:
-            return parse4(str2);
+            return parse4(str);
         }
       }
       var url3 = Url !== void 0 ? new Url() : {};
-      url3.path = str2;
-      url3.href = str2;
+      url3.path = str;
+      url3.href = str;
       url3.pathname = pathname;
       if (search !== null) {
         url3.query = query;
@@ -18832,13 +18832,13 @@ var require_view = __commonJS({
   "../../node_modules/.pnpm/express@5.2.1/node_modules/express/lib/view.js"(exports, module) {
     "use strict";
     var debug = require_src()("express:view");
-    var path2 = __require("node:path");
+    var path = __require("node:path");
     var fs = __require("node:fs");
-    var dirname = path2.dirname;
-    var basename = path2.basename;
-    var extname = path2.extname;
-    var join = path2.join;
-    var resolve = path2.resolve;
+    var dirname = path.dirname;
+    var basename = path.basename;
+    var extname = path.extname;
+    var join = path.join;
+    var resolve = path.resolve;
     module.exports = View2;
     function View2(name, options) {
       var opts = options || {};
@@ -18867,17 +18867,17 @@ var require_view = __commonJS({
       this.path = this.lookup(fileName);
     }
     View2.prototype.lookup = function lookup(name) {
-      var path3;
+      var path2;
       var roots = [].concat(this.root);
       debug('lookup "%s"', name);
-      for (var i = 0; i < roots.length && !path3; i++) {
+      for (var i = 0; i < roots.length && !path2; i++) {
         var root = roots[i];
         var loc = resolve(root, name);
         var dir = dirname(loc);
         var file2 = basename(loc);
-        path3 = this.resolve(dir, file2);
+        path2 = this.resolve(dir, file2);
       }
-      return path3;
+      return path2;
     };
     View2.prototype.render = function render(options, callback) {
       var sync = true;
@@ -18899,21 +18899,21 @@ var require_view = __commonJS({
     };
     View2.prototype.resolve = function resolve2(dir, file2) {
       var ext = this.ext;
-      var path3 = join(dir, file2);
-      var stat = tryStat(path3);
+      var path2 = join(dir, file2);
+      var stat = tryStat(path2);
       if (stat && stat.isFile()) {
-        return path3;
+        return path2;
       }
-      path3 = join(dir, basename(file2, ext), "index" + ext);
-      stat = tryStat(path3);
+      path2 = join(dir, basename(file2, ext), "index" + ext);
+      stat = tryStat(path2);
       if (stat && stat.isFile()) {
-        return path3;
+        return path2;
       }
     };
-    function tryStat(path3) {
-      debug('stat "%s"', path3);
+    function tryStat(path2) {
+      debug('stat "%s"', path2);
       try {
-        return fs.statSync(path3);
+        return fs.statSync(path2);
       } catch (e) {
         return void 0;
       }
@@ -19699,11 +19699,11 @@ var require_proxy_addr = __commonJS({
     }
     function parseipNotation(note) {
       var pos = note.lastIndexOf("/");
-      var str2 = pos !== -1 ? note.substring(0, pos) : note;
-      if (!isip(str2)) {
-        throw new TypeError("invalid IP address: " + str2);
+      var str = pos !== -1 ? note.substring(0, pos) : note;
+      if (!isip(str)) {
+        throw new TypeError("invalid IP address: " + str);
       }
-      var ip = parseip(str2);
+      var ip = parseip(str);
       if (pos === -1 && ip.kind() === "ipv6" && ip.isIPv4MappedAddress()) {
         ip = ip.toIPv4Address();
       }
@@ -19812,22 +19812,22 @@ var require_utils3 = __commonJS({
     exports.normalizeTypes = function(types3) {
       return types3.map(exports.normalizeType);
     };
-    function acceptParams(str2) {
-      var length = str2.length;
-      var colonIndex = str2.indexOf(";");
+    function acceptParams(str) {
+      var length = str.length;
+      var colonIndex = str.indexOf(";");
       var index = colonIndex === -1 ? length : colonIndex;
-      var ret = { value: str2.slice(0, index).trim(), quality: 1, params: {} };
+      var ret = { value: str.slice(0, index).trim(), quality: 1, params: {} };
       while (index < length) {
-        var splitIndex = str2.indexOf("=", index);
+        var splitIndex = str.indexOf("=", index);
         if (splitIndex === -1) break;
-        var colonIndex = str2.indexOf(";", index);
+        var colonIndex = str.indexOf(";", index);
         var endIndex = colonIndex === -1 ? length : colonIndex;
         if (splitIndex > endIndex) {
-          index = str2.lastIndexOf(";", splitIndex - 1) + 1;
+          index = str.lastIndexOf(";", splitIndex - 1) + 1;
           continue;
         }
-        var key = str2.slice(index, splitIndex).trim();
-        var value = str2.slice(splitIndex + 1, endIndex).trim();
+        var key = str.slice(index, splitIndex).trim();
+        var value = str.slice(splitIndex + 1, endIndex).trim();
         if (key === "q") {
           ret.quality = parseFloat(value);
         } else {
@@ -19910,8 +19910,8 @@ var require_utils3 = __commonJS({
         return etag(buf, options);
       };
     }
-    function parseExtendedQueryString(str2) {
-      return qs.parse(str2, {
+    function parseExtendedQueryString(str) {
+      return qs.parse(str, {
         allowPrototypes: true
       });
     }
@@ -20013,17 +20013,17 @@ var require_dist2 = __commonJS({
     exports.compile = compile;
     exports.match = match2;
     exports.pathToRegexp = pathToRegexp2;
-    exports.stringify = stringify3;
+    exports.stringify = stringify2;
     var DEFAULT_DELIMITER = "/";
     var NOOP_VALUE = (value) => value;
     var ID_START = /^[$_\p{ID_Start}]$/u;
     var ID_CONTINUE = /^[$\u200c\u200d\p{ID_Continue}]$/u;
     var ID = /^[$_\p{ID_Start}][$\u200c\u200d\p{ID_Continue}]*$/u;
-    function escapeText(str2) {
-      return str2.replace(/[{}()\[\]+?!:*\\]/g, "\\$&");
+    function escapeText(str) {
+      return str.replace(/[{}()\[\]+?!:*\\]/g, "\\$&");
     }
-    function escape2(str2) {
-      return str2.replace(/[.+*?^${}()[\]|/\\]/g, "\\$&");
+    function escape2(str) {
+      return str.replace(/[.+*?^${}()[\]|/\\]/g, "\\$&");
     }
     var TokenData = class {
       constructor(tokens, originalPath) {
@@ -20043,21 +20043,21 @@ var require_dist2 = __commonJS({
       }
     };
     exports.PathError = PathError;
-    function parse4(str2, options = {}) {
+    function parse4(str, options = {}) {
       const { encodePath = NOOP_VALUE } = options;
-      const chars = [...str2];
+      const chars = [...str];
       let index = 0;
       function consumeUntil(end) {
         const output = [];
-        let path2 = "";
+        let path = "";
         function writePath() {
-          if (!path2)
+          if (!path)
             return;
           output.push({
             type: "text",
-            value: encodePath(path2)
+            value: encodePath(path)
           });
-          path2 = "";
+          path = "";
         }
         while (index < chars.length) {
           const value = chars[index++];
@@ -20067,9 +20067,9 @@ var require_dist2 = __commonJS({
           }
           if (value === "\\") {
             if (index === chars.length) {
-              throw new PathError(`Unexpected end after \\ at index ${index}`, str2);
+              throw new PathError(`Unexpected end after \\ at index ${index}`, str);
             }
-            path2 += chars[index++];
+            path += chars[index++];
             continue;
           }
           if (value === ":" || value === "*") {
@@ -20092,11 +20092,11 @@ var require_dist2 = __commonJS({
                 name += chars[index];
               }
               if (quoteStart) {
-                throw new PathError(`Unterminated quote at index ${quoteStart}`, str2);
+                throw new PathError(`Unterminated quote at index ${quoteStart}`, str);
               }
             }
             if (!name) {
-              throw new PathError(`Missing parameter name at index ${index}`, str2);
+              throw new PathError(`Missing parameter name at index ${index}`, str);
             }
             writePath();
             output.push({ type, name });
@@ -20111,33 +20111,33 @@ var require_dist2 = __commonJS({
             continue;
           }
           if (value === "}" || value === "(" || value === ")" || value === "[" || value === "]" || value === "+" || value === "?" || value === "!") {
-            throw new PathError(`Unexpected ${value} at index ${index - 1}`, str2);
+            throw new PathError(`Unexpected ${value} at index ${index - 1}`, str);
           }
-          path2 += value;
+          path += value;
         }
         if (end) {
-          throw new PathError(`Unexpected end at index ${index}, expected ${end}`, str2);
+          throw new PathError(`Unexpected end at index ${index}, expected ${end}`, str);
         }
         writePath();
         return output;
       }
-      return new TokenData(consumeUntil(""), str2);
+      return new TokenData(consumeUntil(""), str);
     }
-    function compile(path2, options = {}) {
-      const { encode: encode2 = encodeURIComponent, delimiter = DEFAULT_DELIMITER } = options;
-      const data = typeof path2 === "object" ? path2 : parse4(path2, options);
-      const fn = tokensToFunction(data.tokens, delimiter, encode2);
-      return function path3(params = {}) {
+    function compile(path, options = {}) {
+      const { encode = encodeURIComponent, delimiter = DEFAULT_DELIMITER } = options;
+      const data = typeof path === "object" ? path : parse4(path, options);
+      const fn = tokensToFunction(data.tokens, delimiter, encode);
+      return function path2(params = {}) {
         const missing = [];
-        const path4 = fn(params, missing);
+        const path3 = fn(params, missing);
         if (missing.length) {
           throw new TypeError(`Missing parameters: ${missing.join(", ")}`);
         }
-        return path4;
+        return path3;
       };
     }
-    function tokensToFunction(tokens, delimiter, encode2) {
-      const encoders = tokens.map((token) => tokenToFunction(token, delimiter, encode2));
+    function tokensToFunction(tokens, delimiter, encode) {
+      const encoders = tokens.map((token) => tokenToFunction(token, delimiter, encode));
       return (data, missing) => {
         let result = "";
         for (const encoder of encoders) {
@@ -20146,11 +20146,11 @@ var require_dist2 = __commonJS({
         return result;
       };
     }
-    function tokenToFunction(token, delimiter, encode2) {
+    function tokenToFunction(token, delimiter, encode) {
       if (token.type === "text")
         return () => token.value;
       if (token.type === "group") {
-        const fn = tokensToFunction(token.tokens, delimiter, encode2);
+        const fn = tokensToFunction(token.tokens, delimiter, encode);
         return (data, missing) => {
           const len = missing.length;
           const value = fn(data, missing);
@@ -20160,8 +20160,8 @@ var require_dist2 = __commonJS({
           return "";
         };
       }
-      const encodeValue = encode2 || NOOP_VALUE;
-      if (token.type === "wildcard" && encode2 !== false) {
+      const encodeValue = encode || NOOP_VALUE;
+      if (token.type === "wildcard" && encode !== false) {
         return (data, missing) => {
           const value = data[token.name];
           if (value == null) {
@@ -20195,9 +20195,9 @@ var require_dist2 = __commonJS({
         return encodeValue(value);
       };
     }
-    function match2(path2, options = {}) {
+    function match2(path, options = {}) {
       const { decode = decodeURIComponent, delimiter = DEFAULT_DELIMITER } = options;
-      const { regexp, keys } = pathToRegexp2(path2, options);
+      const { regexp, keys } = pathToRegexp2(path, options);
       const decoders = keys.map((key) => {
         if (decode === false)
           return NOOP_VALUE;
@@ -20209,7 +20209,7 @@ var require_dist2 = __commonJS({
         const m = regexp.exec(input);
         if (!m)
           return false;
-        const path3 = m[0];
+        const path2 = m[0];
         const params = /* @__PURE__ */ Object.create(null);
         for (let i = 1; i < m.length; i++) {
           if (m[i] === void 0)
@@ -20218,21 +20218,21 @@ var require_dist2 = __commonJS({
           const decoder = decoders[i - 1];
           params[key.name] = decoder(m[i]);
         }
-        return { path: path3, params };
+        return { path: path2, params };
       };
     }
-    function pathToRegexp2(path2, options = {}) {
+    function pathToRegexp2(path, options = {}) {
       const { delimiter = DEFAULT_DELIMITER, end = true, sensitive = false, trailing = true } = options;
       const keys = [];
       let source = "";
       let combinations = 0;
-      function process2(path3) {
-        if (Array.isArray(path3)) {
-          for (const p of path3)
+      function process2(path2) {
+        if (Array.isArray(path2)) {
+          for (const p of path2)
             process2(p);
           return;
         }
-        const data = typeof path3 === "object" ? path3 : parse4(path3, options);
+        const data = typeof path2 === "object" ? path2 : parse4(path2, options);
         flatten(data.tokens, 0, [], (tokens) => {
           if (combinations >= 256) {
             throw new PathError("Too many path combinations", data.originalPath);
@@ -20243,7 +20243,7 @@ var require_dist2 = __commonJS({
           combinations++;
         });
       }
-      process2(path2);
+      process2(path);
       let pattern = `^(?:${source})`;
       if (trailing)
         pattern += "(?:" + escape2(delimiter) + "$)?";
@@ -20358,7 +20358,7 @@ var require_dist2 = __commonJS({
       }
       return value;
     }
-    function stringify3(data) {
+    function stringify2(data) {
       return stringifyTokens(data.tokens, 0);
     }
     function stringifyName(name, next) {
@@ -20383,18 +20383,18 @@ var require_layer = __commonJS({
     var TRAILING_SLASH_REGEXP = /\/+$/;
     var MATCHING_GROUP_REGEXP = /\((?:\?<(.*?)>)?(?!\?)/g;
     module.exports = Layer;
-    function Layer(path2, options, fn) {
+    function Layer(path, options, fn) {
       if (!(this instanceof Layer)) {
-        return new Layer(path2, options, fn);
+        return new Layer(path, options, fn);
       }
-      debug("new %o", path2);
+      debug("new %o", path);
       const opts = options || {};
       this.handle = fn;
       this.keys = [];
       this.name = fn.name || "<anonymous>";
       this.params = void 0;
       this.path = void 0;
-      this.slash = path2 === "/" && opts.end === false;
+      this.slash = path === "/" && opts.end === false;
       function matcher(_path) {
         if (_path instanceof RegExp) {
           const keys = [];
@@ -20433,7 +20433,7 @@ var require_layer = __commonJS({
           decode: decodeParam
         });
       }
-      this.matchers = Array.isArray(path2) ? path2.map(matcher) : [matcher(path2)];
+      this.matchers = Array.isArray(path) ? path.map(matcher) : [matcher(path)];
     }
     Layer.prototype.handleError = function handleError2(error40, req, res, next) {
       const fn = this.handle;
@@ -20473,9 +20473,9 @@ var require_layer = __commonJS({
         next(err);
       }
     };
-    Layer.prototype.match = function match2(path2) {
+    Layer.prototype.match = function match2(path) {
       let match3;
-      if (path2 != null) {
+      if (path != null) {
         if (this.slash) {
           this.params = {};
           this.path = "";
@@ -20483,7 +20483,7 @@ var require_layer = __commonJS({
         }
         let i = 0;
         while (!match3 && i < this.matchers.length) {
-          match3 = this.matchers[i](path2);
+          match3 = this.matchers[i](path);
           i++;
         }
       }
@@ -20511,13 +20511,13 @@ var require_layer = __commonJS({
         throw err;
       }
     }
-    function loosen(path2) {
-      if (path2 instanceof RegExp || path2 === "/") {
-        return path2;
+    function loosen(path) {
+      if (path instanceof RegExp || path === "/") {
+        return path;
       }
-      return Array.isArray(path2) ? path2.map(function(p) {
+      return Array.isArray(path) ? path.map(function(p) {
         return loosen(p);
-      }) : String(path2).replace(TRAILING_SLASH_REGEXP, "");
+      }) : String(path).replace(TRAILING_SLASH_REGEXP, "");
     }
   }
 });
@@ -20533,9 +20533,9 @@ var require_route = __commonJS({
     var flatten = Array.prototype.flat;
     var methods = METHODS.map((method) => method.toLowerCase());
     module.exports = Route;
-    function Route(path2) {
-      debug("new %o", path2);
-      this.path = path2;
+    function Route(path) {
+      debug("new %o", path);
+      this.path = path;
       this.stack = [];
       this.methods = /* @__PURE__ */ Object.create(null);
     }
@@ -20656,27 +20656,27 @@ var require_router = __commonJS({
     var slice = Array.prototype.slice;
     var flatten = Array.prototype.flat;
     var methods = METHODS.map((method) => method.toLowerCase());
-    module.exports = Router13;
+    module.exports = Router;
     module.exports.Route = Route;
-    function Router13(options) {
-      if (!(this instanceof Router13)) {
-        return new Router13(options);
+    function Router(options) {
+      if (!(this instanceof Router)) {
+        return new Router(options);
       }
       const opts = options || {};
-      function router13(req, res, next) {
-        router13.handle(req, res, next);
+      function router(req, res, next) {
+        router.handle(req, res, next);
       }
-      Object.setPrototypeOf(router13, this);
-      router13.caseSensitive = opts.caseSensitive;
-      router13.mergeParams = opts.mergeParams;
-      router13.params = {};
-      router13.strict = opts.strict;
-      router13.stack = [];
-      return router13;
+      Object.setPrototypeOf(router, this);
+      router.caseSensitive = opts.caseSensitive;
+      router.mergeParams = opts.mergeParams;
+      router.params = {};
+      router.strict = opts.strict;
+      router.stack = [];
+      return router;
     }
-    Router13.prototype = function() {
+    Router.prototype = function() {
     };
-    Router13.prototype.param = function param(name, fn) {
+    Router.prototype.param = function param(name, fn) {
       if (!name) {
         throw new TypeError("argument name is required");
       }
@@ -20696,7 +20696,7 @@ var require_router = __commonJS({
       params.push(fn);
       return this;
     };
-    Router13.prototype.handle = function handle(req, res, callback) {
+    Router.prototype.handle = function handle(req, res, callback) {
       if (!callback) {
         throw new TypeError("argument callback is required");
       }
@@ -20743,8 +20743,8 @@ var require_router = __commonJS({
         if (++sync > 100) {
           return setImmediate(next, err);
         }
-        const path2 = getPathname(req);
-        if (path2 == null) {
+        const path = getPathname(req);
+        if (path == null) {
           return done(layerError);
         }
         let layer;
@@ -20752,7 +20752,7 @@ var require_router = __commonJS({
         let route;
         while (match2 !== true && idx < stack.length) {
           layer = stack[idx++];
-          match2 = matchLayer(layer, path2);
+          match2 = matchLayer(layer, path);
           route = layer.route;
           if (typeof match2 !== "boolean") {
             layerError = layerError || match2;
@@ -20790,18 +20790,18 @@ var require_router = __commonJS({
           } else if (route) {
             layer.handleRequest(req, res, next);
           } else {
-            trimPrefix(layer, layerError, layerPath, path2);
+            trimPrefix(layer, layerError, layerPath, path);
           }
           sync = 0;
         });
       }
-      function trimPrefix(layer, layerError, layerPath, path2) {
+      function trimPrefix(layer, layerError, layerPath, path) {
         if (layerPath.length !== 0) {
-          if (layerPath !== path2.substring(0, layerPath.length)) {
+          if (layerPath !== path.substring(0, layerPath.length)) {
             next(layerError);
             return;
           }
-          const c = path2[layerPath.length];
+          const c = path[layerPath.length];
           if (c && c !== "/") {
             next(layerError);
             return;
@@ -20823,9 +20823,9 @@ var require_router = __commonJS({
         }
       }
     };
-    Router13.prototype.use = function use(handler) {
+    Router.prototype.use = function use(handler) {
       let offset = 0;
-      let path2 = "/";
+      let path = "/";
       if (typeof handler !== "function") {
         let arg = handler;
         while (Array.isArray(arg) && arg.length !== 0) {
@@ -20833,7 +20833,7 @@ var require_router = __commonJS({
         }
         if (typeof arg !== "function") {
           offset = 1;
-          path2 = handler;
+          path = handler;
         }
       }
       const callbacks = flatten.call(slice.call(arguments, offset), Infinity);
@@ -20845,8 +20845,8 @@ var require_router = __commonJS({
         if (typeof fn !== "function") {
           throw new TypeError("argument handler must be a function");
         }
-        debug("use %o %s", path2, fn.name || "<anonymous>");
-        const layer = new Layer(path2, {
+        debug("use %o %s", path, fn.name || "<anonymous>");
+        const layer = new Layer(path, {
           sensitive: this.caseSensitive,
           strict: false,
           end: false
@@ -20856,9 +20856,9 @@ var require_router = __commonJS({
       }
       return this;
     };
-    Router13.prototype.route = function route(path2) {
-      const route2 = new Route(path2);
-      const layer = new Layer(path2, {
+    Router.prototype.route = function route(path) {
+      const route2 = new Route(path);
+      const layer = new Layer(path, {
         sensitive: this.caseSensitive,
         strict: this.strict,
         end: true
@@ -20871,8 +20871,8 @@ var require_router = __commonJS({
       return route2;
     };
     methods.concat("all").forEach(function(method) {
-      Router13.prototype[method] = function(path2) {
-        const route = this.route(path2);
+      Router.prototype[method] = function(path) {
+        const route = this.route(path);
         route[method].apply(route, slice.call(arguments, 1));
         return this;
       };
@@ -20901,9 +20901,9 @@ var require_router = __commonJS({
       const fqdnIndex = url2.substring(0, pathLength).indexOf("://");
       return fqdnIndex !== -1 ? url2.substring(0, url2.indexOf("/", 3 + fqdnIndex)) : void 0;
     }
-    function matchLayer(layer, path2) {
+    function matchLayer(layer, path) {
       try {
-        return layer.match(path2);
+        return layer.match(path);
       } catch (err) {
         return err;
       }
@@ -21054,13 +21054,13 @@ var require_application = __commonJS({
     var compileTrust = require_utils3().compileTrust;
     var resolve = __require("node:path").resolve;
     var once = require_once();
-    var Router13 = require_router();
+    var Router = require_router();
     var slice = Array.prototype.slice;
     var flatten = Array.prototype.flat;
     var app2 = exports = module.exports = {};
     var trustProxyDefaultSymbol = "@@symbol:trust_proxy_default";
     app2.init = function init() {
-      var router13 = null;
+      var router = null;
       this.cache = /* @__PURE__ */ Object.create(null);
       this.engines = /* @__PURE__ */ Object.create(null);
       this.settings = /* @__PURE__ */ Object.create(null);
@@ -21069,13 +21069,13 @@ var require_application = __commonJS({
         configurable: true,
         enumerable: true,
         get: function getrouter() {
-          if (router13 === null) {
-            router13 = new Router13({
+          if (router === null) {
+            router = new Router({
               caseSensitive: this.enabled("case sensitive routing"),
               strict: this.enabled("strict routing")
             });
           }
-          return router13;
+          return router;
         }
       });
     };
@@ -21131,7 +21131,7 @@ var require_application = __commonJS({
     };
     app2.use = function use(fn) {
       var offset = 0;
-      var path2 = "/";
+      var path = "/";
       if (typeof fn !== "function") {
         var arg = fn;
         while (Array.isArray(arg) && arg.length !== 0) {
@@ -21139,22 +21139,22 @@ var require_application = __commonJS({
         }
         if (typeof arg !== "function") {
           offset = 1;
-          path2 = fn;
+          path = fn;
         }
       }
       var fns = flatten.call(slice.call(arguments, offset), Infinity);
       if (fns.length === 0) {
         throw new TypeError("app.use() requires a middleware function");
       }
-      var router13 = this.router;
+      var router = this.router;
       fns.forEach(function(fn2) {
         if (!fn2 || !fn2.handle || !fn2.set) {
-          return router13.use(path2, fn2);
+          return router.use(path, fn2);
         }
-        debug(".use app under %s", path2);
-        fn2.mountpath = path2;
+        debug(".use app under %s", path);
+        fn2.mountpath = path;
         fn2.parent = this;
-        router13.use(path2, function mounted_app(req, res, next) {
+        router.use(path, function mounted_app(req, res, next) {
           var orig = req.app;
           fn2.handle(req, res, function(err) {
             Object.setPrototypeOf(req, orig.request);
@@ -21166,8 +21166,8 @@ var require_application = __commonJS({
       }, this);
       return this;
     };
-    app2.route = function route(path2) {
-      return this.router.route(path2);
+    app2.route = function route(path) {
+      return this.router.route(path);
     };
     app2.engine = function engine(ext, fn) {
       if (typeof fn !== "function") {
@@ -21210,7 +21210,7 @@ var require_application = __commonJS({
       }
       return this;
     };
-    app2.path = function path2() {
+    app2.path = function path() {
       return this.parent ? this.parent.path() + this.mountpath : "";
     };
     app2.enabled = function enabled(setting) {
@@ -21226,17 +21226,17 @@ var require_application = __commonJS({
       return this.set(setting, false);
     };
     methods.forEach(function(method) {
-      app2[method] = function(path2) {
+      app2[method] = function(path) {
         if (method === "get" && arguments.length === 1) {
-          return this.set(path2);
+          return this.set(path);
         }
-        var route = this.route(path2);
+        var route = this.route(path);
         route[method].apply(route, slice.call(arguments, 1));
         return this;
       };
     });
-    app2.all = function all(path2) {
-      var route = this.route(path2);
+    app2.all = function all(path) {
+      var route = this.route(path);
       var args = slice.call(arguments, 1);
       for (var i = 0; i < methods.length; i++) {
         route[methods[i]].apply(route, args);
@@ -21319,8 +21319,8 @@ var require_charset = __commonJS({
       accepts.length = j;
       return accepts;
     }
-    function parseCharset(str2, i) {
-      var match2 = simpleCharsetRegExp.exec(str2);
+    function parseCharset(str, i) {
+      var match2 = simpleCharsetRegExp.exec(str);
       if (!match2) return null;
       var charset = match2[1];
       var q = 1;
@@ -21417,8 +21417,8 @@ var require_encoding = __commonJS({
       accepts.length = j;
       return accepts;
     }
-    function parseEncoding(str2, i) {
-      var match2 = simpleEncodingRegExp.exec(str2);
+    function parseEncoding(str, i) {
+      var match2 = simpleEncodingRegExp.exec(str);
       if (!match2) return null;
       var encoding = match2[1];
       var q = 1;
@@ -21519,8 +21519,8 @@ var require_language = __commonJS({
       accepts.length = j;
       return accepts;
     }
-    function parseLanguage(str2, i) {
-      var match2 = simpleLanguageRegExp.exec(str2);
+    function parseLanguage(str, i) {
+      var match2 = simpleLanguageRegExp.exec(str);
       if (!match2) return null;
       var prefix = match2[1];
       var suffix = match2[2];
@@ -21614,8 +21614,8 @@ var require_mediaType = __commonJS({
       accepts.length = j;
       return accepts;
     }
-    function parseMediaType(str2, i) {
-      var match2 = simpleMediaTypeRegExp.exec(str2);
+    function parseMediaType(str, i) {
+      var match2 = simpleMediaTypeRegExp.exec(str);
       if (!match2) return null;
       var params = /* @__PURE__ */ Object.create(null);
       var q = 1;
@@ -21716,15 +21716,15 @@ var require_mediaType = __commonJS({
       }
       return count;
     }
-    function splitKeyValuePair(str2) {
-      var index = str2.indexOf("=");
+    function splitKeyValuePair(str) {
+      var index = str.indexOf("=");
       var key;
       var val;
       if (index === -1) {
-        key = str2;
+        key = str;
       } else {
-        key = str2.slice(0, index);
-        val = str2.slice(index + 1);
+        key = str.slice(0, index);
+        val = str.slice(index + 1);
       }
       return [key, val];
     }
@@ -21740,8 +21740,8 @@ var require_mediaType = __commonJS({
       accepts.length = j + 1;
       return accepts;
     }
-    function splitParameters(str2) {
-      var parameters = str2.split(";");
+    function splitParameters(str) {
+      var parameters = str.split(";");
       for (var i = 1, j = 0; i < parameters.length; i++) {
         if (quoteCount(parameters[j]) % 2 == 0) {
           parameters[++j] = parameters[i];
@@ -21941,19 +21941,19 @@ var require_fresh = __commonJS({
       var timestamp2 = date6 && Date.parse(date6);
       return typeof timestamp2 === "number" ? timestamp2 : NaN;
     }
-    function parseTokenList(str2) {
+    function parseTokenList(str) {
       var end = 0;
       var list = [];
       var start = 0;
-      for (var i = 0, len = str2.length; i < len; i++) {
-        switch (str2.charCodeAt(i)) {
+      for (var i = 0, len = str.length; i < len; i++) {
+        switch (str.charCodeAt(i)) {
           case 32:
             if (start === end) {
               start = end = i + 1;
             }
             break;
           case 44:
-            list.push(str2.substring(start, end));
+            list.push(str.substring(start, end));
             start = end = i + 1;
             break;
           default:
@@ -21961,7 +21961,7 @@ var require_fresh = __commonJS({
             break;
         }
       }
-      list.push(str2.substring(start, end));
+      list.push(str.substring(start, end));
       return list;
     }
   }
@@ -21972,17 +21972,17 @@ var require_range_parser = __commonJS({
   "../../node_modules/.pnpm/range-parser@1.2.1/node_modules/range-parser/index.js"(exports, module) {
     "use strict";
     module.exports = rangeParser;
-    function rangeParser(size, str2, options) {
-      if (typeof str2 !== "string") {
+    function rangeParser(size, str, options) {
+      if (typeof str !== "string") {
         throw new TypeError("argument str must be a string");
       }
-      var index = str2.indexOf("=");
+      var index = str.indexOf("=");
       if (index === -1) {
         return -2;
       }
-      var arr = str2.slice(index + 1).split(",");
+      var arr = str.slice(index + 1).split(",");
       var ranges = [];
-      ranges.type = str2.slice(0, index);
+      ranges.type = str.slice(0, index);
       for (var i = 0; i < arr.length; i++) {
         var range = arr[i].split("-");
         var start = parseInt(range[0], 10);
@@ -22146,7 +22146,7 @@ var require_request = __commonJS({
       var subdomains2 = !isIP(hostname2) ? hostname2.split(".").reverse() : [hostname2];
       return subdomains2.slice(offset);
     });
-    defineGetter(req, "path", function path2() {
+    defineGetter(req, "path", function path() {
       return parse4(this).pathname;
     });
     defineGetter(req, "host", function host() {
@@ -22265,8 +22265,8 @@ var require_content_disposition = __commonJS({
       }
       return string4;
     }
-    function decodefield(str2) {
-      const match2 = EXT_VALUE_REGEXP.exec(str2);
+    function decodefield(str) {
+      const match2 = EXT_VALUE_REGEXP.exec(str);
       if (!match2) {
         throw new TypeError("invalid extended field value");
       }
@@ -22345,20 +22345,20 @@ var require_content_disposition = __commonJS({
       return "%" + String(char2).charCodeAt(0).toString(16).toUpperCase();
     }
     function qstring(val) {
-      var str2 = String(val);
-      return '"' + str2.replace(QUOTE_REGEXP, "\\$1") + '"';
+      var str = String(val);
+      return '"' + str.replace(QUOTE_REGEXP, "\\$1") + '"';
     }
     function ustring(val) {
-      var str2 = String(val);
-      var encoded = encodeURIComponent(str2).replace(ENCODE_URL_ATTR_CHAR_REGEXP, pencode);
+      var str = String(val);
+      var encoded = encodeURIComponent(str).replace(ENCODE_URL_ATTR_CHAR_REGEXP, pencode);
       return "UTF-8''" + encoded;
     }
     function ContentDisposition(type, parameters) {
       this.type = type;
       this.parameters = parameters;
     }
-    function basename(path2) {
-      const normalized = path2.replaceAll("\\", "/");
+    function basename(path) {
+      const normalized = path.replaceAll("\\", "/");
       let end = normalized.length;
       while (end > 0 && normalized[end - 1] === "/") {
         end--;
@@ -22378,26 +22378,26 @@ var require_content_disposition = __commonJS({
       code >= 65 && code <= 70 || // A-F
       code >= 97 && code <= 102;
     }
-    function hasHexEscape(str2) {
-      const maxIndex = str2.length - 3;
+    function hasHexEscape(str) {
+      const maxIndex = str.length - 3;
       let lastIndex = -1;
-      while ((lastIndex = str2.indexOf("%", lastIndex + 1)) !== -1 && lastIndex <= maxIndex) {
-        if (isHexDigit(str2[lastIndex + 1]) && isHexDigit(str2[lastIndex + 2])) {
+      while ((lastIndex = str.indexOf("%", lastIndex + 1)) !== -1 && lastIndex <= maxIndex) {
+        if (isHexDigit(str[lastIndex + 1]) && isHexDigit(str[lastIndex + 2])) {
           return true;
         }
       }
       return false;
     }
-    function decodeHexEscapes(str2) {
-      const firstEscape = str2.indexOf("%");
-      if (firstEscape === -1) return str2;
-      let result = str2.slice(0, firstEscape);
-      for (let idx = firstEscape; idx < str2.length; idx++) {
-        if (str2[idx] === "%" && idx + 2 < str2.length && isHexDigit(str2[idx + 1]) && isHexDigit(str2[idx + 2])) {
-          result += String.fromCharCode(Number.parseInt(str2[idx + 1] + str2[idx + 2], 16));
+    function decodeHexEscapes(str) {
+      const firstEscape = str.indexOf("%");
+      if (firstEscape === -1) return str;
+      let result = str.slice(0, firstEscape);
+      for (let idx = firstEscape; idx < str.length; idx++) {
+        if (str[idx] === "%" && idx + 2 < str.length && isHexDigit(str[idx + 1]) && isHexDigit(str[idx + 2])) {
+          result += String.fromCharCode(Number.parseInt(str[idx + 1] + str[idx + 2], 16));
           idx += 2;
         } else {
-          result += str2[idx];
+          result += str[idx];
         }
       }
       return result;
@@ -22435,54 +22435,54 @@ var require_cookie = __commonJS({
     var cookieValueRegExp = /^("?)[\u0021\u0023-\u002B\u002D-\u003A\u003C-\u005B\u005D-\u007E]*\1$/;
     var domainValueRegExp = /^([.]?[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)([.][a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*$/i;
     var pathValueRegExp = /^[\u0020-\u003A\u003D-\u007E]*$/;
-    function parse4(str2, opt) {
-      if (typeof str2 !== "string") {
+    function parse4(str, opt) {
+      if (typeof str !== "string") {
         throw new TypeError("argument str must be a string");
       }
       var obj = {};
-      var len = str2.length;
+      var len = str.length;
       if (len < 2) return obj;
       var dec = opt && opt.decode || decode;
       var index = 0;
       var eqIdx = 0;
       var endIdx = 0;
       do {
-        eqIdx = str2.indexOf("=", index);
+        eqIdx = str.indexOf("=", index);
         if (eqIdx === -1) break;
-        endIdx = str2.indexOf(";", index);
+        endIdx = str.indexOf(";", index);
         if (endIdx === -1) {
           endIdx = len;
         } else if (eqIdx > endIdx) {
-          index = str2.lastIndexOf(";", eqIdx - 1) + 1;
+          index = str.lastIndexOf(";", eqIdx - 1) + 1;
           continue;
         }
-        var keyStartIdx = startIndex(str2, index, eqIdx);
-        var keyEndIdx = endIndex(str2, eqIdx, keyStartIdx);
-        var key = str2.slice(keyStartIdx, keyEndIdx);
+        var keyStartIdx = startIndex(str, index, eqIdx);
+        var keyEndIdx = endIndex(str, eqIdx, keyStartIdx);
+        var key = str.slice(keyStartIdx, keyEndIdx);
         if (!__hasOwnProperty.call(obj, key)) {
-          var valStartIdx = startIndex(str2, eqIdx + 1, endIdx);
-          var valEndIdx = endIndex(str2, endIdx, valStartIdx);
-          if (str2.charCodeAt(valStartIdx) === 34 && str2.charCodeAt(valEndIdx - 1) === 34) {
+          var valStartIdx = startIndex(str, eqIdx + 1, endIdx);
+          var valEndIdx = endIndex(str, endIdx, valStartIdx);
+          if (str.charCodeAt(valStartIdx) === 34 && str.charCodeAt(valEndIdx - 1) === 34) {
             valStartIdx++;
             valEndIdx--;
           }
-          var val = str2.slice(valStartIdx, valEndIdx);
+          var val = str.slice(valStartIdx, valEndIdx);
           obj[key] = tryDecode(val, dec);
         }
         index = endIdx + 1;
       } while (index < len);
       return obj;
     }
-    function startIndex(str2, index, max) {
+    function startIndex(str, index, max) {
       do {
-        var code = str2.charCodeAt(index);
+        var code = str.charCodeAt(index);
         if (code !== 32 && code !== 9) return index;
       } while (++index < max);
       return max;
     }
-    function endIndex(str2, index, min) {
+    function endIndex(str, index, min) {
       while (index > min) {
-        var code = str2.charCodeAt(--index);
+        var code = str.charCodeAt(--index);
         if (code !== 32 && code !== 9) return index + 1;
       }
       return min;
@@ -22499,54 +22499,54 @@ var require_cookie = __commonJS({
       if (!cookieValueRegExp.test(value)) {
         throw new TypeError("argument val is invalid");
       }
-      var str2 = name + "=" + value;
-      if (!opt) return str2;
+      var str = name + "=" + value;
+      if (!opt) return str;
       if (null != opt.maxAge) {
         var maxAge = Math.floor(opt.maxAge);
         if (!isFinite(maxAge)) {
           throw new TypeError("option maxAge is invalid");
         }
-        str2 += "; Max-Age=" + maxAge;
+        str += "; Max-Age=" + maxAge;
       }
       if (opt.domain) {
         if (!domainValueRegExp.test(opt.domain)) {
           throw new TypeError("option domain is invalid");
         }
-        str2 += "; Domain=" + opt.domain;
+        str += "; Domain=" + opt.domain;
       }
       if (opt.path) {
         if (!pathValueRegExp.test(opt.path)) {
           throw new TypeError("option path is invalid");
         }
-        str2 += "; Path=" + opt.path;
+        str += "; Path=" + opt.path;
       }
       if (opt.expires) {
         var expires = opt.expires;
         if (!isDate(expires) || isNaN(expires.valueOf())) {
           throw new TypeError("option expires is invalid");
         }
-        str2 += "; Expires=" + expires.toUTCString();
+        str += "; Expires=" + expires.toUTCString();
       }
       if (opt.httpOnly) {
-        str2 += "; HttpOnly";
+        str += "; HttpOnly";
       }
       if (opt.secure) {
-        str2 += "; Secure";
+        str += "; Secure";
       }
       if (opt.partitioned) {
-        str2 += "; Partitioned";
+        str += "; Partitioned";
       }
       if (opt.priority) {
         var priority = typeof opt.priority === "string" ? opt.priority.toLowerCase() : opt.priority;
         switch (priority) {
           case "low":
-            str2 += "; Priority=Low";
+            str += "; Priority=Low";
             break;
           case "medium":
-            str2 += "; Priority=Medium";
+            str += "; Priority=Medium";
             break;
           case "high":
-            str2 += "; Priority=High";
+            str += "; Priority=High";
             break;
           default:
             throw new TypeError("option priority is invalid");
@@ -22556,34 +22556,34 @@ var require_cookie = __commonJS({
         var sameSite = typeof opt.sameSite === "string" ? opt.sameSite.toLowerCase() : opt.sameSite;
         switch (sameSite) {
           case true:
-            str2 += "; SameSite=Strict";
+            str += "; SameSite=Strict";
             break;
           case "lax":
-            str2 += "; SameSite=Lax";
+            str += "; SameSite=Lax";
             break;
           case "strict":
-            str2 += "; SameSite=Strict";
+            str += "; SameSite=Strict";
             break;
           case "none":
-            str2 += "; SameSite=None";
+            str += "; SameSite=None";
             break;
           default:
             throw new TypeError("option sameSite is invalid");
         }
       }
-      return str2;
+      return str;
     }
-    function decode(str2) {
-      return str2.indexOf("%") !== -1 ? decodeURIComponent(str2) : str2;
+    function decode(str) {
+      return str.indexOf("%") !== -1 ? decodeURIComponent(str) : str;
     }
     function isDate(val) {
       return __toString.call(val) === "[object Date]";
     }
-    function tryDecode(str2, decode2) {
+    function tryDecode(str, decode2) {
       try {
-        return decode2(str2);
+        return decode2(str);
       } catch (e) {
-        return str2;
+        return str;
       }
     }
   }
@@ -22604,27 +22604,27 @@ var require_send = __commonJS({
     var ms = require_ms();
     var onFinished = require_on_finished();
     var parseRange = require_range_parser();
-    var path2 = __require("path");
+    var path = __require("path");
     var statuses = require_statuses();
-    var Stream2 = __require("stream");
-    var util2 = __require("util");
-    var extname = path2.extname;
-    var join = path2.join;
-    var normalize = path2.normalize;
-    var resolve = path2.resolve;
-    var sep = path2.sep;
+    var Stream = __require("stream");
+    var util = __require("util");
+    var extname = path.extname;
+    var join = path.join;
+    var normalize = path.normalize;
+    var resolve = path.resolve;
+    var sep = path.sep;
     var BYTES_RANGE_REGEXP = /^ *bytes=/;
     var MAX_MAXAGE = 60 * 60 * 24 * 365 * 1e3;
     var UP_PATH_REGEXP = /(?:^|[\\/])\.\.(?:[\\/]|$)/;
     module.exports = send;
-    function send(req, path3, options) {
-      return new SendStream(req, path3, options);
+    function send(req, path2, options) {
+      return new SendStream(req, path2, options);
     }
-    function SendStream(req, path3, options) {
-      Stream2.call(this);
+    function SendStream(req, path2, options) {
+      Stream.call(this);
       var opts = options || {};
       this.options = opts;
-      this.path = path3;
+      this.path = path2;
       this.req = req;
       this._acceptRanges = opts.acceptRanges !== void 0 ? Boolean(opts.acceptRanges) : true;
       this._cacheControl = opts.cacheControl !== void 0 ? Boolean(opts.cacheControl) : true;
@@ -22642,7 +22642,7 @@ var require_send = __commonJS({
       this._maxage = !isNaN(this._maxage) ? Math.min(Math.max(0, this._maxage), MAX_MAXAGE) : 0;
       this._root = opts.root ? resolve(opts.root) : null;
     }
-    util2.inherits(SendStream, Stream2);
+    util.inherits(SendStream, Stream);
     SendStream.prototype.error = function error40(status, err) {
       if (hasListeners(this, "error")) {
         return this.emit("error", createHttpError(status, err));
@@ -22738,10 +22738,10 @@ var require_send = __commonJS({
       var lastModified = this.res.getHeader("Last-Modified");
       return parseHttpDate(lastModified) <= parseHttpDate(ifRange);
     };
-    SendStream.prototype.redirect = function redirect(path3) {
+    SendStream.prototype.redirect = function redirect(path2) {
       var res = this.res;
       if (hasListeners(this, "directory")) {
-        this.emit("directory", res, path3);
+        this.emit("directory", res, path2);
         return;
       }
       if (this.hasTrailingSlash()) {
@@ -22761,38 +22761,38 @@ var require_send = __commonJS({
     SendStream.prototype.pipe = function pipe2(res) {
       var root = this._root;
       this.res = res;
-      var path3 = decode(this.path);
-      if (path3 === -1) {
+      var path2 = decode(this.path);
+      if (path2 === -1) {
         this.error(400);
         return res;
       }
-      if (~path3.indexOf("\0")) {
+      if (~path2.indexOf("\0")) {
         this.error(400);
         return res;
       }
       var parts;
       if (root !== null) {
-        if (path3) {
-          path3 = normalize("." + sep + path3);
+        if (path2) {
+          path2 = normalize("." + sep + path2);
         }
-        if (UP_PATH_REGEXP.test(path3)) {
-          debug('malicious path "%s"', path3);
+        if (UP_PATH_REGEXP.test(path2)) {
+          debug('malicious path "%s"', path2);
           this.error(403);
           return res;
         }
-        parts = path3.split(sep);
-        path3 = normalize(join(root, path3));
+        parts = path2.split(sep);
+        path2 = normalize(join(root, path2));
       } else {
-        if (UP_PATH_REGEXP.test(path3)) {
-          debug('malicious path "%s"', path3);
+        if (UP_PATH_REGEXP.test(path2)) {
+          debug('malicious path "%s"', path2);
           this.error(403);
           return res;
         }
-        parts = normalize(path3).split(sep);
-        path3 = resolve(path3);
+        parts = normalize(path2).split(sep);
+        path2 = resolve(path2);
       }
       if (containsDotFile(parts)) {
-        debug('%s dotfile "%s"', this._dotfiles, path3);
+        debug('%s dotfile "%s"', this._dotfiles, path2);
         switch (this._dotfiles) {
           case "allow":
             break;
@@ -22806,13 +22806,13 @@ var require_send = __commonJS({
         }
       }
       if (this._index.length && this.hasTrailingSlash()) {
-        this.sendIndex(path3);
+        this.sendIndex(path2);
         return res;
       }
-      this.sendFile(path3);
+      this.sendFile(path2);
       return res;
     };
-    SendStream.prototype.send = function send2(path3, stat) {
+    SendStream.prototype.send = function send2(path2, stat) {
       var len = stat.size;
       var options = this.options;
       var opts = {};
@@ -22824,9 +22824,9 @@ var require_send = __commonJS({
         this.headersAlreadySent();
         return;
       }
-      debug('pipe "%s"', path3);
-      this.setHeader(path3, stat);
-      this.type(path3);
+      debug('pipe "%s"', path2);
+      this.setHeader(path2, stat);
+      this.type(path2);
       if (this.isConditionalGET()) {
         if (this.isPreconditionFailure()) {
           this.error(412);
@@ -22875,28 +22875,28 @@ var require_send = __commonJS({
         res.end();
         return;
       }
-      this.stream(path3, opts);
+      this.stream(path2, opts);
     };
-    SendStream.prototype.sendFile = function sendFile(path3) {
+    SendStream.prototype.sendFile = function sendFile(path2) {
       var i = 0;
       var self2 = this;
-      debug('stat "%s"', path3);
-      fs.stat(path3, function onstat(err, stat) {
-        var pathEndsWithSep = path3[path3.length - 1] === sep;
-        if (err && err.code === "ENOENT" && !extname(path3) && !pathEndsWithSep) {
+      debug('stat "%s"', path2);
+      fs.stat(path2, function onstat(err, stat) {
+        var pathEndsWithSep = path2[path2.length - 1] === sep;
+        if (err && err.code === "ENOENT" && !extname(path2) && !pathEndsWithSep) {
           return next(err);
         }
         if (err) return self2.onStatError(err);
-        if (stat.isDirectory()) return self2.redirect(path3);
+        if (stat.isDirectory()) return self2.redirect(path2);
         if (pathEndsWithSep) return self2.error(404);
-        self2.emit("file", path3, stat);
-        self2.send(path3, stat);
+        self2.emit("file", path2, stat);
+        self2.send(path2, stat);
       });
       function next(err) {
         if (self2._extensions.length <= i) {
           return err ? self2.onStatError(err) : self2.error(404);
         }
-        var p = path3 + "." + self2._extensions[i++];
+        var p = path2 + "." + self2._extensions[i++];
         debug('stat "%s"', p);
         fs.stat(p, function(err2, stat) {
           if (err2) return next(err2);
@@ -22906,7 +22906,7 @@ var require_send = __commonJS({
         });
       }
     };
-    SendStream.prototype.sendIndex = function sendIndex(path3) {
+    SendStream.prototype.sendIndex = function sendIndex(path2) {
       var i = -1;
       var self2 = this;
       function next(err) {
@@ -22914,7 +22914,7 @@ var require_send = __commonJS({
           if (err) return self2.onStatError(err);
           return self2.error(404);
         }
-        var p = join(path3, self2._index[i]);
+        var p = join(path2, self2._index[i]);
         debug('stat "%s"', p);
         fs.stat(p, function(err2, stat) {
           if (err2) return next(err2);
@@ -22925,10 +22925,10 @@ var require_send = __commonJS({
       }
       next();
     };
-    SendStream.prototype.stream = function stream(path3, options) {
+    SendStream.prototype.stream = function stream(path2, options) {
       var self2 = this;
       var res = this.res;
-      var stream2 = fs.createReadStream(path3, options);
+      var stream2 = fs.createReadStream(path2, options);
       this.emit("stream", stream2);
       stream2.pipe(res);
       function cleanup() {
@@ -22943,17 +22943,17 @@ var require_send = __commonJS({
         self2.emit("end");
       });
     };
-    SendStream.prototype.type = function type(path3) {
+    SendStream.prototype.type = function type(path2) {
       var res = this.res;
       if (res.getHeader("Content-Type")) return;
-      var ext = extname(path3);
+      var ext = extname(path2);
       var type2 = mime.contentType(ext) || "application/octet-stream";
       debug("content-type %s", type2);
       res.setHeader("Content-Type", type2);
     };
-    SendStream.prototype.setHeader = function setHeader2(path3, stat) {
+    SendStream.prototype.setHeader = function setHeader2(path2, stat) {
       var res = this.res;
-      this.emit("headers", res, path3, stat);
+      this.emit("headers", res, path2, stat);
       if (this._acceptRanges && !res.getHeader("Accept-Ranges")) {
         debug("accept ranges");
         res.setHeader("Accept-Ranges", "bytes");
@@ -22982,13 +22982,13 @@ var require_send = __commonJS({
         res.removeHeader(header);
       }
     }
-    function collapseLeadingSlashes(str2) {
-      for (var i = 0; i < str2.length; i++) {
-        if (str2[i] !== "/") {
+    function collapseLeadingSlashes(str) {
+      for (var i = 0; i < str.length; i++) {
+        if (str[i] !== "/") {
           break;
         }
       }
-      return i > 1 ? "/" + str2.substr(i) : str2;
+      return i > 1 ? "/" + str.substr(i) : str;
     }
     function containsDotFile(parts) {
       for (var i = 0; i < parts.length; i++) {
@@ -23011,9 +23011,9 @@ var require_send = __commonJS({
       }
       return err instanceof Error ? createError(status, err, { expose: false }) : createError(status, err);
     }
-    function decode(path3) {
+    function decode(path2) {
       try {
-        return decodeURIComponent(path3);
+        return decodeURIComponent(path2);
       } catch (err) {
         return -1;
       }
@@ -23035,12 +23035,12 @@ var require_send = __commonJS({
       var timestamp2 = date6 && Date.parse(date6);
       return typeof timestamp2 === "number" ? timestamp2 : NaN;
     }
-    function parseTokenList(str2) {
+    function parseTokenList(str) {
       var end = 0;
       var list = [];
       var start = 0;
-      for (var i = 0, len = str2.length; i < len; i++) {
-        switch (str2.charCodeAt(i)) {
+      for (var i = 0, len = str.length; i < len; i++) {
+        switch (str.charCodeAt(i)) {
           case 32:
             if (start === end) {
               start = end = i + 1;
@@ -23048,7 +23048,7 @@ var require_send = __commonJS({
             break;
           case 44:
             if (start !== end) {
-              list.push(str2.substring(start, end));
+              list.push(str.substring(start, end));
             }
             start = end = i + 1;
             break;
@@ -23058,7 +23058,7 @@ var require_send = __commonJS({
         }
       }
       if (start !== end) {
-        list.push(str2.substring(start, end));
+        list.push(str.substring(start, end));
       }
       return list;
     }
@@ -23157,7 +23157,7 @@ var require_response = __commonJS({
     var http = __require("node:http");
     var onFinished = require_on_finished();
     var mime = require_mime_types();
-    var path2 = __require("node:path");
+    var path = __require("node:path");
     var pathIsAbsolute = __require("node:path").isAbsolute;
     var statuses = require_statuses();
     var sign = require_cookie_signature().sign;
@@ -23166,8 +23166,8 @@ var require_response = __commonJS({
     var setCharset = require_utils3().setCharset;
     var cookie = require_cookie();
     var send = require_send();
-    var extname = path2.extname;
-    var resolve = path2.resolve;
+    var extname = path.extname;
+    var resolve = path.resolve;
     var vary = require_vary();
     var { Buffer: Buffer2 } = __require("node:buffer");
     var res = Object.create(http.ServerResponse.prototype);
@@ -23274,7 +23274,7 @@ var require_response = __commonJS({
       var escape2 = app2.get("json escape");
       var replacer = app2.get("json replacer");
       var spaces = app2.get("json spaces");
-      var body = stringify3(obj, replacer, spaces, escape2);
+      var body = stringify2(obj, replacer, spaces, escape2);
       if (!this.get("Content-Type")) {
         this.set("Content-Type", "application/json");
       }
@@ -23285,7 +23285,7 @@ var require_response = __commonJS({
       var escape2 = app2.get("json escape");
       var replacer = app2.get("json replacer");
       var spaces = app2.get("json spaces");
-      var body = stringify3(obj, replacer, spaces, escape2);
+      var body = stringify2(obj, replacer, spaces, escape2);
       var callback = this.req.query[app2.get("jsonp callback name")];
       if (!this.get("Content-Type")) {
         this.set("X-Content-Type-Options", "nosniff");
@@ -23313,26 +23313,26 @@ var require_response = __commonJS({
       this.type("txt");
       return this.send(body);
     };
-    res.sendFile = function sendFile(path3, options, callback) {
+    res.sendFile = function sendFile(path2, options, callback) {
       var done = callback;
       var req = this.req;
       var res2 = this;
       var next = req.next;
       var opts = options || {};
-      if (!path3) {
+      if (!path2) {
         throw new TypeError("path argument is required to res.sendFile");
       }
-      if (typeof path3 !== "string") {
+      if (typeof path2 !== "string") {
         throw new TypeError("path must be a string to res.sendFile");
       }
       if (typeof options === "function") {
         done = options;
         opts = {};
       }
-      if (!opts.root && !pathIsAbsolute(path3)) {
+      if (!opts.root && !pathIsAbsolute(path2)) {
         throw new TypeError("path must be absolute or specify root to res.sendFile");
       }
-      var pathname = encodeURI(path3);
+      var pathname = encodeURI(path2);
       opts.etag = this.app.enabled("etag");
       var file2 = send(req, pathname, opts);
       sendfile(res2, file2, opts, function(err) {
@@ -23343,7 +23343,7 @@ var require_response = __commonJS({
         }
       });
     };
-    res.download = function download(path3, filename, options, callback) {
+    res.download = function download(path2, filename, options, callback) {
       var done = callback;
       var name = filename;
       var opts = options || null;
@@ -23360,7 +23360,7 @@ var require_response = __commonJS({
         opts = filename;
       }
       var headers = {
-        "Content-Disposition": contentDisposition(name || path3)
+        "Content-Disposition": contentDisposition(name || path2)
       };
       if (opts && opts.headers) {
         var keys = Object.keys(opts.headers);
@@ -23373,7 +23373,7 @@ var require_response = __commonJS({
       }
       opts = Object.create(opts);
       opts.headers = headers;
-      var fullPath = !opts.root ? resolve(path3) : path3;
+      var fullPath = !opts.root ? resolve(path2) : path2;
       return this.sendFile(fullPath, opts, done);
     };
     res.contentType = res.type = function contentType(type) {
@@ -23522,9 +23522,9 @@ var require_response = __commonJS({
         opts = {};
       }
       opts._locals = self2.locals;
-      done = done || function(err, str2) {
+      done = done || function(err, str) {
         if (err) return req.next(err);
-        self2.send(str2);
+        self2.send(str);
       };
       app2.render(view, opts, done);
     };
@@ -23593,7 +23593,7 @@ var require_response = __commonJS({
       }
       file2.pipe(res2);
     }
-    function stringify3(value, replacer, spaces, escape2) {
+    function stringify2(value, replacer, spaces, escape2) {
       var json4 = replacer || spaces ? JSON.stringify(value, replacer, spaces) : JSON.stringify(value);
       if (escape2 && typeof json4 === "string") {
         json4 = json4.replace(/[<>&]/g, function(c) {
@@ -23656,11 +23656,11 @@ var require_serve_static = __commonJS({
         }
         var forwardError = !fallthrough;
         var originalUrl = parseUrl.original(req);
-        var path2 = parseUrl(req).pathname;
-        if (path2 === "/" && originalUrl.pathname.substr(-1) !== "/") {
-          path2 = "";
+        var path = parseUrl(req).pathname;
+        if (path === "/" && originalUrl.pathname.substr(-1) !== "/") {
+          path = "";
         }
-        var stream = send(req, path2, opts);
+        var stream = send(req, path, opts);
         stream.on("directory", onDirectory);
         if (setHeaders) {
           stream.on("headers", setHeaders);
@@ -23680,13 +23680,13 @@ var require_serve_static = __commonJS({
         stream.pipe(res);
       };
     }
-    function collapseLeadingSlashes(str2) {
-      for (var i = 0; i < str2.length; i++) {
-        if (str2.charCodeAt(i) !== 47) {
+    function collapseLeadingSlashes(str) {
+      for (var i = 0; i < str.length; i++) {
+        if (str.charCodeAt(i) !== 47) {
           break;
         }
       }
-      return i > 1 ? "/" + str2.substr(i) : str2;
+      return i > 1 ? "/" + str.substr(i) : str;
     }
     function createHtmlDocument(title, body) {
       return '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<title>' + title + "</title>\n</head>\n<body>\n<pre>" + body + "</pre>\n</body>\n</html>\n";
@@ -23727,7 +23727,7 @@ var require_express = __commonJS({
     var EventEmitter = __require("node:events").EventEmitter;
     var mixin = require_merge_descriptors();
     var proto = require_application();
-    var Router13 = require_router();
+    var Router = require_router();
     var req = require_request();
     var res = require_response();
     exports = module.exports = createApplication;
@@ -23749,8 +23749,8 @@ var require_express = __commonJS({
     exports.application = proto;
     exports.request = req;
     exports.response = res;
-    exports.Route = Router13.Route;
-    exports.Router = Router13;
+    exports.Route = Router.Route;
+    exports.Router = Router;
     exports.json = bodyParser.json;
     exports.raw = bodyParser.raw;
     exports.static = require_serve_static();
@@ -24196,13 +24196,13 @@ function __disposeResources(env) {
   }
   return next();
 }
-function __rewriteRelativeImportExtension(path2, preserveJsx) {
-  if (typeof path2 === "string" && /^\.\.?\//.test(path2)) {
-    return path2.replace(/\.(tsx)$|((?:\.d)?)((?:\.[^./]+?)?)\.([cm]?)ts$/i, function(m, tsx, d, ext, cm) {
+function __rewriteRelativeImportExtension(path, preserveJsx) {
+  if (typeof path === "string" && /^\.\.?\//.test(path)) {
+    return path.replace(/\.(tsx)$|((?:\.d)?)((?:\.[^./]+?)?)\.([cm]?)ts$/i, function(m, tsx, d, ext, cm) {
       return tsx ? preserveJsx ? ".jsx" : ".js" : d && (!ext || !cm) ? m : d + ext + "." + cm.toLowerCase() + "js";
     });
   }
-  return path2;
+  return path;
 }
 var extendStatics, __assign, __createBinding, __setModuleDefault, ownKeys, _SuppressedError, tslib_es6_default;
 var init_tslib_es6 = __esm({
@@ -24548,7 +24548,7 @@ var require_FunctionsClient = __commonJS({
        */
       invoke(functionName_1) {
         return tslib_1.__awaiter(this, arguments, void 0, function* (functionName, options = {}) {
-          var _a3;
+          var _a;
           let timeoutId;
           let timeoutController;
           try {
@@ -24614,7 +24614,7 @@ var require_FunctionsClient = __commonJS({
             if (!response.ok) {
               throw new types_1.FunctionsHttpError(response);
             }
-            let responseType = ((_a3 = response.headers.get("Content-Type")) !== null && _a3 !== void 0 ? _a3 : "text/plain").split(";")[0].trim();
+            let responseType = ((_a = response.headers.get("Content-Type")) !== null && _a !== void 0 ? _a : "text/plain").split(";")[0].trim();
             let data;
             if (responseType === "application/json") {
               data = yield response.json();
@@ -24688,7 +24688,7 @@ var require_websocket_factory = __commonJS({
       constructor() {
       }
       static detectEnvironment() {
-        var _a3;
+        var _a;
         if (typeof WebSocket !== "undefined") {
           return { type: "native", wsConstructor: WebSocket };
         }
@@ -24707,7 +24707,7 @@ var require_websocket_factory = __commonJS({
             workaround: "Use Cloudflare Workers WebSocket API for server-side WebSocket handling, or deploy to a different runtime."
           };
         }
-        if (typeof globalThis !== "undefined" && gt2.EdgeRuntime || typeof navigator !== "undefined" && ((_a3 = navigator.userAgent) === null || _a3 === void 0 ? void 0 : _a3.includes("Vercel-Edge"))) {
+        if (typeof globalThis !== "undefined" && gt2.EdgeRuntime || typeof navigator !== "undefined" && ((_a = navigator.userAgent) === null || _a === void 0 ? void 0 : _a.includes("Vercel-Edge"))) {
           return {
             type: "unsupported",
             error: "Edge runtime detected (Vercel Edge/Netlify Edge). WebSockets are not supported in edge functions.",
@@ -24788,7 +24788,7 @@ Suggested solution: ${env.workaround}`;
         try {
           const env = this.detectEnvironment();
           return env.type === "native" || env.type === "ws";
-        } catch (_a3) {
+        } catch (_a) {
           return false;
         }
       }
@@ -24880,29 +24880,29 @@ var require_serializer = __commonJS({
         return callback(JSON.stringify(payload));
       }
       _binaryEncodeUserBroadcastPush(message) {
-        var _a3;
-        if (this._isArrayBuffer((_a3 = message.payload) === null || _a3 === void 0 ? void 0 : _a3.payload)) {
+        var _a;
+        if (this._isArrayBuffer((_a = message.payload) === null || _a === void 0 ? void 0 : _a.payload)) {
           return this._encodeBinaryUserBroadcastPush(message);
         } else {
           return this._encodeJsonUserBroadcastPush(message);
         }
       }
       _encodeBinaryUserBroadcastPush(message) {
-        var _a3, _b;
-        const userPayload = (_b = (_a3 = message.payload) === null || _a3 === void 0 ? void 0 : _a3.payload) !== null && _b !== void 0 ? _b : new ArrayBuffer(0);
+        var _a, _b;
+        const userPayload = (_b = (_a = message.payload) === null || _a === void 0 ? void 0 : _a.payload) !== null && _b !== void 0 ? _b : new ArrayBuffer(0);
         return this._encodeUserBroadcastPush(message, this.BINARY_ENCODING, userPayload);
       }
       _encodeJsonUserBroadcastPush(message) {
-        var _a3, _b;
-        const userPayload = (_b = (_a3 = message.payload) === null || _a3 === void 0 ? void 0 : _a3.payload) !== null && _b !== void 0 ? _b : {};
+        var _a, _b;
+        const userPayload = (_b = (_a = message.payload) === null || _a === void 0 ? void 0 : _a.payload) !== null && _b !== void 0 ? _b : {};
         const encoder = new TextEncoder();
         const encodedUserPayload = encoder.encode(JSON.stringify(userPayload)).buffer;
         return this._encodeUserBroadcastPush(message, this.JSON_ENCODING, encodedUserPayload);
       }
       _encodeUserBroadcastPush(message, encodingType, encodedPayload) {
-        var _a3, _b;
+        var _a, _b;
         const topic = message.topic;
-        const ref = (_a3 = message.ref) !== null && _a3 !== void 0 ? _a3 : "";
+        const ref = (_a = message.ref) !== null && _a !== void 0 ? _a : "";
         const joinRef = (_b = message.join_ref) !== null && _b !== void 0 ? _b : "";
         const userEvent = message.payload.event;
         const rest = this.allowedMetadataKeys ? this._pick(message.payload, this.allowedMetadataKeys) : {};
@@ -24989,8 +24989,8 @@ var require_serializer = __commonJS({
         return { join_ref: null, ref: null, topic, event: this.BROADCAST_EVENT, payload: data };
       }
       _isArrayBuffer(buffer) {
-        var _a3;
-        return buffer instanceof ArrayBuffer || ((_a3 = buffer === null || buffer === void 0 ? void 0 : buffer.constructor) === null || _a3 === void 0 ? void 0 : _a3.name) === "ArrayBuffer";
+        var _a;
+        return buffer instanceof ArrayBuffer || ((_a = buffer === null || buffer === void 0 ? void 0 : buffer.constructor) === null || _a === void 0 ? void 0 : _a.name) === "ArrayBuffer";
       }
       _pick(obj, keys) {
         if (!obj || typeof obj !== "object") {
@@ -25037,8 +25037,8 @@ var require_transformers = __commonJS({
       PostgresTypes2["tstzrange"] = "tstzrange";
     })(PostgresTypes || (exports.PostgresTypes = PostgresTypes = {}));
     var convertChangeData = (columns, record2, options = {}) => {
-      var _a3;
-      const skipTypes = (_a3 = options.skipTypes) !== null && _a3 !== void 0 ? _a3 : [];
+      var _a;
+      const skipTypes = (_a = options.skipTypes) !== null && _a !== void 0 ? _a : [];
       if (!record2) {
         return {};
       }
@@ -25055,7 +25055,7 @@ var require_transformers = __commonJS({
       if (colType && !skipTypes.includes(colType)) {
         return (0, exports.convertCell)(colType, value);
       }
-      return noop3(value);
+      return noop2(value);
     };
     exports.convertColumn = convertColumn;
     var convertCell = (type, value) => {
@@ -25099,13 +25099,13 @@ var require_transformers = __commonJS({
         // To allow users to cast it based on Timezone
         case PostgresTypes.tsrange:
         case PostgresTypes.tstzrange:
-          return noop3(value);
+          return noop2(value);
         default:
-          return noop3(value);
+          return noop2(value);
       }
     };
     exports.convertCell = convertCell;
-    var noop3 = (value) => {
+    var noop2 = (value) => {
       return value;
     };
     var toBoolean = (value) => {
@@ -25133,7 +25133,7 @@ var require_transformers = __commonJS({
       if (typeof value === "string") {
         try {
           return JSON.parse(value);
-        } catch (_a3) {
+        } catch (_a) {
           return value;
         }
       }
@@ -27349,7 +27349,7 @@ var require_RealtimeChannel = __commonJS({
        * ```
        */
       constructor(topic, params = { config: {} }, socket) {
-        var _a3, _b;
+        var _a, _b;
         this.topic = topic;
         this.params = params;
         this.socket = socket;
@@ -27368,7 +27368,7 @@ var require_RealtimeChannel = __commonJS({
         this._updateFilterTransform();
         this.broadcastEndpointURL = (0, transformers_1.httpEndpointURL)(this.socket.socketAdapter.endPointURL());
         this.private = this.params.config.private || false;
-        if (!this.private && ((_b = (_a3 = this.params.config) === null || _a3 === void 0 ? void 0 : _a3.broadcast) === null || _b === void 0 ? void 0 : _b.replay)) {
+        if (!this.private && ((_b = (_a = this.params.config) === null || _a === void 0 ? void 0 : _a.broadcast) === null || _b === void 0 ? void 0 : _b.replay)) {
           throw new Error(`tried to use replay on public channel '${this.topic}'. It must be a private channel.`);
         }
       }
@@ -27392,13 +27392,13 @@ var require_RealtimeChannel = __commonJS({
        * ```
        */
       subscribe(callback, timeout = this.timeout) {
-        var _a3, _b, _c;
+        var _a, _b, _c;
         if (!this.socket.isConnected()) {
           this.socket.connect();
         }
         if (this.channelAdapter.isClosed()) {
           const { config: { broadcast, presence, private: isPrivate } } = this.params;
-          const postgres_changes = (_b = (_a3 = this.bindings.postgres_changes) === null || _a3 === void 0 ? void 0 : _a3.map((r) => r.filter)) !== null && _b !== void 0 ? _b : [];
+          const postgres_changes = (_b = (_a = this.bindings.postgres_changes) === null || _a === void 0 ? void 0 : _a.map((r) => r.filter)) !== null && _b !== void 0 ? _b : [];
           const presence_enabled = !!this.bindings[REALTIME_LISTEN_TYPES.PRESENCE] && this.bindings[REALTIME_LISTEN_TYPES.PRESENCE].length > 0 || ((_c = this.params.config.presence) === null || _c === void 0 ? void 0 : _c.enabled) === true;
           const accessTokenPayload = {};
           const config2 = {
@@ -27436,9 +27436,9 @@ var require_RealtimeChannel = __commonJS({
         return this;
       }
       _updatePostgresBindings(postgres_changes, callback) {
-        var _a3;
+        var _a;
         const clientPostgresBindings = this.bindings.postgres_changes;
-        const bindingsLen = (_a3 = clientPostgresBindings === null || clientPostgresBindings === void 0 ? void 0 : clientPostgresBindings.length) !== null && _a3 !== void 0 ? _a3 : 0;
+        const bindingsLen = (_a = clientPostgresBindings === null || clientPostgresBindings === void 0 ? void 0 : clientPostgresBindings.length) !== null && _a !== void 0 ? _a : 0;
         const newPostgresBindings = [];
         for (let i = 0; i < bindingsLen; i++) {
           const clientPostgresBinding = clientPostgresBindings[i];
@@ -27678,7 +27678,7 @@ var require_RealtimeChannel = __commonJS({
        * @category Realtime
        */
       async httpSend(event, payload, opts = {}) {
-        var _a3;
+        var _a;
         if (payload === void 0 || payload === null) {
           return Promise.reject(new Error("Payload is required for httpSend()"));
         }
@@ -27700,7 +27700,7 @@ var require_RealtimeChannel = __commonJS({
           headers,
           body: isBinary ? payload : JSON.stringify(payload)
         };
-        const response = await this._fetchWithTimeout(url2.toString(), options, (_a3 = opts.timeout) !== null && _a3 !== void 0 ? _a3 : this.timeout);
+        const response = await this._fetchWithTimeout(url2.toString(), options, (_a = opts.timeout) !== null && _a !== void 0 ? _a : this.timeout);
         if (response.status === 202) {
           return { success: true };
         }
@@ -27761,7 +27761,7 @@ var require_RealtimeChannel = __commonJS({
        * ```
        */
       async send(args, opts = {}) {
-        var _a3, _b;
+        var _a, _b;
         if (!this.channelAdapter.canPush() && args.type === "broadcast") {
           console.warn("Realtime send() is automatically falling back to REST API. This behavior will be deprecated in the future. Please use httpSend() explicitly for REST delivery.");
           const { event, payload: endpoint_payload } = args;
@@ -27787,7 +27787,7 @@ var require_RealtimeChannel = __commonJS({
             })
           };
           try {
-            const response = await this._fetchWithTimeout(this.broadcastEndpointURL, options, (_a3 = opts.timeout) !== null && _a3 !== void 0 ? _a3 : this.timeout);
+            const response = await this._fetchWithTimeout(this.broadcastEndpointURL, options, (_a = opts.timeout) !== null && _a !== void 0 ? _a : this.timeout);
             await ((_b = response.body) === null || _b === void 0 ? void 0 : _b.cancel());
             return response.ok ? "ok" : "error";
           } catch (error40) {
@@ -27799,9 +27799,9 @@ var require_RealtimeChannel = __commonJS({
           }
         } else {
           return new Promise((resolve) => {
-            var _a4, _b2, _c;
+            var _a2, _b2, _c;
             const push = this.channelAdapter.push(args.type, args, opts.timeout || this.timeout);
-            if (args.type === "broadcast" && !((_c = (_b2 = (_a4 = this.params) === null || _a4 === void 0 ? void 0 : _a4.config) === null || _b2 === void 0 ? void 0 : _b2.broadcast) === null || _c === void 0 ? void 0 : _c.ack)) {
+            if (args.type === "broadcast" && !((_c = (_b2 = (_a2 = this.params) === null || _a2 === void 0 ? void 0 : _a2.config) === null || _b2 === void 0 ? void 0 : _b2.broadcast) === null || _c === void 0 ? void 0 : _c.ack)) {
               resolve("ok");
             }
             push.receive("ok", () => resolve("ok"));
@@ -27888,12 +27888,12 @@ var require_RealtimeChannel = __commonJS({
       /** @internal */
       _updateFilterMessage() {
         this.channelAdapter.updateFilterBindings((binding, payload, ref) => {
-          var _a3, _b, _c, _d, _e, _f, _g;
+          var _a, _b, _c, _d, _e, _f, _g;
           const typeLower = binding.event.toLocaleLowerCase();
           if (this._notThisChannelEvent(typeLower, ref)) {
             return false;
           }
-          const bind = (_a3 = this.bindings[typeLower]) === null || _a3 === void 0 ? void 0 : _a3.find((bind2) => bind2.ref === binding.ref);
+          const bind = (_a = this.bindings[typeLower]) === null || _a === void 0 ? void 0 : _a.find((bind2) => bind2.ref === binding.ref);
           if (!bind) {
             return true;
           }
@@ -28126,8 +28126,8 @@ var require_RealtimeClient = __commonJS({
           return store.has(key) ? store.get(key) : null;
         },
         key(index) {
-          var _a3;
-          return (_a3 = Array.from(store.keys())[index]) !== null && _a3 !== void 0 ? _a3 : null;
+          var _a;
+          return (_a = Array.from(store.keys())[index]) !== null && _a !== void 0 ? _a : null;
         },
         removeItem(key) {
           store.delete(key);
@@ -28142,7 +28142,7 @@ var require_RealtimeClient = __commonJS({
         if (typeof globalThis !== "undefined" && globalThis.sessionStorage) {
           return globalThis.sessionStorage;
         }
-      } catch (_a3) {
+      } catch (_a) {
       }
       return createMemorySessionStorage();
     }
@@ -28245,7 +28245,7 @@ var require_RealtimeClient = __commonJS({
        * ```
        */
       constructor(endPoint, options) {
-        var _a3;
+        var _a;
         this.channels = new Array();
         this.accessTokenValue = null;
         this.accessToken = null;
@@ -28267,7 +28267,7 @@ var require_RealtimeClient = __commonJS({
           }
           return (...args) => fetch(...args);
         };
-        if (!((_a3 = options === null || options === void 0 ? void 0 : options.params) === null || _a3 === void 0 ? void 0 : _a3.apikey)) {
+        if (!((_a = options === null || options === void 0 ? void 0 : options.params) === null || _a === void 0 ? void 0 : _a.apikey)) {
           throw new Error("API key is required to connect to Realtime");
         }
         this.apiKey = options.params.apikey;
@@ -28700,8 +28700,8 @@ Option 2: Install and provide the "ws" package:
        * @internal
        */
       _initializeOptions(options) {
-        var _a3, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
-        this.worker = (_a3 = options === null || options === void 0 ? void 0 : options.worker) !== null && _a3 !== void 0 ? _a3 : false;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
+        this.worker = (_a = options === null || options === void 0 ? void 0 : options.worker) !== null && _a !== void 0 ? _a : false;
         this.accessToken = (_b = options === null || options === void 0 ? void 0 : options.accessToken) !== null && _b !== void 0 ? _b : null;
         const result = {};
         result.timeout = (_c = options === null || options === void 0 ? void 0 : options.timeout) !== null && _c !== void 0 ? _c : constants_1.DEFAULT_TIMEOUT;
@@ -29059,19 +29059,19 @@ var require_base64url = __commonJS({
         throw new Error(`Invalid Base64-URL character "${String.fromCharCode(charCode)}"`);
       }
     }
-    function stringToBase64URL(str2) {
+    function stringToBase64URL(str) {
       const base643 = [];
       const emitter = (char2) => {
         base643.push(char2);
       };
       const state = { queue: 0, queuedBits: 0 };
-      stringToUTF8(str2, (byte) => {
+      stringToUTF8(str, (byte) => {
         byteToBase64URL(byte, state, emitter);
       });
       byteToBase64URL(null, state, emitter);
       return base643.join("");
     }
-    function stringFromBase64URL(str2) {
+    function stringFromBase64URL(str) {
       const conv = [];
       const utf8Emit = (codepoint) => {
         conv.push(String.fromCodePoint(codepoint));
@@ -29084,8 +29084,8 @@ var require_base64url = __commonJS({
       const byteEmit = (byte) => {
         stringFromUTF8(byte, utf8State, utf8Emit);
       };
-      for (let i = 0; i < str2.length; i += 1) {
-        byteFromBase64URL(str2.charCodeAt(i), b64State, byteEmit);
+      for (let i = 0; i < str.length; i += 1) {
+        byteFromBase64URL(str.charCodeAt(i), b64State, byteEmit);
       }
       return conv.join("");
     }
@@ -29111,12 +29111,12 @@ var require_base64url = __commonJS({
       }
       throw new Error(`Unrecognized Unicode codepoint: ${codepoint.toString(16)}`);
     }
-    function stringToUTF8(str2, emit) {
-      for (let i = 0; i < str2.length; i += 1) {
-        let codepoint = str2.charCodeAt(i);
+    function stringToUTF8(str, emit) {
+      for (let i = 0; i < str.length; i += 1) {
+        let codepoint = str.charCodeAt(i);
         if (codepoint > 55295 && codepoint <= 56319) {
           const highSurrogate = (codepoint - 55296) * 1024 & 65535;
-          const lowSurrogate = str2.charCodeAt(i + 1) - 56320 & 65535;
+          const lowSurrogate = str.charCodeAt(i + 1) - 56320 & 65535;
           codepoint = (lowSurrogate | highSurrogate) + 65536;
           i += 1;
         }
@@ -29156,20 +29156,20 @@ var require_base64url = __commonJS({
         }
       }
     }
-    function base64UrlToUint8Array(str2) {
+    function base64UrlToUint8Array(str) {
       const result = [];
       const state = { queue: 0, queuedBits: 0 };
       const onByte = (byte) => {
         result.push(byte);
       };
-      for (let i = 0; i < str2.length; i += 1) {
-        byteFromBase64URL(str2.charCodeAt(i), state, onByte);
+      for (let i = 0; i < str.length; i += 1) {
+        byteFromBase64URL(str.charCodeAt(i), state, onByte);
       }
       return new Uint8Array(result);
     }
-    function stringToUint8Array(str2) {
+    function stringToUint8Array(str) {
       const result = [];
-      stringToUTF8(str2, (byte) => result.push(byte));
+      stringToUTF8(str, (byte) => result.push(byte));
       return new Uint8Array(result);
     }
     function bytesToBase64URL(bytes) {
@@ -29195,7 +29195,7 @@ var require_helpers = __commonJS({
     exports.generateCallbackId = generateCallbackId;
     exports.parseParametersFromURL = parseParametersFromURL;
     exports.decodeJWT = decodeJWT;
-    exports.sleep = sleep4;
+    exports.sleep = sleep3;
     exports.retryable = retryable;
     exports.generatePKCEVerifier = generatePKCEVerifier;
     exports.generatePKCEChallenge = generatePKCEChallenge;
@@ -29290,7 +29290,7 @@ var require_helpers = __commonJS({
       }
       try {
         return JSON.parse(value);
-      } catch (_a3) {
+      } catch (_a) {
         return null;
       }
     };
@@ -29333,7 +29333,7 @@ var require_helpers = __commonJS({
       };
       return data;
     }
-    async function sleep4(time4) {
+    async function sleep3(time4) {
       return await new Promise((accept) => {
         setTimeout(() => accept(null), time4);
       });
@@ -29448,8 +29448,8 @@ var require_helpers = __commonJS({
       }
     }
     var UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
-    function validateUUID(str2) {
-      if (!UUID_REGEX.test(str2)) {
+    function validateUUID(str) {
+      if (!UUID_REGEX.test(str)) {
         throw new Error("@supabase/auth-js: Expected parameter to be UUID but is not");
       }
     }
@@ -29540,7 +29540,7 @@ var require_fetch = __commonJS({
     };
     var NETWORK_ERROR_CODES = [502, 503, 504, 520, 521, 522, 523, 524, 530];
     async function handleError2(error40) {
-      var _a3;
+      var _a;
       if (!(0, helpers_1.looksLikeFetchResponse)(error40)) {
         throw new errors_1.AuthRetryableFetchError(_getErrorMessage2(error40), 0);
       }
@@ -29565,7 +29565,7 @@ var require_fetch = __commonJS({
           throw new errors_1.AuthWeakPasswordError(_getErrorMessage2(data), error40.status, data.weak_password.reasons);
         }
       } else if (errorCode === "weak_password") {
-        throw new errors_1.AuthWeakPasswordError(_getErrorMessage2(data), error40.status, ((_a3 = data.weak_password) === null || _a3 === void 0 ? void 0 : _a3.reasons) || []);
+        throw new errors_1.AuthWeakPasswordError(_getErrorMessage2(data), error40.status, ((_a = data.weak_password) === null || _a === void 0 ? void 0 : _a.reasons) || []);
       } else if (errorCode === "session_not_found") {
         throw new errors_1.AuthSessionMissingError();
       }
@@ -29581,7 +29581,7 @@ var require_fetch = __commonJS({
       return Object.assign(Object.assign({}, params), parameters);
     };
     async function _request(fetcher, method, url2, options) {
-      var _a3;
+      var _a;
       const headers = Object.assign({}, options === null || options === void 0 ? void 0 : options.headers);
       if (!headers[constants_1.API_VERSION_HEADER_NAME]) {
         headers[constants_1.API_VERSION_HEADER_NAME] = constants_1.API_VERSIONS["2024-01-01"].name;
@@ -29589,7 +29589,7 @@ var require_fetch = __commonJS({
       if (options === null || options === void 0 ? void 0 : options.jwt) {
         headers["Authorization"] = `Bearer ${options.jwt}`;
       }
-      const qs = (_a3 = options === null || options === void 0 ? void 0 : options.query) !== null && _a3 !== void 0 ? _a3 : {};
+      const qs = (_a = options === null || options === void 0 ? void 0 : options.query) !== null && _a !== void 0 ? _a : {};
       if (options === null || options === void 0 ? void 0 : options.redirectTo) {
         qs["redirect_to"] = options.redirectTo;
       }
@@ -29622,7 +29622,7 @@ var require_fetch = __commonJS({
       }
     }
     function _sessionResponse(data) {
-      var _a3;
+      var _a;
       let session = null;
       if (hasSession(data)) {
         session = Object.assign({}, data);
@@ -29630,7 +29630,7 @@ var require_fetch = __commonJS({
           session.expires_at = (0, helpers_1.expiresAt)(data.expires_in);
         }
       }
-      const user = (_a3 = data.user) !== null && _a3 !== void 0 ? _a3 : typeof (data === null || data === void 0 ? void 0 : data.id) === "string" ? data : null;
+      const user = (_a = data.user) !== null && _a !== void 0 ? _a : typeof (data === null || data === void 0 ? void 0 : data.id) === "string" ? data : null;
       return { data: { session, user }, error: null };
     }
     function _sessionResponsePassword(data) {
@@ -29641,8 +29641,8 @@ var require_fetch = __commonJS({
       return response;
     }
     function _userResponse(data) {
-      var _a3;
-      const user = (_a3 = data.user) !== null && _a3 !== void 0 ? _a3 : data;
+      var _a;
+      const user = (_a = data.user) !== null && _a !== void 0 ? _a : data;
       return { data: { user }, error: null };
     }
     function _ssoResponse(data) {
@@ -30116,14 +30116,14 @@ var require_GoTrueAdminApi = __commonJS({
        * ```
        */
       async listUsers(params) {
-        var _a3, _b, _c, _d, _e, _f, _g;
+        var _a, _b, _c, _d, _e, _f, _g;
         try {
           const pagination = { nextPage: null, lastPage: 0, total: 0 };
           const response = await (0, fetch_1._request)(this.fetch, "GET", `${this.url}/admin/users`, {
             headers: this.headers,
             noResolveJson: true,
             query: {
-              page: (_b = (_a3 = params === null || params === void 0 ? void 0 : params.page) === null || _a3 === void 0 ? void 0 : _a3.toString()) !== null && _b !== void 0 ? _b : "",
+              page: (_b = (_a = params === null || params === void 0 ? void 0 : params.page) === null || _a === void 0 ? void 0 : _a.toString()) !== null && _b !== void 0 ? _b : "",
               per_page: (_d = (_c = params === null || params === void 0 ? void 0 : params.perPage) === null || _c === void 0 ? void 0 : _c.toString()) !== null && _d !== void 0 ? _d : ""
             },
             xform: fetch_1._noResolveJsonResponse
@@ -30472,14 +30472,14 @@ var require_GoTrueAdminApi = __commonJS({
        * This function should only be called on a server. Never expose your `service_role` key in the browser.
        */
       async _listOAuthClients(params) {
-        var _a3, _b, _c, _d, _e, _f, _g;
+        var _a, _b, _c, _d, _e, _f, _g;
         try {
           const pagination = { nextPage: null, lastPage: 0, total: 0 };
           const response = await (0, fetch_1._request)(this.fetch, "GET", `${this.url}/admin/oauth/clients`, {
             headers: this.headers,
             noResolveJson: true,
             query: {
-              page: (_b = (_a3 = params === null || params === void 0 ? void 0 : params.page) === null || _a3 === void 0 ? void 0 : _a3.toString()) !== null && _b !== void 0 ? _b : "",
+              page: (_b = (_a = params === null || params === void 0 ? void 0 : params.page) === null || _a === void 0 ? void 0 : _a.toString()) !== null && _b !== void 0 ? _b : "",
               per_page: (_d = (_c = params === null || params === void 0 ? void 0 : params.perPage) === null || _c === void 0 ? void 0 : _c.toString()) !== null && _d !== void 0 ? _d : ""
             },
             xform: fetch_1._noResolveJsonResponse
@@ -30626,8 +30626,8 @@ var require_GoTrueAdminApi = __commonJS({
             headers: this.headers,
             query,
             xform: (data) => {
-              var _a3;
-              return { data: { providers: (_a3 = data === null || data === void 0 ? void 0 : data.providers) !== null && _a3 !== void 0 ? _a3 : [] }, error: null };
+              var _a;
+              return { data: { providers: (_a = data === null || data === void 0 ? void 0 : data.providers) !== null && _a !== void 0 ? _a : [] }, error: null };
             }
           });
         } catch (error40) {
@@ -30922,8 +30922,8 @@ var require_locks = __commonJS({
     }
     var PROCESS_LOCKS = {};
     async function processLock(name, acquireTimeout, fn) {
-      var _a3;
-      const previousOperation = (_a3 = PROCESS_LOCKS[name]) !== null && _a3 !== void 0 ? _a3 : Promise.resolve();
+      var _a;
+      const previousOperation = (_a = PROCESS_LOCKS[name]) !== null && _a !== void 0 ? _a : Promise.resolve();
       const previousOperationHandled = (async () => {
         try {
           await previousOperation;
@@ -31025,7 +31025,7 @@ var require_ethereum = __commonJS({
       return "0x" + hex;
     }
     function createSiweMessage(parameters) {
-      var _a3;
+      var _a;
       const { chainId, domain: domain2, expirationTime, issuedAt = /* @__PURE__ */ new Date(), nonce, notBefore, requestId, resources, scheme, uri, version: version5 } = parameters;
       {
         if (!Number.isInteger(chainId))
@@ -31038,7 +31038,7 @@ var require_ethereum = __commonJS({
           throw new Error(`@supabase/auth-js: Invalid SIWE message field "uri". URI must be provided.`);
         if (version5 !== "1")
           throw new Error(`@supabase/auth-js: Invalid SIWE message field "version". Version must be '1'. Provided value: ${version5}`);
-        if ((_a3 = parameters.statement) === null || _a3 === void 0 ? void 0 : _a3.includes("\n"))
+        if ((_a = parameters.statement) === null || _a === void 0 ? void 0 : _a.includes("\n"))
           throw new Error(`@supabase/auth-js: Invalid SIWE message field "statement". Statement must not include '\\n'. Provided value: ${parameters.statement}`);
       }
       const address = getAddress(parameters.address);
@@ -31091,10 +31091,10 @@ var require_webauthn_errors = __commonJS({
     var webauthn_1 = require_webauthn();
     var WebAuthnError = class extends Error {
       constructor({ message, code, cause, name }) {
-        var _a3;
+        var _a;
         super(message, { cause });
         this.__isWebAuthnError = true;
-        this.name = (_a3 = name !== null && name !== void 0 ? name : cause instanceof Error ? cause.name : void 0) !== null && _a3 !== void 0 ? _a3 : "Unknown Error";
+        this.name = (_a = name !== null && name !== void 0 ? name : cause instanceof Error ? cause.name : void 0) !== null && _a !== void 0 ? _a : "Unknown Error";
         this.code = code;
       }
       toJSON() {
@@ -31122,7 +31122,7 @@ var require_webauthn_errors = __commonJS({
       return typeof error40 === "object" && error40 !== null && "__isWebAuthnError" in error40;
     }
     function identifyRegistrationError({ error: error40, options }) {
-      var _a3, _b, _c;
+      var _a, _b, _c;
       const { publicKey } = options;
       if (!publicKey) {
         throw Error("options was missing required publicKey property");
@@ -31136,7 +31136,7 @@ var require_webauthn_errors = __commonJS({
           });
         }
       } else if (error40.name === "ConstraintError") {
-        if (((_a3 = publicKey.authenticatorSelection) === null || _a3 === void 0 ? void 0 : _a3.requireResidentKey) === true) {
+        if (((_a = publicKey.authenticatorSelection) === null || _a === void 0 ? void 0 : _a.requireResidentKey) === true) {
           return new WebAuthnError({
             message: "Discoverable credentials were required but no available authenticator supported it",
             code: "ERROR_AUTHENTICATOR_MISSING_DISCOVERABLE_CREDENTIAL_SUPPORT",
@@ -31400,7 +31400,7 @@ var require_webauthn = __commonJS({
       return result;
     }
     function serializeCredentialCreationResponse(credential) {
-      var _a3;
+      var _a;
       if ("toJSON" in credential && typeof credential.toJSON === "function") {
         return credential.toJSON();
       }
@@ -31415,11 +31415,11 @@ var require_webauthn = __commonJS({
         type: "public-key",
         clientExtensionResults: credential.getClientExtensionResults(),
         // Convert null to undefined and cast to AuthenticatorAttachment type
-        authenticatorAttachment: (_a3 = credentialWithAttachment.authenticatorAttachment) !== null && _a3 !== void 0 ? _a3 : void 0
+        authenticatorAttachment: (_a = credentialWithAttachment.authenticatorAttachment) !== null && _a !== void 0 ? _a : void 0
       };
     }
     function serializeCredentialRequestResponse(credential) {
-      var _a3;
+      var _a;
       if ("toJSON" in credential && typeof credential.toJSON === "function") {
         return credential.toJSON();
       }
@@ -31439,7 +31439,7 @@ var require_webauthn = __commonJS({
         type: "public-key",
         clientExtensionResults,
         // Convert null to undefined and cast to AuthenticatorAttachment type
-        authenticatorAttachment: (_a3 = credentialWithAttachment.authenticatorAttachment) !== null && _a3 !== void 0 ? _a3 : void 0
+        authenticatorAttachment: (_a = credentialWithAttachment.authenticatorAttachment) !== null && _a !== void 0 ? _a : void 0
       };
     }
     function isValidDomain(hostname2) {
@@ -31449,8 +31449,8 @@ var require_webauthn = __commonJS({
       );
     }
     function browserSupportsWebAuthn() {
-      var _a3, _b;
-      return !!((0, helpers_1.isBrowser)() && "PublicKeyCredential" in window && window.PublicKeyCredential && "credentials" in navigator && typeof ((_a3 = navigator === null || navigator === void 0 ? void 0 : navigator.credentials) === null || _a3 === void 0 ? void 0 : _a3.create) === "function" && typeof ((_b = navigator === null || navigator === void 0 ? void 0 : navigator.credentials) === null || _b === void 0 ? void 0 : _b.get) === "function");
+      var _a, _b;
+      return !!((0, helpers_1.isBrowser)() && "PublicKeyCredential" in window && window.PublicKeyCredential && "credentials" in navigator && typeof ((_a = navigator === null || navigator === void 0 ? void 0 : navigator.credentials) === null || _a === void 0 ? void 0 : _a.create) === "function" && typeof ((_b = navigator === null || navigator === void 0 ? void 0 : navigator.credentials) === null || _b === void 0 ? void 0 : _b.get) === "function");
     }
     async function createCredential(options) {
       try {
@@ -31598,7 +31598,7 @@ var require_webauthn = __commonJS({
        * @see {@link https://w3c.github.io/webauthn/#sctn-verifying-assertion W3C WebAuthn Spec - Verifying Assertion}
        */
       async _challenge({ factorId, webauthn, friendlyName, signal }, overrides) {
-        var _a3;
+        var _a;
         try {
           const { data: challengeResponse, error: challengeError } = await this.client.mfa.challenge({
             factorId,
@@ -31615,7 +31615,7 @@ var require_webauthn = __commonJS({
               if (!nameToUse) {
                 const currentUser = await this.client.getUser();
                 const userData = currentUser.data.user;
-                const fallbackName = ((_a3 = userData === null || userData === void 0 ? void 0 : userData.user_metadata) === null || _a3 === void 0 ? void 0 : _a3.name) || (userData === null || userData === void 0 ? void 0 : userData.email) || (userData === null || userData === void 0 ? void 0 : userData.id) || "User";
+                const fallbackName = ((_a = userData === null || userData === void 0 ? void 0 : userData.user_metadata) === null || _a === void 0 ? void 0 : _a.name) || (userData === null || userData === void 0 ? void 0 : userData.email) || (userData === null || userData === void 0 ? void 0 : userData.id) || "User";
                 user.name = `${user.id}:${fallbackName}`;
               } else {
                 user.name = `${user.id}:${nameToUse}`;
@@ -31788,8 +31788,8 @@ var require_webauthn = __commonJS({
           });
           if (!factor) {
             await this.client.mfa.listFactors().then((factors) => {
-              var _a3;
-              return (_a3 = factors.data) === null || _a3 === void 0 ? void 0 : _a3.all.find((v) => v.factor_type === "webauthn" && v.friendly_name === friendlyName && v.status !== "unverified");
+              var _a;
+              return (_a = factors.data) === null || _a === void 0 ? void 0 : _a.all.find((v) => v.factor_type === "webauthn" && v.friendly_name === friendlyName && v.status !== "unverified");
             }).then((factor2) => factor2 ? this.client.mfa.unenroll({ factorId: factor2 === null || factor2 === void 0 ? void 0 : factor2.id }) : void 0);
             return { data: null, error: enrollError };
           }
@@ -31870,15 +31870,15 @@ var require_GoTrueClient = __commonJS({
        * The JWKS used for verifying asymmetric JWTs
        */
       get jwks() {
-        var _a3, _b;
-        return (_b = (_a3 = GLOBAL_JWKS[this.storageKey]) === null || _a3 === void 0 ? void 0 : _a3.jwks) !== null && _b !== void 0 ? _b : { keys: [] };
+        var _a, _b;
+        return (_b = (_a = GLOBAL_JWKS[this.storageKey]) === null || _a === void 0 ? void 0 : _a.jwks) !== null && _b !== void 0 ? _b : { keys: [] };
       }
       set jwks(value) {
         GLOBAL_JWKS[this.storageKey] = Object.assign(Object.assign({}, GLOBAL_JWKS[this.storageKey]), { jwks: value });
       }
       get jwks_cached_at() {
-        var _a3, _b;
-        return (_b = (_a3 = GLOBAL_JWKS[this.storageKey]) === null || _a3 === void 0 ? void 0 : _a3.cachedAt) !== null && _b !== void 0 ? _b : Number.MIN_SAFE_INTEGER;
+        var _a, _b;
+        return (_b = (_a = GLOBAL_JWKS[this.storageKey]) === null || _a === void 0 ? void 0 : _a.cachedAt) !== null && _b !== void 0 ? _b : Number.MIN_SAFE_INTEGER;
       }
       set jwks_cached_at(value) {
         GLOBAL_JWKS[this.storageKey] = Object.assign(Object.assign({}, GLOBAL_JWKS[this.storageKey]), { cachedAt: value });
@@ -31906,7 +31906,7 @@ var require_GoTrueClient = __commonJS({
        * ```
        */
       constructor(options) {
-        var _a3, _b, _c;
+        var _a, _b, _c;
         this.userStorage = null;
         this.memoryStorage = null;
         this.stateChangeEmitters = /* @__PURE__ */ new Map();
@@ -31926,7 +31926,7 @@ var require_GoTrueClient = __commonJS({
         this.logger = console.log;
         const settings = Object.assign(Object.assign({}, DEFAULT_OPTIONS), options);
         this.storageKey = settings.storageKey;
-        this.instanceID = (_a3 = _GoTrueClient.nextInstanceID[this.storageKey]) !== null && _a3 !== void 0 ? _a3 : 0;
+        this.instanceID = (_a = _GoTrueClient.nextInstanceID[this.storageKey]) !== null && _a !== void 0 ? _a : 0;
         _GoTrueClient.nextInstanceID[this.storageKey] = this.instanceID + 1;
         this.logDebugMessages = !!settings.debug;
         if (typeof settings.debug === "function") {
@@ -32082,7 +32082,7 @@ var require_GoTrueClient = __commonJS({
        *    the whole lifetime of the client
        */
       async _initialize() {
-        var _a3;
+        var _a;
         try {
           let params = {};
           let callbackUrlType = "none";
@@ -32099,7 +32099,7 @@ var require_GoTrueClient = __commonJS({
             if (error40) {
               this._debug("#_initialize()", "error detecting session from URL", error40);
               if ((0, errors_1.isAuthImplicitGrantRedirectError)(error40)) {
-                const errorCode = (_a3 = error40.details) === null || _a3 === void 0 ? void 0 : _a3.code;
+                const errorCode = (_a = error40.details) === null || _a === void 0 ? void 0 : _a.code;
                 if (errorCode === "identity_already_exists" || errorCode === "identity_not_found" || errorCode === "single_identity_not_deletable") {
                   return { error: error40 };
                 }
@@ -32206,12 +32206,12 @@ var require_GoTrueClient = __commonJS({
        * ```
        */
       async signInAnonymously(credentials) {
-        var _a3, _b, _c;
+        var _a, _b, _c;
         try {
           const res = await (0, fetch_1._request)(this.fetch, "POST", `${this.url}/signup`, {
             headers: this.headers,
             body: {
-              data: (_b = (_a3 = credentials === null || credentials === void 0 ? void 0 : credentials.options) === null || _a3 === void 0 ? void 0 : _a3.data) !== null && _b !== void 0 ? _b : {},
+              data: (_b = (_a = credentials === null || credentials === void 0 ? void 0 : credentials.options) === null || _a === void 0 ? void 0 : _a.data) !== null && _b !== void 0 ? _b : {},
               gotrue_meta_security: { captcha_token: (_c = credentials === null || credentials === void 0 ? void 0 : credentials.options) === null || _c === void 0 ? void 0 : _c.captchaToken }
             },
             xform: fetch_1._sessionResponse
@@ -32412,7 +32412,7 @@ var require_GoTrueClient = __commonJS({
        * ```
        */
       async signUp(credentials) {
-        var _a3, _b, _c;
+        var _a, _b, _c;
         try {
           let res;
           if ("email" in credentials) {
@@ -32429,7 +32429,7 @@ var require_GoTrueClient = __commonJS({
               body: {
                 email: email3,
                 password,
-                data: (_a3 = options === null || options === void 0 ? void 0 : options.data) !== null && _a3 !== void 0 ? _a3 : {},
+                data: (_a = options === null || options === void 0 ? void 0 : options.data) !== null && _a !== void 0 ? _a : {},
                 gotrue_meta_security: { captcha_token: options === null || options === void 0 ? void 0 : options.captchaToken },
                 code_challenge: codeChallenge,
                 code_challenge_method: codeChallengeMethod
@@ -32734,9 +32734,9 @@ var require_GoTrueClient = __commonJS({
        * ```
        */
       async signInWithOAuth(credentials) {
-        var _a3, _b, _c, _d;
+        var _a, _b, _c, _d;
         return await this._handleProviderSignIn(credentials.provider, {
-          redirectTo: (_a3 = credentials.options) === null || _a3 === void 0 ? void 0 : _a3.redirectTo,
+          redirectTo: (_a = credentials.options) === null || _a === void 0 ? void 0 : _a.redirectTo,
           scopes: (_b = credentials.options) === null || _b === void 0 ? void 0 : _b.scopes,
           queryParams: (_c = credentials.options) === null || _c === void 0 ? void 0 : _c.queryParams,
           skipBrowserRedirect: (_d = credentials.options) === null || _d === void 0 ? void 0 : _d.skipBrowserRedirect
@@ -33021,7 +33021,7 @@ var require_GoTrueClient = __commonJS({
         }
       }
       async signInWithEthereum(credentials) {
-        var _a3, _b, _c, _d, _f, _g, _h, _j, _k, _l, _m;
+        var _a, _b, _c, _d, _f, _g, _h, _j, _k, _l, _m;
         let message;
         let signature;
         if ("message" in credentials) {
@@ -33045,7 +33045,7 @@ var require_GoTrueClient = __commonJS({
               throw new Error(`@supabase/auth-js: No compatible Ethereum wallet interface on the window object (window.ethereum) detected. Make sure the user already has a wallet installed and connected for this app. Prefer passing the wallet interface object directly to signInWithWeb3({ chain: 'ethereum', wallet: resolvedUserWallet }) instead.`);
             }
           }
-          const url2 = new URL((_a3 = options === null || options === void 0 ? void 0 : options.url) !== null && _a3 !== void 0 ? _a3 : window.location.href);
+          const url2 = new URL((_a = options === null || options === void 0 ? void 0 : options.url) !== null && _a !== void 0 ? _a : window.location.href);
           const accounts = await resolvedWallet.request({
             method: "eth_requestAccounts"
           }).then((accs) => accs).catch(() => {
@@ -33112,7 +33112,7 @@ var require_GoTrueClient = __commonJS({
         }
       }
       async signInWithSolana(credentials) {
-        var _a3, _b, _c, _d, _f, _g, _h, _j, _k, _l, _m, _o;
+        var _a, _b, _c, _d, _f, _g, _h, _j, _k, _l, _m, _o;
         let message;
         let signature;
         if ("message" in credentials) {
@@ -33136,7 +33136,7 @@ var require_GoTrueClient = __commonJS({
               throw new Error(`@supabase/auth-js: No compatible Solana wallet interface on the window object (window.solana) detected. Make sure the user already has a wallet installed and connected for this app. Prefer passing the wallet interface object directly to signInWithWeb3({ chain: 'solana', wallet: resolvedUserWallet }) instead.`);
             }
           }
-          const url2 = new URL((_a3 = options === null || options === void 0 ? void 0 : options.url) !== null && _a3 !== void 0 ? _a3 : window.location.href);
+          const url2 = new URL((_a = options === null || options === void 0 ? void 0 : options.url) !== null && _a !== void 0 ? _a : window.location.href);
           if ("signIn" in resolvedWallet && resolvedWallet.signIn) {
             const output = await resolvedWallet.signIn(Object.assign(Object.assign(Object.assign({ issuedAt: (/* @__PURE__ */ new Date()).toISOString() }, options === null || options === void 0 ? void 0 : options.signInWithSolana), {
               // non-overridable properties
@@ -33439,7 +33439,7 @@ var require_GoTrueClient = __commonJS({
        * ```
        */
       async signInWithOtp(credentials) {
-        var _a3, _b, _c, _d, _f;
+        var _a, _b, _c, _d, _f;
         try {
           if ("email" in credentials) {
             const { email: email3, options } = credentials;
@@ -33453,7 +33453,7 @@ var require_GoTrueClient = __commonJS({
               headers: this.headers,
               body: {
                 email: email3,
-                data: (_a3 = options === null || options === void 0 ? void 0 : options.data) !== null && _a3 !== void 0 ? _a3 : {},
+                data: (_a = options === null || options === void 0 ? void 0 : options.data) !== null && _a !== void 0 ? _a : {},
                 create_user: (_b = options === null || options === void 0 ? void 0 : options.shouldCreateUser) !== null && _b !== void 0 ? _b : true,
                 gotrue_meta_security: { captcha_token: options === null || options === void 0 ? void 0 : options.captchaToken },
                 code_challenge: codeChallenge,
@@ -33627,12 +33627,12 @@ var require_GoTrueClient = __commonJS({
        * ```
        */
       async verifyOtp(params) {
-        var _a3, _b;
+        var _a, _b;
         try {
           let redirectTo = void 0;
           let captchaToken = void 0;
           if ("options" in params) {
-            redirectTo = (_a3 = params.options) === null || _a3 === void 0 ? void 0 : _a3.redirectTo;
+            redirectTo = (_a = params.options) === null || _a === void 0 ? void 0 : _a.redirectTo;
             captchaToken = (_b = params.options) === null || _b === void 0 ? void 0 : _b.captchaToken;
           }
           const { data, error: error40 } = await (0, fetch_1._request)(this.fetch, "POST", `${this.url}/verify`, {
@@ -33716,7 +33716,7 @@ var require_GoTrueClient = __commonJS({
        * ```
        */
       async signInWithSSO(params) {
-        var _a3, _b, _c, _d, _f;
+        var _a, _b, _c, _d, _f;
         try {
           let codeChallenge = null;
           let codeChallengeMethod = null;
@@ -33725,7 +33725,7 @@ var require_GoTrueClient = __commonJS({
             [codeChallenge, codeChallengeMethod] = await (0, helpers_1.getCodeChallengeAndMethod)(this.storage, this.storageKey);
           }
           const result = await (0, fetch_1._request)(this.fetch, "POST", `${this.url}/sso`, {
-            body: Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, "providerId" in params ? { provider_id: params.providerId } : null), "domain" in params ? { domain: params.domain } : null), { redirect_to: (_b = (_a3 = params.options) === null || _a3 === void 0 ? void 0 : _a3.redirectTo) !== null && _b !== void 0 ? _b : void 0 }), ((_c = params === null || params === void 0 ? void 0 : params.options) === null || _c === void 0 ? void 0 : _c.captchaToken) ? { gotrue_meta_security: { captcha_token: params.options.captchaToken } } : null), { skip_http_redirect: true, code_challenge: codeChallenge, code_challenge_method: codeChallengeMethod }),
+            body: Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, "providerId" in params ? { provider_id: params.providerId } : null), "domain" in params ? { domain: params.domain } : null), { redirect_to: (_b = (_a = params.options) === null || _a === void 0 ? void 0 : _a.redirectTo) !== null && _b !== void 0 ? _b : void 0 }), ((_c = params === null || params === void 0 ? void 0 : params.options) === null || _c === void 0 ? void 0 : _c.captchaToken) ? { gotrue_meta_security: { captcha_token: params.options.captchaToken } } : null), { skip_http_redirect: true, code_challenge: codeChallenge, code_challenge_method: codeChallengeMethod }),
             headers: this.headers,
             xform: fetch_1._ssoResponse
           });
@@ -34222,12 +34222,12 @@ var require_GoTrueClient = __commonJS({
             });
           }
           return await this._useSession(async (result) => {
-            var _a3, _b, _c;
+            var _a, _b, _c;
             const { data, error: error40 } = result;
             if (error40) {
               throw error40;
             }
-            if (!((_a3 = data.session) === null || _a3 === void 0 ? void 0 : _a3.access_token) && !this.hasCustomAuthorizationHeader) {
+            if (!((_a = data.session) === null || _a === void 0 ? void 0 : _a.access_token) && !this.hasCustomAuthorizationHeader) {
               return { data: { user: null }, error: new errors_1.AuthSessionMissingError() };
             }
             return await (0, fetch_1._request)(this.fetch, "GET", `${this.url}/user`, {
@@ -34727,13 +34727,13 @@ var require_GoTrueClient = __commonJS({
       async _refreshSession(currentSession) {
         try {
           return await this._useSession(async (result) => {
-            var _a3;
+            var _a;
             if (!currentSession) {
               const { data, error: error41 } = result;
               if (error41) {
                 throw error41;
               }
-              currentSession = (_a3 = data.session) !== null && _a3 !== void 0 ? _a3 : void 0;
+              currentSession = (_a = data.session) !== null && _a !== void 0 ? _a : void 0;
             }
             if (!(currentSession === null || currentSession === void 0 ? void 0 : currentSession.refresh_token)) {
               throw new errors_1.AuthSessionMissingError();
@@ -34758,7 +34758,7 @@ var require_GoTrueClient = __commonJS({
        * Gets the session data from a URL string
        */
       async _getSessionFromURL(params, callbackUrlType) {
-        var _a3;
+        var _a;
         try {
           if (!(0, helpers_1.isBrowser)())
             throw new errors_1.AuthImplicitGrantRedirectError("No browser detected.");
@@ -34792,7 +34792,7 @@ var require_GoTrueClient = __commonJS({
             url2.searchParams.delete("code");
             window.history.replaceState(window.history.state, "", url2.toString());
             return {
-              data: { session: data2.session, redirectType: (_a3 = data2.redirectType) !== null && _a3 !== void 0 ? _a3 : null },
+              data: { session: data2.session, redirectType: (_a = data2.redirectType) !== null && _a !== void 0 ? _a : null },
               error: null
             };
           }
@@ -34911,12 +34911,12 @@ var require_GoTrueClient = __commonJS({
       }
       async _signOut({ scope } = { scope: "global" }) {
         return await this._useSession(async (result) => {
-          var _a3;
+          var _a;
           const { data, error: sessionError } = result;
           if (sessionError && !(0, errors_1.isAuthSessionMissingError)(sessionError)) {
             return this._returnResult({ error: sessionError });
           }
-          const accessToken = (_a3 = data.session) === null || _a3 === void 0 ? void 0 : _a3.access_token;
+          const accessToken = (_a = data.session) === null || _a === void 0 ? void 0 : _a.access_token;
           if (accessToken) {
             const { error: error40 } = await this.admin.signOut(accessToken, scope);
             if (error40) {
@@ -35135,12 +35135,12 @@ var require_GoTrueClient = __commonJS({
       }
       async _emitInitialSession(id) {
         return await this._useSession(async (result) => {
-          var _a3, _b;
+          var _a, _b;
           try {
             const { data: { session }, error: error40 } = result;
             if (error40)
               throw error40;
-            await ((_a3 = this.stateChangeEmitters.get(id)) === null || _a3 === void 0 ? void 0 : _a3.callback("INITIAL_SESSION", session));
+            await ((_a = this.stateChangeEmitters.get(id)) === null || _a === void 0 ? void 0 : _a.callback("INITIAL_SESSION", session));
             this._debug("INITIAL_SESSION", "callback id", id, "session", session);
           } catch (err) {
             await ((_b = this.stateChangeEmitters.get(id)) === null || _b === void 0 ? void 0 : _b.callback("INITIAL_SESSION", null));
@@ -35292,12 +35292,12 @@ var require_GoTrueClient = __commonJS({
        * ```
        */
       async getUserIdentities() {
-        var _a3;
+        var _a;
         try {
           const { data, error: error40 } = await this.getUser();
           if (error40)
             throw error40;
-          return this._returnResult({ data: { identities: (_a3 = data.user.identities) !== null && _a3 !== void 0 ? _a3 : [] }, error: null });
+          return this._returnResult({ data: { identities: (_a = data.user.identities) !== null && _a !== void 0 ? _a : [] }, error: null });
         } catch (error40) {
           if ((0, errors_1.isAuthError)(error40)) {
             return this._returnResult({ data: null, error: error40 });
@@ -35339,15 +35339,15 @@ var require_GoTrueClient = __commonJS({
         return this.linkIdentityOAuth(credentials);
       }
       async linkIdentityOAuth(credentials) {
-        var _a3;
+        var _a;
         try {
           const { data, error: error40 } = await this._useSession(async (result) => {
-            var _a4, _b, _c, _d, _f;
+            var _a2, _b, _c, _d, _f;
             const { data: data2, error: error41 } = result;
             if (error41)
               throw error41;
             const url2 = await this._getUrlForProvider(`${this.url}/user/identities/authorize`, credentials.provider, {
-              redirectTo: (_a4 = credentials.options) === null || _a4 === void 0 ? void 0 : _a4.redirectTo,
+              redirectTo: (_a2 = credentials.options) === null || _a2 === void 0 ? void 0 : _a2.redirectTo,
               scopes: (_b = credentials.options) === null || _b === void 0 ? void 0 : _b.scopes,
               queryParams: (_c = credentials.options) === null || _c === void 0 ? void 0 : _c.queryParams,
               skipBrowserRedirect: true
@@ -35359,7 +35359,7 @@ var require_GoTrueClient = __commonJS({
           });
           if (error40)
             throw error40;
-          if ((0, helpers_1.isBrowser)() && !((_a3 = credentials.options) === null || _a3 === void 0 ? void 0 : _a3.skipBrowserRedirect)) {
+          if ((0, helpers_1.isBrowser)() && !((_a = credentials.options) === null || _a === void 0 ? void 0 : _a.skipBrowserRedirect)) {
             window.location.assign(data === null || data === void 0 ? void 0 : data.url);
           }
           return this._returnResult({
@@ -35375,7 +35375,7 @@ var require_GoTrueClient = __commonJS({
       }
       async linkIdentityIdToken(credentials) {
         return await this._useSession(async (result) => {
-          var _a3;
+          var _a;
           try {
             const { error: sessionError, data: { session } } = result;
             if (sessionError)
@@ -35383,7 +35383,7 @@ var require_GoTrueClient = __commonJS({
             const { options, provider, token, access_token, nonce } = credentials;
             const res = await (0, fetch_1._request)(this.fetch, "POST", `${this.url}/token?grant_type=id_token`, {
               headers: this.headers,
-              jwt: (_a3 = session === null || session === void 0 ? void 0 : session.access_token) !== null && _a3 !== void 0 ? _a3 : void 0,
+              jwt: (_a = session === null || session === void 0 ? void 0 : session.access_token) !== null && _a !== void 0 ? _a : void 0,
               body: {
                 provider,
                 id_token: token,
@@ -35445,14 +35445,14 @@ var require_GoTrueClient = __commonJS({
       async unlinkIdentity(identity) {
         try {
           return await this._useSession(async (result) => {
-            var _a3, _b;
+            var _a, _b;
             const { data, error: error40 } = result;
             if (error40) {
               throw error40;
             }
             return await (0, fetch_1._request)(this.fetch, "DELETE", `${this.url}/user/identities/${identity.identity_id}`, {
               headers: this.headers,
-              jwt: (_b = (_a3 = data.session) === null || _a3 === void 0 ? void 0 : _a3.access_token) !== null && _b !== void 0 ? _b : void 0
+              jwt: (_b = (_a = data.session) === null || _a === void 0 ? void 0 : _a.access_token) !== null && _b !== void 0 ? _b : void 0
             });
           });
         } catch (error40) {
@@ -35517,7 +35517,7 @@ var require_GoTrueClient = __commonJS({
        * Note: this method is async to accommodate for AsyncStorage e.g. in React native.
        */
       async _recoverAndRefresh() {
-        var _a3, _b;
+        var _a, _b;
         const debugName = "#_recoverAndRefresh()";
         this._debug(debugName, "begin");
         try {
@@ -35528,7 +35528,7 @@ var require_GoTrueClient = __commonJS({
               maybeUser = { user: currentSession.user };
               await (0, helpers_1.setItemAsync)(this.userStorage, this.storageKey + "-user", maybeUser);
             }
-            currentSession.user = (_a3 = maybeUser === null || maybeUser === void 0 ? void 0 : maybeUser.user) !== null && _a3 !== void 0 ? _a3 : (0, helpers_1.userNotAvailableProxy)();
+            currentSession.user = (_a = maybeUser === null || maybeUser === void 0 ? void 0 : maybeUser.user) !== null && _a !== void 0 ? _a : (0, helpers_1.userNotAvailableProxy)();
           } else if (currentSession && !currentSession.user) {
             if (!currentSession.user) {
               const separateUser = await (0, helpers_1.getItemAsync)(this.storage, this.storageKey + "-user");
@@ -35592,7 +35592,7 @@ var require_GoTrueClient = __commonJS({
         }
       }
       async _callRefreshToken(refreshToken) {
-        var _a3, _b;
+        var _a, _b;
         if (!refreshToken) {
           throw new errors_1.AuthSessionMissingError();
         }
@@ -35651,7 +35651,7 @@ var require_GoTrueClient = __commonJS({
             if (!(0, errors_1.isAuthRetryableFetchError)(error40)) {
               await this._removeSession();
             }
-            (_a3 = this.refreshingDeferred) === null || _a3 === void 0 ? void 0 : _a3.resolve(result);
+            (_a = this.refreshingDeferred) === null || _a === void 0 ? void 0 : _a.resolve(result);
             return result;
           }
           (_b = this.refreshingDeferred) === null || _b === void 0 ? void 0 : _b.reject(error40);
@@ -35898,10 +35898,10 @@ var require_GoTrueClient = __commonJS({
        * ```
        */
       async dispose() {
-        var _a3;
+        var _a;
         this._removeVisibilityChangedCallback();
         await this._stopAutoRefresh();
-        (_a3 = this.broadcastChannel) === null || _a3 === void 0 ? void 0 : _a3.close();
+        (_a = this.broadcastChannel) === null || _a === void 0 ? void 0 : _a.close();
         this.broadcastChannel = null;
         this.stateChangeEmitters.clear();
       }
@@ -36065,14 +36065,14 @@ var require_GoTrueClient = __commonJS({
       async _unenroll(params) {
         try {
           return await this._useSession(async (result) => {
-            var _a3;
+            var _a;
             const { data: sessionData, error: sessionError } = result;
             if (sessionError) {
               return this._returnResult({ data: null, error: sessionError });
             }
             return await (0, fetch_1._request)(this.fetch, "DELETE", `${this.url}/factors/${params.factorId}`, {
               headers: this.headers,
-              jwt: (_a3 = sessionData === null || sessionData === void 0 ? void 0 : sessionData.session) === null || _a3 === void 0 ? void 0 : _a3.access_token
+              jwt: (_a = sessionData === null || sessionData === void 0 ? void 0 : sessionData.session) === null || _a === void 0 ? void 0 : _a.access_token
             });
           });
         } catch (error40) {
@@ -36085,7 +36085,7 @@ var require_GoTrueClient = __commonJS({
       async _enroll(params) {
         try {
           return await this._useSession(async (result) => {
-            var _a3, _b;
+            var _a, _b;
             const { data: sessionData, error: sessionError } = result;
             if (sessionError) {
               return this._returnResult({ data: null, error: sessionError });
@@ -36094,7 +36094,7 @@ var require_GoTrueClient = __commonJS({
             const { data, error: error40 } = await (0, fetch_1._request)(this.fetch, "POST", `${this.url}/factors`, {
               body,
               headers: this.headers,
-              jwt: (_a3 = sessionData === null || sessionData === void 0 ? void 0 : sessionData.session) === null || _a3 === void 0 ? void 0 : _a3.access_token
+              jwt: (_a = sessionData === null || sessionData === void 0 ? void 0 : sessionData.session) === null || _a === void 0 ? void 0 : _a.access_token
             });
             if (error40) {
               return this._returnResult({ data: null, error: error40 });
@@ -36115,7 +36115,7 @@ var require_GoTrueClient = __commonJS({
         const run = async () => {
           try {
             return await this._useSession(async (result) => {
-              var _a3;
+              var _a;
               const { data: sessionData, error: sessionError } = result;
               if (sessionError) {
                 return this._returnResult({ data: null, error: sessionError });
@@ -36126,7 +36126,7 @@ var require_GoTrueClient = __commonJS({
               const { data, error: error40 } = await (0, fetch_1._request)(this.fetch, "POST", `${this.url}/factors/${params.factorId}/verify`, {
                 body,
                 headers: this.headers,
-                jwt: (_a3 = sessionData === null || sessionData === void 0 ? void 0 : sessionData.session) === null || _a3 === void 0 ? void 0 : _a3.access_token
+                jwt: (_a = sessionData === null || sessionData === void 0 ? void 0 : sessionData.session) === null || _a === void 0 ? void 0 : _a.access_token
               });
               if (error40) {
                 return this._returnResult({ data: null, error: error40 });
@@ -36151,7 +36151,7 @@ var require_GoTrueClient = __commonJS({
         const run = async () => {
           try {
             return await this._useSession(async (result) => {
-              var _a3;
+              var _a;
               const { data: sessionData, error: sessionError } = result;
               if (sessionError) {
                 return this._returnResult({ data: null, error: sessionError });
@@ -36159,7 +36159,7 @@ var require_GoTrueClient = __commonJS({
               const response = await (0, fetch_1._request)(this.fetch, "POST", `${this.url}/factors/${params.factorId}/challenge`, {
                 body: params,
                 headers: this.headers,
-                jwt: (_a3 = sessionData === null || sessionData === void 0 ? void 0 : sessionData.session) === null || _a3 === void 0 ? void 0 : _a3.access_token
+                jwt: (_a = sessionData === null || sessionData === void 0 ? void 0 : sessionData.session) === null || _a === void 0 ? void 0 : _a.access_token
               });
               if (response.error) {
                 return response;
@@ -36213,7 +36213,7 @@ var require_GoTrueClient = __commonJS({
        * {@see GoTrueMFAApi#listFactors}
        */
       async _listFactors() {
-        var _a3;
+        var _a;
         const { data: { user }, error: userError } = await this.getUser();
         if (userError) {
           return { data: null, error: userError };
@@ -36224,7 +36224,7 @@ var require_GoTrueClient = __commonJS({
           totp: [],
           webauthn: []
         };
-        for (const factor of (_a3 = user === null || user === void 0 ? void 0 : user.factors) !== null && _a3 !== void 0 ? _a3 : []) {
+        for (const factor of (_a = user === null || user === void 0 ? void 0 : user.factors) !== null && _a !== void 0 ? _a : []) {
           data.all.push(factor);
           if (factor.status === "verified") {
             ;
@@ -36240,7 +36240,7 @@ var require_GoTrueClient = __commonJS({
        * {@see GoTrueMFAApi#getAuthenticatorAssuranceLevel}
        */
       async _getAuthenticatorAssuranceLevel(jwt2) {
-        var _a3, _b, _c, _d;
+        var _a, _b, _c, _d;
         if (jwt2) {
           try {
             const { payload: payload2 } = (0, helpers_1.decodeJWT)(jwt2);
@@ -36253,7 +36253,7 @@ var require_GoTrueClient = __commonJS({
             if (userError) {
               return this._returnResult({ data: null, error: userError });
             }
-            const verifiedFactors2 = (_b = (_a3 = user === null || user === void 0 ? void 0 : user.factors) === null || _a3 === void 0 ? void 0 : _a3.filter((factor) => factor.status === "verified")) !== null && _b !== void 0 ? _b : [];
+            const verifiedFactors2 = (_b = (_a = user === null || user === void 0 ? void 0 : user.factors) === null || _a === void 0 ? void 0 : _a.filter((factor) => factor.status === "verified")) !== null && _b !== void 0 ? _b : [];
             if (verifiedFactors2.length > 0) {
               nextLevel2 = "aal2";
             }
@@ -36573,8 +36573,8 @@ var require_GoTrueClient = __commonJS({
           const publicKey = await crypto.subtle.importKey("jwk", signingKey, algorithm, true, [
             "verify"
           ]);
-          const isValid2 = await crypto.subtle.verify(algorithm, publicKey, signature, (0, base64url_1.stringToUint8Array)(`${rawHeader}.${rawPayload}`));
-          if (!isValid2) {
+          const isValid = await crypto.subtle.verify(algorithm, publicKey, signature, (0, base64url_1.stringToUint8Array)(`${rawHeader}.${rawPayload}`));
+          if (!isValid) {
             throw new errors_1.AuthInvalidJwtError("Invalid JWT signature");
           }
           return {
@@ -36604,7 +36604,7 @@ var require_GoTrueClient = __commonJS({
        * @category Auth
        */
       async signInWithPasskey(credentials) {
-        var _a3, _b, _c;
+        var _a, _b, _c;
         (0, helpers_1.assertPasskeyExperimentalEnabled)(this.experimental);
         try {
           if (!(0, webauthn_1.browserSupportsWebAuthn)()) {
@@ -36614,7 +36614,7 @@ var require_GoTrueClient = __commonJS({
             });
           }
           const { data: options, error: optionsError } = await this._startPasskeyAuthentication({
-            options: { captchaToken: (_a3 = credentials === null || credentials === void 0 ? void 0 : credentials.options) === null || _a3 === void 0 ? void 0 : _a3.captchaToken }
+            options: { captchaToken: (_a = credentials === null || credentials === void 0 ? void 0 : credentials.options) === null || _a === void 0 ? void 0 : _a.captchaToken }
           });
           if (optionsError || !options) {
             return this._returnResult({ data: null, error: optionsError });
@@ -36654,7 +36654,7 @@ var require_GoTrueClient = __commonJS({
        * @category Auth
        */
       async registerPasskey(credentials) {
-        var _a3, _b;
+        var _a, _b;
         (0, helpers_1.assertPasskeyExperimentalEnabled)(this.experimental);
         try {
           if (!(0, webauthn_1.browserSupportsWebAuthn)()) {
@@ -36668,7 +36668,7 @@ var require_GoTrueClient = __commonJS({
             return this._returnResult({ data: null, error: optionsError });
           }
           const publicKeyOptions = (0, webauthn_1.deserializeCredentialCreationOptions)(options.options);
-          const signal = (_b = (_a3 = credentials === null || credentials === void 0 ? void 0 : credentials.options) === null || _a3 === void 0 ? void 0 : _a3.signal) !== null && _b !== void 0 ? _b : webauthn_1.webAuthnAbortService.createNewAbortSignal();
+          const signal = (_b = (_a = credentials === null || credentials === void 0 ? void 0 : credentials.options) === null || _a === void 0 ? void 0 : _a.signal) !== null && _b !== void 0 ? _b : webauthn_1.webAuthnAbortService.createNewAbortSignal();
           const { data: credential, error: credentialError } = await (0, webauthn_1.createCredential)({
             publicKey: publicKeyOptions,
             signal
@@ -36763,13 +36763,13 @@ var require_GoTrueClient = __commonJS({
        * Returns WebAuthn credential request options to pass to navigator.credentials.get().
        */
       async _startPasskeyAuthentication(params) {
-        var _a3;
+        var _a;
         (0, helpers_1.assertPasskeyExperimentalEnabled)(this.experimental);
         try {
           const { data, error: error40 } = await (0, fetch_1._request)(this.fetch, "POST", `${this.url}/passkeys/authentication/options`, {
             headers: this.headers,
             body: {
-              gotrue_meta_security: { captcha_token: (_a3 = params === null || params === void 0 ? void 0 : params.options) === null || _a3 === void 0 ? void 0 : _a3.captchaToken }
+              gotrue_meta_security: { captcha_token: (_a = params === null || params === void 0 ? void 0 : params.options) === null || _a === void 0 ? void 0 : _a.captchaToken }
             }
           });
           if (error40) {
@@ -37046,7 +37046,7 @@ var require_lib3 = __commonJS({
       "use strict";
       var assign = require_object_assign();
       var vary = require_vary();
-      var defaults3 = {
+      var defaults2 = {
         origin: "*",
         methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
         preflightContinue: false,
@@ -37217,7 +37217,7 @@ var require_lib3 = __commonJS({
             if (err) {
               next(err);
             } else {
-              var corsOptions = assign({}, defaults3, options);
+              var corsOptions = assign({}, defaults2, options);
               var originCallback = null;
               if (corsOptions.origin && typeof corsOptions.origin === "function") {
                 originCallback = corsOptions.origin;
@@ -37510,8 +37510,8 @@ var require_req = __commonJS({
       if (req.originalUrl) {
         _req.url = req.originalUrl;
       } else {
-        const path2 = req.path;
-        _req.url = typeof path2 === "string" ? path2 : req.url ? req.url.path || req.url : void 0;
+        const path = req.path;
+        _req.url = typeof path === "string" ? path : req.url ? req.url.path || req.url : void 0;
       }
       if (req.query) {
         _req.query = req.query;
@@ -37676,14 +37676,14 @@ var require_redact = __commonJS({
       }
       return obj;
     }
-    function parsePath(path2) {
+    function parsePath(path) {
       const parts = [];
       let current = "";
       let inBrackets = false;
       let inQuotes = false;
       let quoteChar = "";
-      for (let i = 0; i < path2.length; i++) {
-        const char2 = path2[i];
+      for (let i = 0; i < path.length; i++) {
+        const char2 = path[i];
         if (!inBrackets && char2 === ".") {
           if (current) {
             parts.push(current);
@@ -37814,10 +37814,10 @@ var require_redact = __commonJS({
       return current;
     }
     function redactPaths(obj, paths, censor, remove2 = false) {
-      for (const path2 of paths) {
-        const parts = parsePath(path2);
+      for (const path of paths) {
+        const parts = parsePath(path);
         if (parts.includes("*")) {
-          redactWildcardPath(obj, parts, censor, path2, remove2);
+          redactWildcardPath(obj, parts, censor, path, remove2);
         } else {
           if (remove2) {
             removeKey(obj, parts);
@@ -37902,8 +37902,8 @@ var require_redact = __commonJS({
           }
         } else {
           if (afterWildcard.includes("*")) {
-            const wrappedCensor = typeof censor === "function" ? (value, path2) => {
-              const fullPath = [...pathArray.slice(0, pathLength), ...path2];
+            const wrappedCensor = typeof censor === "function" ? (value, path) => {
+              const fullPath = [...pathArray.slice(0, pathLength), ...path];
               return censor(value, fullPath);
             } : censor;
             redactWildcardPath(current, afterWildcard, wrappedCensor, originalPath, remove2);
@@ -37938,8 +37938,8 @@ var require_redact = __commonJS({
         return null;
       }
       const pathStructure = /* @__PURE__ */ new Map();
-      for (const path2 of pathsToClone) {
-        const parts = parsePath(path2);
+      for (const path of pathsToClone) {
+        const parts = parsePath(path);
         let current = pathStructure;
         for (let i = 0; i < parts.length; i++) {
           const part = parts[i];
@@ -37991,24 +37991,24 @@ var require_redact = __commonJS({
       }
       return cloneSelectively(obj, pathStructure);
     }
-    function validatePath(path2) {
-      if (typeof path2 !== "string") {
+    function validatePath(path) {
+      if (typeof path !== "string") {
         throw new Error("Paths must be (non-empty) strings");
       }
-      if (path2 === "") {
+      if (path === "") {
         throw new Error("Invalid redaction path ()");
       }
-      if (path2.includes("..")) {
-        throw new Error(`Invalid redaction path (${path2})`);
+      if (path.includes("..")) {
+        throw new Error(`Invalid redaction path (${path})`);
       }
-      if (path2.includes(",")) {
-        throw new Error(`Invalid redaction path (${path2})`);
+      if (path.includes(",")) {
+        throw new Error(`Invalid redaction path (${path})`);
       }
       let bracketCount = 0;
       let inQuotes = false;
       let quoteChar = "";
-      for (let i = 0; i < path2.length; i++) {
-        const char2 = path2[i];
+      for (let i = 0; i < path.length; i++) {
+        const char2 = path[i];
         if ((char2 === '"' || char2 === "'") && bracketCount > 0) {
           if (!inQuotes) {
             inQuotes = true;
@@ -38022,20 +38022,20 @@ var require_redact = __commonJS({
         } else if (char2 === "]" && !inQuotes) {
           bracketCount--;
           if (bracketCount < 0) {
-            throw new Error(`Invalid redaction path (${path2})`);
+            throw new Error(`Invalid redaction path (${path})`);
           }
         }
       }
       if (bracketCount !== 0) {
-        throw new Error(`Invalid redaction path (${path2})`);
+        throw new Error(`Invalid redaction path (${path})`);
       }
     }
     function validatePaths(paths) {
       if (!Array.isArray(paths)) {
         throw new TypeError("paths must be an array");
       }
-      for (const path2 of paths) {
-        validatePath(path2);
+      for (const path of paths) {
+        validatePath(path);
       }
     }
     function slowRedact(options = {}) {
@@ -38162,10 +38162,10 @@ var require_redaction = __commonJS({
     var strict = false;
     function redaction(opts, serialize) {
       const { paths, censor, remove: remove2 } = handle(opts);
-      const shape = paths.reduce((o, str2) => {
+      const shape = paths.reduce((o, str) => {
         rx.lastIndex = 0;
-        const first = rx.exec(str2);
-        const next = rx.exec(str2);
+        const first = rx.exec(str);
+        const next = rx.exec(str);
         let ns = first[1] !== void 0 ? first[1].replace(/^(?:"|'|`)(.*)(?:"|'|`)$/, "$1") : first[0];
         if (ns === "*") {
           ns = wildcardFirstSym;
@@ -38178,7 +38178,7 @@ var require_redaction = __commonJS({
           return o;
         }
         const { index } = next;
-        const nextPath = `${str2.substr(index, str2.length - 1)}`;
+        const nextPath = `${str.substr(index, str.length - 1)}`;
         o[ns] = o[ns] || [];
         if (ns !== wildcardFirstSym && o[ns].length === 0) {
           o[ns].push(...o[wildcardFirstSym] || []);
@@ -38203,8 +38203,8 @@ var require_redaction = __commonJS({
         if (shape[k] === null) {
           o[k] = (value) => topCensor(value, [k]);
         } else {
-          const wrappedCensor = typeof censor === "function" ? (value, path2) => {
-            return censor(value, [k, ...path2]);
+          const wrappedCensor = typeof censor === "function" ? (value, path) => {
+            return censor(value, [k, ...path]);
           } : censor;
           o[k] = Redact({
             paths: shape[k],
@@ -38294,7 +38294,7 @@ var require_quick_format_unescaped = __commonJS({
       }
       var argLen = args.length;
       if (argLen === 0) return f;
-      var str2 = "";
+      var str = "";
       var a = 1 - offset;
       var lastPos = -1;
       var flen = f && f.length || 0;
@@ -38309,8 +38309,8 @@ var require_quick_format_unescaped = __commonJS({
                 break;
               if (args[a] == null) break;
               if (lastPos < i)
-                str2 += f.slice(lastPos, i);
-              str2 += Number(args[a]);
+                str += f.slice(lastPos, i);
+              str += Number(args[a]);
               lastPos = i + 2;
               i++;
               break;
@@ -38319,8 +38319,8 @@ var require_quick_format_unescaped = __commonJS({
                 break;
               if (args[a] == null) break;
               if (lastPos < i)
-                str2 += f.slice(lastPos, i);
-              str2 += Math.floor(Number(args[a]));
+                str += f.slice(lastPos, i);
+              str += Math.floor(Number(args[a]));
               lastPos = i + 2;
               i++;
               break;
@@ -38333,21 +38333,21 @@ var require_quick_format_unescaped = __commonJS({
                 break;
               if (args[a] === void 0) break;
               if (lastPos < i)
-                str2 += f.slice(lastPos, i);
+                str += f.slice(lastPos, i);
               var type = typeof args[a];
               if (type === "string") {
-                str2 += "'" + args[a] + "'";
+                str += "'" + args[a] + "'";
                 lastPos = i + 2;
                 i++;
                 break;
               }
               if (type === "function") {
-                str2 += args[a].name || "<anonymous>";
+                str += args[a].name || "<anonymous>";
                 lastPos = i + 2;
                 i++;
                 break;
               }
-              str2 += ss(args[a]);
+              str += ss(args[a]);
               lastPos = i + 2;
               i++;
               break;
@@ -38355,15 +38355,15 @@ var require_quick_format_unescaped = __commonJS({
               if (a >= argLen)
                 break;
               if (lastPos < i)
-                str2 += f.slice(lastPos, i);
-              str2 += String(args[a]);
+                str += f.slice(lastPos, i);
+              str += String(args[a]);
               lastPos = i + 2;
               i++;
               break;
             case 37:
               if (lastPos < i)
-                str2 += f.slice(lastPos, i);
-              str2 += "%";
+                str += f.slice(lastPos, i);
+              str += "%";
               lastPos = i + 2;
               i++;
               a--;
@@ -38376,9 +38376,9 @@ var require_quick_format_unescaped = __commonJS({
       if (lastPos === -1)
         return f;
       else if (lastPos < flen) {
-        str2 += f.slice(lastPos);
+        str += f.slice(lastPos);
       }
-      return str2;
+      return str;
     }
   }
 });
@@ -38388,7 +38388,7 @@ var require_atomic_sleep = __commonJS({
   "../../node_modules/.pnpm/atomic-sleep@1.0.0/node_modules/atomic-sleep/index.js"(exports, module) {
     "use strict";
     if (typeof SharedArrayBuffer !== "undefined" && typeof Atomics !== "undefined") {
-      let sleep4 = function(ms) {
+      let sleep3 = function(ms) {
         const valid = ms > 0 && ms < Infinity;
         if (valid === false) {
           if (typeof ms !== "number" && typeof ms !== "bigint") {
@@ -38399,9 +38399,9 @@ var require_atomic_sleep = __commonJS({
         Atomics.wait(nil, 0, 0, Number(ms));
       };
       const nil = new Int32Array(new SharedArrayBuffer(4));
-      module.exports = sleep4;
+      module.exports = sleep3;
     } else {
-      let sleep4 = function(ms) {
+      let sleep3 = function(ms) {
         const valid = ms > 0 && ms < Infinity;
         if (valid === false) {
           if (typeof ms !== "number" && typeof ms !== "bigint") {
@@ -38413,7 +38413,7 @@ var require_atomic_sleep = __commonJS({
         while (target > Date.now()) {
         }
       };
-      module.exports = sleep4;
+      module.exports = sleep3;
     }
   }
 });
@@ -38425,8 +38425,8 @@ var require_sonic_boom = __commonJS({
     var fs = __require("fs");
     var EventEmitter = __require("events");
     var inherits = __require("util").inherits;
-    var path2 = __require("path");
-    var sleep4 = require_atomic_sleep();
+    var path = __require("path");
+    var sleep3 = require_atomic_sleep();
     var assert2 = __require("assert");
     var BUSY_WRITE_TIMEOUT = 100;
     var kEmptyBuffer = Buffer.allocUnsafe(0);
@@ -38479,7 +38479,7 @@ var require_sonic_boom = __commonJS({
       const mode = sonic.mode;
       if (sonic.sync) {
         try {
-          if (sonic.mkdir) fs.mkdirSync(path2.dirname(file2), { recursive: true });
+          if (sonic.mkdir) fs.mkdirSync(path.dirname(file2), { recursive: true });
           const fd = fs.openSync(file2, flags, mode);
           fileOpened(null, fd);
         } catch (err) {
@@ -38487,7 +38487,7 @@ var require_sonic_boom = __commonJS({
           throw err;
         }
       } else if (sonic.mkdir) {
-        fs.mkdir(path2.dirname(file2), { recursive: true }, (err) => {
+        fs.mkdir(path.dirname(file2), { recursive: true }, (err) => {
           if (err) return fileOpened(err);
           fs.open(file2, flags, mode, fileOpened);
         });
@@ -38572,7 +38572,7 @@ var require_sonic_boom = __commonJS({
           if ((err.code === "EAGAIN" || err.code === "EBUSY") && this.retryEAGAIN(err, this._writingBuf.length, this._len - this._writingBuf.length)) {
             if (this.sync) {
               try {
-                sleep4(BUSY_WRITE_TIMEOUT);
+                sleep3(BUSY_WRITE_TIMEOUT);
                 this.release(void 0, 0);
               } catch (err2) {
                 this.release(err2);
@@ -38885,7 +38885,7 @@ var require_sonic_boom = __commonJS({
           if (shouldRetry2 && !this.retryEAGAIN(err, buf.length, this._len - buf.length)) {
             throw err;
           }
-          sleep4(BUSY_WRITE_TIMEOUT);
+          sleep3(BUSY_WRITE_TIMEOUT);
         }
       }
       try {
@@ -38922,7 +38922,7 @@ var require_sonic_boom = __commonJS({
           if (shouldRetry2 && !this.retryEAGAIN(err, buf.length, this._len - buf.length)) {
             throw err;
           }
-          sleep4(BUSY_WRITE_TIMEOUT);
+          sleep3(BUSY_WRITE_TIMEOUT);
         }
       }
     }
@@ -39663,7 +39663,7 @@ var require_transport = __commonJS({
     var { createRequire } = __require("module");
     var getCallers = require_caller();
     var { join, isAbsolute, sep } = __require("node:path");
-    var sleep4 = require_atomic_sleep();
+    var sleep3 = require_atomic_sleep();
     var onExit = require_on_exit_leak_free();
     var ThreadStream = require_thread_stream();
     function setupOnExit(stream) {
@@ -39697,7 +39697,7 @@ var require_transport = __commonJS({
           return;
         }
         stream.flushSync();
-        sleep4(100);
+        sleep3(100);
         stream.end();
       }
       return stream;
@@ -39827,7 +39827,7 @@ var require_tools = __commonJS({
         }
       };
     }
-    function noop3() {
+    function noop2() {
     }
     function genLog(level, hook) {
       if (!hook) return LOG;
@@ -39864,29 +39864,29 @@ var require_tools = __commonJS({
         }
       }
     }
-    function asString(str2) {
+    function asString(str) {
       let result = "";
       let last = 0;
       let found = false;
       let point2 = 255;
-      const l = str2.length;
+      const l = str.length;
       if (l > 100) {
-        return JSON.stringify(str2);
+        return JSON.stringify(str);
       }
       for (var i = 0; i < l && point2 >= 32; i++) {
-        point2 = str2.charCodeAt(i);
+        point2 = str.charCodeAt(i);
         if (point2 === 34 || point2 === 92) {
-          result += str2.slice(last, i) + "\\";
+          result += str.slice(last, i) + "\\";
           last = i;
           found = true;
         }
       }
       if (!found) {
-        result = str2;
+        result = str;
       } else {
-        result += str2.slice(last);
+        result += str.slice(last);
       }
-      return point2 < 32 ? JSON.stringify(str2) : '"' + result + '"';
+      return point2 < 32 ? JSON.stringify(str) : '"' + result + '"';
     }
     function asJson(obj, msg, num, time4) {
       if (asJsonChan.hasSubscribers === false) {
@@ -39896,20 +39896,20 @@ var require_tools = __commonJS({
       return asJsonChan.traceSync(_asJson, store, this, obj, msg, num, time4);
     }
     function _asJson(obj, msg, num, time4) {
-      const stringify4 = this[stringifySym];
+      const stringify3 = this[stringifySym];
       const stringifySafe = this[stringifySafeSym];
       const stringifiers = this[stringifiersSym];
       const end = this[endSym];
       const chindings = this[chindingsSym];
       const serializers = this[serializersSym];
-      const formatters2 = this[formattersSym];
+      const formatters = this[formattersSym];
       const messageKey = this[messageKeySym];
       const errorKey = this[errorKeySym];
       let data = this[lsCacheSym][num] + time4;
       data = data + chindings;
       let value;
-      if (formatters2.log) {
-        obj = formatters2.log(obj);
+      if (formatters.log) {
+        obj = formatters.log(obj);
       }
       const wildcardStringifier = stringifiers[wildcardFirstSym];
       let propStr = "";
@@ -39938,7 +39938,7 @@ var require_tools = __commonJS({
               value = (stringifier || asString)(value);
               break;
             default:
-              value = (stringifier || stringify4)(value, stringifySafe);
+              value = (stringifier || stringify3)(value, stringifySafe);
           }
           if (value === void 0) continue;
           const strKey = asString(key);
@@ -39966,7 +39966,7 @@ var require_tools = __commonJS({
             msgStr = ',"' + messageKey + '":' + value;
             break;
           default:
-            value = (stringifier || stringify4)(value, stringifySafe);
+            value = (stringifier || stringify3)(value, stringifySafe);
             msgStr = ',"' + messageKey + '":' + value;
         }
       }
@@ -39979,7 +39979,7 @@ var require_tools = __commonJS({
     function asChindings(instance, bindings) {
       let value;
       let data = instance[chindingsSym];
-      const stringify4 = instance[stringifySym];
+      const stringify3 = instance[stringifySym];
       const stringifySafe = instance[stringifySafeSym];
       const stringifiers = instance[stringifiersSym];
       const wildcardStringifier = stringifiers[wildcardFirstSym];
@@ -39991,7 +39991,7 @@ var require_tools = __commonJS({
         const valid = (key.length < 5 || key !== "level" && key !== "serializers" && key !== "formatters" && key !== "customLevels") && bindings.hasOwnProperty(key) && value !== void 0;
         if (valid === true) {
           value = serializers[key] ? serializers[key](value) : value;
-          value = (stringifiers[key] || wildcardStringifier || stringify4)(value, stringifySafe);
+          value = (stringifiers[key] || wildcardStringifier || stringify3)(value, stringifySafe);
           if (value === void 0) continue;
           data += ',"' + key + '":' + value;
         }
@@ -40013,10 +40013,10 @@ var require_tools = __commonJS({
       return stream;
       function filterBrokenPipe(err) {
         if (err.code === "EPIPE") {
-          stream.write = noop3;
-          stream.end = noop3;
-          stream.flushSync = noop3;
-          stream.destroy = noop3;
+          stream.write = noop2;
+          stream.end = noop2;
+          stream.flushSync = noop2;
+          stream.destroy = noop2;
           return;
         }
         stream.removeListener("error", filterBrokenPipe);
@@ -40070,7 +40070,7 @@ var require_tools = __commonJS({
         }
         const { enabled, onChild } = opts;
         if (enabled === false) opts.level = "silent";
-        if (!onChild) opts.onChild = noop3;
+        if (!onChild) opts.onChild = noop2;
         if (!stream) {
           if (!hasBeenTampered(process.stdout)) {
             stream = buildSafeSonicBoom({ fd: process.stdout.fd || 1 });
@@ -40081,13 +40081,13 @@ var require_tools = __commonJS({
         return { opts, stream };
       };
     }
-    function stringify3(obj, stringifySafeFn) {
+    function stringify2(obj, stringifySafeFn) {
       try {
         return JSON.stringify(obj);
       } catch (_2) {
         try {
-          const stringify4 = stringifySafeFn || this[stringifySafeSym];
-          return stringify4(obj);
+          const stringify3 = stringifySafeFn || this[stringifySafeSym];
+          return stringify3(obj);
         } catch (_3) {
           return '"[unable to serialize, circular reference is too complex to analyze]"';
         }
@@ -40111,13 +40111,13 @@ var require_tools = __commonJS({
       return destination;
     }
     module.exports = {
-      noop: noop3,
+      noop: noop2,
       buildSafeSonicBoom,
       asChindings,
       asJson,
       genLog,
       createArgsNormalizer,
-      stringify: stringify3,
+      stringify: stringify2,
       buildFormatters,
       normalizeDestFileDescriptor
     };
@@ -40159,7 +40159,7 @@ var require_levels = __commonJS({
       hooksSym,
       levelCompSym
     } = require_symbols();
-    var { noop: noop3, genLog } = require_tools();
+    var { noop: noop2, genLog } = require_tools();
     var { DEFAULT_LEVELS, SORTING_ORDER } = require_constants3();
     var levelMethods = {
       fatal: (hook) => {
@@ -40230,7 +40230,7 @@ var require_levels = __commonJS({
       const hook = this[hooksSym].logMethod;
       for (const key in values) {
         if (levelComparison(values[key], levelVal) === false) {
-          this[key] = noop3;
+          this[key] = noop2;
           continue;
         }
         this[key] = isStandardLevel(key, useOnlyCustomLevelsVal) ? levelMethods[key](hook) : genLog(values[key], hook);
@@ -40392,8 +40392,8 @@ var require_proto = __commonJS({
       asChindings,
       asJson,
       buildFormatters,
-      stringify: stringify3,
-      noop: noop3
+      stringify: stringify2,
+      noop: noop2
     } = require_tools();
     var {
       version: version5
@@ -40443,19 +40443,19 @@ var require_proto = __commonJS({
         throw Error("missing bindings for child Pino");
       }
       const serializers = this[serializersSym];
-      const formatters2 = this[formattersSym];
+      const formatters = this[formattersSym];
       const instance = Object.create(this);
       if (options == null) {
         if (instance[formattersSym].bindings !== resetChildingsFormatter) {
           instance[formattersSym] = buildFormatters(
-            formatters2.level,
+            formatters.level,
             resetChildingsFormatter,
-            formatters2.log
+            formatters.log
           );
         }
         instance[chindingsSym] = asChindings(instance, bindings2);
         instance[setLevelSym](this.level);
-        if (this.onChild !== noop3) {
+        if (this.onChild !== noop2) {
           this.onChild(instance);
         }
         return instance;
@@ -40482,15 +40482,15 @@ var require_proto = __commonJS({
       if (options.hasOwnProperty("formatters")) {
         const { level, bindings: chindings, log } = options.formatters;
         instance[formattersSym] = buildFormatters(
-          level || formatters2.level,
+          level || formatters.level,
           chindings || resetChildingsFormatter,
-          log || formatters2.log
+          log || formatters.log
         );
       } else {
         instance[formattersSym] = buildFormatters(
-          formatters2.level,
+          formatters.level,
           resetChildingsFormatter,
-          formatters2.log
+          formatters.log
         );
       }
       if (options.hasOwnProperty("customLevels") === true) {
@@ -40500,9 +40500,9 @@ var require_proto = __commonJS({
       }
       if (typeof options.redact === "object" && options.redact !== null || Array.isArray(options.redact)) {
         instance.redact = options.redact;
-        const stringifiers = redaction(instance.redact, stringify3);
+        const stringifiers = redaction(instance.redact, stringify2);
         const formatOpts = { stringify: stringifiers[redactFmtSym] };
-        instance[stringifySym] = stringify3;
+        instance[stringifySym] = stringify2;
         instance[stringifiersSym] = stringifiers;
         instance[formatOptsSym] = formatOpts;
       }
@@ -40572,7 +40572,7 @@ var require_proto = __commonJS({
       }
       const stream = this[streamSym];
       if (typeof stream.flush === "function") {
-        stream.flush(cb || noop3);
+        stream.flush(cb || noop2);
       } else if (cb) cb();
     }
   }
@@ -40583,19 +40583,19 @@ var require_safe_stable_stringify = __commonJS({
   "../../node_modules/.pnpm/safe-stable-stringify@2.5.0/node_modules/safe-stable-stringify/index.js"(exports, module) {
     "use strict";
     var { hasOwnProperty } = Object.prototype;
-    var stringify3 = configure();
-    stringify3.configure = configure;
-    stringify3.stringify = stringify3;
-    stringify3.default = stringify3;
-    exports.stringify = stringify3;
+    var stringify2 = configure();
+    stringify2.configure = configure;
+    stringify2.stringify = stringify2;
+    stringify2.default = stringify2;
+    exports.stringify = stringify2;
     exports.configure = configure;
-    module.exports = stringify3;
+    module.exports = stringify2;
     var strEscapeSequencesRegExp = /[\u0000-\u001f\u0022\u005c\ud800-\udfff]/;
-    function strEscape(str2) {
-      if (str2.length < 5e3 && !strEscapeSequencesRegExp.test(str2)) {
-        return `"${str2}"`;
+    function strEscape(str) {
+      if (str.length < 5e3 && !strEscapeSequencesRegExp.test(str)) {
+        return `"${str}"`;
       }
-      return JSON.stringify(str2);
+      return JSON.stringify(str);
     }
     function sort(array2, comparator) {
       if (array2.length > 200 || comparator) {
@@ -41147,7 +41147,7 @@ ${originalIndentation}`;
             return fail ? fail(value) : void 0;
         }
       }
-      function stringify4(value, replacer, space) {
+      function stringify3(value, replacer, space) {
         if (arguments.length > 1) {
           let spacer = "";
           if (typeof space === "number") {
@@ -41169,7 +41169,7 @@ ${originalIndentation}`;
         }
         return stringifySimple("", value, []);
       }
-      return stringify4;
+      return stringify3;
     }
   }
 });
@@ -41347,9 +41347,9 @@ var require_pino = __commonJS({
   "../../node_modules/.pnpm/pino@9.14.0/node_modules/pino/pino.js"(exports, module) {
     function pinoBundlerAbsolutePath(p) {
       try {
-        const path2 = __require("path");
+        const path = __require("path");
         const outputDir = "C:\\Users\\Home\\Desktop\\\u041F\u0420\u043E\u0435\u043A\u0442\\Calorie-Tracker-Web\\artifacts\\api-server\\dist";
-        return path2.resolve(outputDir, p.replace(/^\.\//, ""));
+        return path.resolve(outputDir, p.replace(/^\.\//, ""));
       } catch (e) {
         const f = new Function("p", "return new URL(p, import.meta.url).pathname");
         return f(p);
@@ -41371,9 +41371,9 @@ var require_pino = __commonJS({
       asChindings,
       buildSafeSonicBoom,
       buildFormatters,
-      stringify: stringify3,
+      stringify: stringify2,
       normalizeDestFileDescriptor,
-      noop: noop3
+      noop: noop2
     } = require_tools();
     var { version: version5 } = require_meta();
     var {
@@ -41459,7 +41459,7 @@ var require_pino = __commonJS({
         mixin,
         mixinMergeStrategy,
         useOnlyCustomLevels,
-        formatters: formatters2,
+        formatters,
         hooks,
         depthLimit,
         edgeLimit,
@@ -41471,11 +41471,11 @@ var require_pino = __commonJS({
         maximumBreadth: edgeLimit
       });
       const allFormatters = buildFormatters(
-        formatters2.level,
-        formatters2.bindings,
-        formatters2.log
+        formatters.level,
+        formatters.bindings,
+        formatters.log
       );
-      const stringifyFn = stringify3.bind({
+      const stringifyFn = stringify2.bind({
         [stringifySafeSym]: stringifySafe
       });
       const stringifiers = redact ? redaction(redact, stringifyFn) : {};
@@ -41485,7 +41485,7 @@ var require_pino = __commonJS({
         [chindingsSym]: "",
         [serializersSym]: serializers2,
         [stringifiersSym]: stringifiers,
-        [stringifySym]: stringify3,
+        [stringifySym]: stringify2,
         [stringifySafeSym]: stringifySafe,
         [formattersSym]: allFormatters
       });
@@ -41516,7 +41516,7 @@ var require_pino = __commonJS({
         [streamSym]: stream,
         [timeSym]: time5,
         [timeSliceIndexSym]: timeSliceIndex,
-        [stringifySym]: stringify3,
+        [stringifySym]: stringify2,
         [stringifySafeSym]: stringifySafe,
         [stringifiersSym]: stringifiers,
         [endSym]: end,
@@ -41532,7 +41532,7 @@ var require_pino = __commonJS({
         [chindingsSym]: chindings,
         [formattersSym]: allFormatters,
         [hooksSym]: hooks,
-        silent: noop3,
+        silent: noop2,
         onChild,
         [msgPrefixSym]: msgPrefix
       });
@@ -41814,7 +41814,7 @@ var require_logger = __commonJS({
 var require_eventemitter3 = __commonJS({
   "../../node_modules/.pnpm/eventemitter3@4.0.7/node_modules/eventemitter3/index.js"(exports, module) {
     "use strict";
-    var has2 = Object.prototype.hasOwnProperty;
+    var has = Object.prototype.hasOwnProperty;
     var prefix = "~";
     function Events() {
     }
@@ -41849,7 +41849,7 @@ var require_eventemitter3 = __commonJS({
       var names = [], events, name;
       if (this._eventsCount === 0) return names;
       for (name in events = this._events) {
-        if (has2.call(events, name)) names.push(prefix ? name.slice(1) : name);
+        if (has.call(events, name)) names.push(prefix ? name.slice(1) : name);
       }
       if (Object.getOwnPropertySymbols) {
         return names.concat(Object.getOwnPropertySymbols(events));
@@ -42321,7 +42321,7 @@ var require_follow_redirects = __commonJS({
       "ERR_STREAM_WRITE_AFTER_END",
       "write after end"
     );
-    var destroy = Writable.prototype.destroy || noop3;
+    var destroy = Writable.prototype.destroy || noop2;
     function RedirectableRequest(options, responseCallback) {
       Writable.call(this);
       this._sanitizeOptions(options);
@@ -42481,7 +42481,7 @@ var require_follow_redirects = __commonJS({
       if (!options.headers) {
         options.headers = {};
       }
-      if (!isArray2(options.sensitiveHeaders)) {
+      if (!isArray(options.sensitiveHeaders)) {
         options.sensitiveHeaders = [];
       }
       if (options.host) {
@@ -42654,7 +42654,7 @@ var require_follow_redirects = __commonJS({
       });
       return exports2;
     }
-    function noop3() {
+    function noop2() {
     }
     function parseUrl(input) {
       var parsed;
@@ -42730,7 +42730,7 @@ var require_follow_redirects = __commonJS({
       for (var event of events) {
         request.removeListener(event, eventHandlers[event]);
       }
-      request.on("error", noop3);
+      request.on("error", noop2);
       request.destroy(error40);
     }
     function isSubdomain(subdomain, domain2) {
@@ -42738,7 +42738,7 @@ var require_follow_redirects = __commonJS({
       var dot = subdomain.length - domain2.length - 1;
       return dot > 0 && subdomain[dot] === "." && subdomain.endsWith(domain2);
     }
-    function isArray2(value) {
+    function isArray(value) {
       return value instanceof Array;
     }
     function isString(value) {
@@ -43303,7 +43303,7 @@ var require_error_response_plugin = __commonJS({
     exports.errorResponsePlugin = void 0;
     var status_code_1 = require_status_code();
     var sanitize_1 = require_sanitize();
-    function isResponseLike2(obj) {
+    function isResponseLike(obj) {
       return obj && typeof obj.writeHead === "function";
     }
     function isSocketLike(obj) {
@@ -43314,7 +43314,7 @@ var require_error_response_plugin = __commonJS({
         if (!req && !res) {
           throw err;
         }
-        if (isResponseLike2(res)) {
+        if (isResponseLike(res)) {
           if (!res.headersSent) {
             const statusCode = (0, status_code_1.getStatusCode)(err.code);
             res.writeHead(statusCode);
@@ -43336,7 +43336,7 @@ var require_logger2 = __commonJS({
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.getLogger = getLogger;
-    var noopLogger2 = {
+    var noopLogger = {
       info: () => {
       },
       warn: () => {
@@ -43345,7 +43345,7 @@ var require_logger2 = __commonJS({
       }
     };
     function getLogger(options) {
-      return options.logger || noopLogger2;
+      return options.logger || noopLogger;
     }
   }
 });
@@ -43492,14 +43492,14 @@ var require_get_plugins = __commonJS({
 // ../../node_modules/.pnpm/is-extglob@2.1.1/node_modules/is-extglob/index.js
 var require_is_extglob = __commonJS({
   "../../node_modules/.pnpm/is-extglob@2.1.1/node_modules/is-extglob/index.js"(exports, module) {
-    module.exports = function isExtglob(str2) {
-      if (typeof str2 !== "string" || str2 === "") {
+    module.exports = function isExtglob(str) {
+      if (typeof str !== "string" || str === "") {
         return false;
       }
       var match2;
-      while (match2 = /(\\).|([@?!+*]\(.*\))/g.exec(str2)) {
+      while (match2 = /(\\).|([@?!+*]\(.*\))/g.exec(str)) {
         if (match2[2]) return true;
-        str2 = str2.slice(match2.index + match2[0].length);
+        str = str.slice(match2.index + match2[0].length);
       }
       return false;
     };
@@ -43511,8 +43511,8 @@ var require_is_glob = __commonJS({
   "../../node_modules/.pnpm/is-glob@4.0.3/node_modules/is-glob/index.js"(exports, module) {
     var isExtglob = require_is_extglob();
     var chars = { "{": "}", "(": ")", "[": "]" };
-    var strictCheck = function(str2) {
-      if (str2[0] === "!") {
+    var strictCheck = function(str) {
+      if (str[0] === "!") {
         return true;
       }
       var index = 0;
@@ -43521,70 +43521,70 @@ var require_is_glob = __commonJS({
       var closeCurlyIndex = -2;
       var closeParenIndex = -2;
       var backSlashIndex = -2;
-      while (index < str2.length) {
-        if (str2[index] === "*") {
+      while (index < str.length) {
+        if (str[index] === "*") {
           return true;
         }
-        if (str2[index + 1] === "?" && /[\].+)]/.test(str2[index])) {
+        if (str[index + 1] === "?" && /[\].+)]/.test(str[index])) {
           return true;
         }
-        if (closeSquareIndex !== -1 && str2[index] === "[" && str2[index + 1] !== "]") {
+        if (closeSquareIndex !== -1 && str[index] === "[" && str[index + 1] !== "]") {
           if (closeSquareIndex < index) {
-            closeSquareIndex = str2.indexOf("]", index);
+            closeSquareIndex = str.indexOf("]", index);
           }
           if (closeSquareIndex > index) {
             if (backSlashIndex === -1 || backSlashIndex > closeSquareIndex) {
               return true;
             }
-            backSlashIndex = str2.indexOf("\\", index);
+            backSlashIndex = str.indexOf("\\", index);
             if (backSlashIndex === -1 || backSlashIndex > closeSquareIndex) {
               return true;
             }
           }
         }
-        if (closeCurlyIndex !== -1 && str2[index] === "{" && str2[index + 1] !== "}") {
-          closeCurlyIndex = str2.indexOf("}", index);
+        if (closeCurlyIndex !== -1 && str[index] === "{" && str[index + 1] !== "}") {
+          closeCurlyIndex = str.indexOf("}", index);
           if (closeCurlyIndex > index) {
-            backSlashIndex = str2.indexOf("\\", index);
+            backSlashIndex = str.indexOf("\\", index);
             if (backSlashIndex === -1 || backSlashIndex > closeCurlyIndex) {
               return true;
             }
           }
         }
-        if (closeParenIndex !== -1 && str2[index] === "(" && str2[index + 1] === "?" && /[:!=]/.test(str2[index + 2]) && str2[index + 3] !== ")") {
-          closeParenIndex = str2.indexOf(")", index);
+        if (closeParenIndex !== -1 && str[index] === "(" && str[index + 1] === "?" && /[:!=]/.test(str[index + 2]) && str[index + 3] !== ")") {
+          closeParenIndex = str.indexOf(")", index);
           if (closeParenIndex > index) {
-            backSlashIndex = str2.indexOf("\\", index);
+            backSlashIndex = str.indexOf("\\", index);
             if (backSlashIndex === -1 || backSlashIndex > closeParenIndex) {
               return true;
             }
           }
         }
-        if (pipeIndex !== -1 && str2[index] === "(" && str2[index + 1] !== "|") {
+        if (pipeIndex !== -1 && str[index] === "(" && str[index + 1] !== "|") {
           if (pipeIndex < index) {
-            pipeIndex = str2.indexOf("|", index);
+            pipeIndex = str.indexOf("|", index);
           }
-          if (pipeIndex !== -1 && str2[pipeIndex + 1] !== ")") {
-            closeParenIndex = str2.indexOf(")", pipeIndex);
+          if (pipeIndex !== -1 && str[pipeIndex + 1] !== ")") {
+            closeParenIndex = str.indexOf(")", pipeIndex);
             if (closeParenIndex > pipeIndex) {
-              backSlashIndex = str2.indexOf("\\", pipeIndex);
+              backSlashIndex = str.indexOf("\\", pipeIndex);
               if (backSlashIndex === -1 || backSlashIndex > closeParenIndex) {
                 return true;
               }
             }
           }
         }
-        if (str2[index] === "\\") {
-          var open = str2[index + 1];
+        if (str[index] === "\\") {
+          var open = str[index + 1];
           index += 2;
           var close = chars[open];
           if (close) {
-            var n = str2.indexOf(close, index);
+            var n = str.indexOf(close, index);
             if (n !== -1) {
               index = n + 1;
             }
           }
-          if (str2[index] === "!") {
+          if (str[index] === "!") {
             return true;
           }
         } else {
@@ -43593,26 +43593,26 @@ var require_is_glob = __commonJS({
       }
       return false;
     };
-    var relaxedCheck = function(str2) {
-      if (str2[0] === "!") {
+    var relaxedCheck = function(str) {
+      if (str[0] === "!") {
         return true;
       }
       var index = 0;
-      while (index < str2.length) {
-        if (/[*?{}()[\]]/.test(str2[index])) {
+      while (index < str.length) {
+        if (/[*?{}()[\]]/.test(str[index])) {
           return true;
         }
-        if (str2[index] === "\\") {
-          var open = str2[index + 1];
+        if (str[index] === "\\") {
+          var open = str[index + 1];
           index += 2;
           var close = chars[open];
           if (close) {
-            var n = str2.indexOf(close, index);
+            var n = str.indexOf(close, index);
             if (n !== -1) {
               index = n + 1;
             }
           }
-          if (str2[index] === "!") {
+          if (str[index] === "!") {
             return true;
           }
         } else {
@@ -43621,18 +43621,18 @@ var require_is_glob = __commonJS({
       }
       return false;
     };
-    module.exports = function isGlob(str2, options) {
-      if (typeof str2 !== "string" || str2 === "") {
+    module.exports = function isGlob(str, options) {
+      if (typeof str !== "string" || str === "") {
         return false;
       }
-      if (isExtglob(str2)) {
+      if (isExtglob(str)) {
         return true;
       }
       var check2 = strictCheck;
       if (options && options.strict === false) {
         check2 = relaxedCheck;
       }
-      return check2(str2);
+      return check2(str);
     };
   }
 });
@@ -43651,10 +43651,10 @@ var require_utils4 = __commonJS({
       return false;
     };
     exports.find = (node, type) => node.nodes.find((node2) => node2.type === type);
-    exports.exceedsLimit = (min, max, step = 1, limit2) => {
-      if (limit2 === false) return false;
+    exports.exceedsLimit = (min, max, step = 1, limit) => {
+      if (limit === false) return false;
       if (!exports.isInteger(min) || !exports.isInteger(max)) return false;
-      return (Number(max) - Number(min)) / Number(step) >= limit2;
+      return (Number(max) - Number(min)) / Number(step) >= limit;
     };
     exports.escapeNode = (block, n = 0, type) => {
       const node = block.nodes[n];
@@ -43725,7 +43725,7 @@ var require_stringify2 = __commonJS({
     "use strict";
     var utils = require_utils4();
     module.exports = (ast, options = {}) => {
-      const stringify3 = (node, parent = {}) => {
+      const stringify2 = (node, parent = {}) => {
         const invalidBlock = options.escapeInvalid && utils.isInvalidBrace(parent);
         const invalidNode = node.invalid === true && options.escapeInvalid === true;
         let output = "";
@@ -43740,12 +43740,12 @@ var require_stringify2 = __commonJS({
         }
         if (node.nodes) {
           for (const child of node.nodes) {
-            output += stringify3(child);
+            output += stringify2(child);
           }
         }
         return output;
       };
-      return stringify3(ast);
+      return stringify2(ast);
     };
   }
 });
@@ -43950,8 +43950,8 @@ var require_to_regex_range = __commonJS({
     function toCharacterClass(a, b, options) {
       return `[${a}${b - a === 1 ? "" : "-"}${b}]`;
     }
-    function hasPadding(str2) {
-      return /^-?(0+)\d/.test(str2);
+    function hasPadding(str) {
+      return /^-?(0+)\d/.test(str);
     }
     function padZeros(value, tok, options) {
       if (!tok.isPadded) {
@@ -43981,7 +43981,7 @@ var require_to_regex_range = __commonJS({
 var require_fill_range = __commonJS({
   "../../node_modules/.pnpm/fill-range@7.1.1/node_modules/fill-range/index.js"(exports, module) {
     "use strict";
-    var util2 = __require("util");
+    var util = __require("util");
     var toRegexRange = require_to_regex_range();
     var isObject3 = (val) => val !== null && typeof val === "object" && !Array.isArray(val);
     var transform2 = (toNumber) => {
@@ -43999,7 +43999,7 @@ var require_fill_range = __commonJS({
       while (value[++index] === "0") ;
       return index > 0;
     };
-    var stringify3 = (start, end, options) => {
+    var stringify2 = (start, end, options) => {
       if (typeof start === "string" || typeof end === "string") {
         return true;
       }
@@ -44066,7 +44066,7 @@ var require_fill_range = __commonJS({
       return toRegexRange(start, end, options);
     };
     var rangeError = (...args) => {
-      return new RangeError("Invalid range arguments: " + util2.inspect(...args));
+      return new RangeError("Invalid range arguments: " + util.inspect(...args));
     };
     var invalidRange = (start, end, options) => {
       if (options.strictRanges === true) throw rangeError([start, end]);
@@ -44094,7 +44094,7 @@ var require_fill_range = __commonJS({
       step = Math.max(Math.abs(step), 1);
       let padded = zeros(startString) || zeros(endString) || zeros(stepString);
       let maxLen = padded ? Math.max(startString.length, endString.length, stepString.length) : 0;
-      let toNumber = padded === false && stringify3(start, end, options) === false;
+      let toNumber = padded === false && stringify2(start, end, options) === false;
       let format = options.transform || transform2(toNumber);
       if (options.toRegex && step === 1) {
         return toRange(toMaxLen(start, maxLen), toMaxLen(end, maxLen), true, options);
@@ -44228,7 +44228,7 @@ var require_expand = __commonJS({
   "../../node_modules/.pnpm/braces@3.0.3/node_modules/braces/lib/expand.js"(exports, module) {
     "use strict";
     var fill = require_fill_range();
-    var stringify3 = require_stringify2();
+    var stringify2 = require_stringify2();
     var utils = require_utils4();
     var append = (queue = "", stash = "", enclose = false) => {
       const result = [];
@@ -44263,7 +44263,7 @@ var require_expand = __commonJS({
           q = p.queue;
         }
         if (node.invalid || node.dollar) {
-          q.push(append(q.pop(), stringify3(node, options)));
+          q.push(append(q.pop(), stringify2(node, options)));
           return;
         }
         if (node.type === "brace" && node.invalid !== true && node.nodes.length === 2) {
@@ -44277,7 +44277,7 @@ var require_expand = __commonJS({
           }
           let range = fill(...args, options);
           if (range.length === 0) {
-            range = stringify3(node, options);
+            range = stringify2(node, options);
           }
           q.push(append(q.pop(), range));
           node.nodes = [];
@@ -44422,7 +44422,7 @@ var require_constants4 = __commonJS({
 var require_parse2 = __commonJS({
   "../../node_modules/.pnpm/braces@3.0.3/node_modules/braces/lib/parse.js"(exports, module) {
     "use strict";
-    var stringify3 = require_stringify2();
+    var stringify2 = require_stringify2();
     var {
       MAX_LENGTH,
       CHAR_BACKSLASH,
@@ -44594,7 +44594,7 @@ var require_parse2 = __commonJS({
           if (block.ranges > 0) {
             block.ranges = 0;
             const open = block.nodes.shift();
-            block.nodes = [open, { type: "text", value: stringify3(block) }];
+            block.nodes = [open, { type: "text", value: stringify2(block) }];
           }
           push({ type: "comma", value });
           block.commas++;
@@ -44660,7 +44660,7 @@ var require_parse2 = __commonJS({
 var require_braces = __commonJS({
   "../../node_modules/.pnpm/braces@3.0.3/node_modules/braces/index.js"(exports, module) {
     "use strict";
-    var stringify3 = require_stringify2();
+    var stringify2 = require_stringify2();
     var compile = require_compile();
     var expand = require_expand();
     var parse4 = require_parse2();
@@ -44686,9 +44686,9 @@ var require_braces = __commonJS({
     braces.parse = (input, options = {}) => parse4(input, options);
     braces.stringify = (input, options = {}) => {
       if (typeof input === "string") {
-        return stringify3(braces.parse(input, options), options);
+        return stringify2(braces.parse(input, options), options);
       }
-      return stringify3(input, options);
+      return stringify2(input, options);
     };
     braces.compile = (input, options = {}) => {
       if (typeof input === "string") {
@@ -44723,7 +44723,7 @@ var require_braces = __commonJS({
 var require_constants5 = __commonJS({
   "../../node_modules/.pnpm/picomatch@2.3.2/node_modules/picomatch/lib/constants.js"(exports, module) {
     "use strict";
-    var path2 = __require("path");
+    var path = __require("path");
     var WIN_SLASH = "\\\\/";
     var WIN_NO_SLASH = `[^${WIN_SLASH}]`;
     var DEFAULT_MAX_EXTGLOB_RECURSION = 0;
@@ -44897,7 +44897,7 @@ var require_constants5 = __commonJS({
       /* | */
       CHAR_ZERO_WIDTH_NOBREAK_SPACE: 65279,
       /* \uFEFF */
-      SEP: path2.sep,
+      SEP: path.sep,
       /**
        * Create EXTGLOB_CHARS
        */
@@ -44924,7 +44924,7 @@ var require_constants5 = __commonJS({
 var require_utils5 = __commonJS({
   "../../node_modules/.pnpm/picomatch@2.3.2/node_modules/picomatch/lib/utils.js"(exports) {
     "use strict";
-    var path2 = __require("path");
+    var path = __require("path");
     var win32 = process.platform === "win32";
     var {
       REGEX_BACKSLASH,
@@ -44933,12 +44933,12 @@ var require_utils5 = __commonJS({
       REGEX_SPECIAL_CHARS_GLOBAL
     } = require_constants5();
     exports.isObject = (val) => val !== null && typeof val === "object" && !Array.isArray(val);
-    exports.hasRegexChars = (str2) => REGEX_SPECIAL_CHARS.test(str2);
-    exports.isRegexChar = (str2) => str2.length === 1 && exports.hasRegexChars(str2);
-    exports.escapeRegex = (str2) => str2.replace(REGEX_SPECIAL_CHARS_GLOBAL, "\\$1");
-    exports.toPosixSlashes = (str2) => str2.replace(REGEX_BACKSLASH, "/");
-    exports.removeBackslashes = (str2) => {
-      return str2.replace(REGEX_REMOVE_BACKSLASH, (match2) => {
+    exports.hasRegexChars = (str) => REGEX_SPECIAL_CHARS.test(str);
+    exports.isRegexChar = (str) => str.length === 1 && exports.hasRegexChars(str);
+    exports.escapeRegex = (str) => str.replace(REGEX_SPECIAL_CHARS_GLOBAL, "\\$1");
+    exports.toPosixSlashes = (str) => str.replace(REGEX_BACKSLASH, "/");
+    exports.removeBackslashes = (str) => {
+      return str.replace(REGEX_REMOVE_BACKSLASH, (match2) => {
         return match2 === "\\" ? "" : match2;
       });
     };
@@ -44953,7 +44953,7 @@ var require_utils5 = __commonJS({
       if (options && typeof options.windows === "boolean") {
         return options.windows;
       }
-      return win32 === true || path2.sep === "\\";
+      return win32 === true || path.sep === "\\";
     };
     exports.escapeLast = (input, char2, lastIdx) => {
       const idx = input.lastIndexOf(char2, lastIdx);
@@ -45033,7 +45033,7 @@ var require_scan = __commonJS({
       const slashes = [];
       const tokens = [];
       const parts = [];
-      let str2 = input;
+      let str = input;
       let index = -1;
       let start = 0;
       let lastIndex = 0;
@@ -45052,10 +45052,10 @@ var require_scan = __commonJS({
       let code;
       let token = { value: "", depth: 0, isGlob: false };
       const eos = () => index >= length;
-      const peek = () => str2.charCodeAt(index + 1);
+      const peek = () => str.charCodeAt(index + 1);
       const advance = () => {
         prev = code;
-        return str2.charCodeAt(++index);
+        return str.charCodeAt(++index);
       };
       while (index < length) {
         code = advance();
@@ -45223,24 +45223,24 @@ var require_scan = __commonJS({
         isExtglob = false;
         isGlob = false;
       }
-      let base = str2;
+      let base = str;
       let prefix = "";
       let glob = "";
       if (start > 0) {
-        prefix = str2.slice(0, start);
-        str2 = str2.slice(start);
+        prefix = str.slice(0, start);
+        str = str.slice(start);
         lastIndex -= start;
       }
       if (base && isGlob === true && lastIndex > 0) {
-        base = str2.slice(0, lastIndex);
-        glob = str2.slice(lastIndex);
+        base = str.slice(0, lastIndex);
+        glob = str.slice(lastIndex);
       } else if (isGlob === true) {
         base = "";
-        glob = str2;
+        glob = str;
       } else {
-        base = str2;
+        base = str;
       }
-      if (base && base !== "" && base !== "/" && base !== str2) {
+      if (base && base !== "" && base !== "/" && base !== str) {
         if (isPathSeparator(base.charCodeAt(base.length - 1))) {
           base = base.slice(0, -1);
         }
@@ -46275,8 +46275,8 @@ var require_parse3 = __commonJS({
         if (opts2.noglobstar === true) return star;
         return `(${capture}(?:(?!${START_ANCHOR}${opts2.dot ? DOTS_SLASH : DOT_LITERAL}).)*?)`;
       };
-      const create = (str2) => {
-        switch (str2) {
+      const create = (str) => {
+        switch (str) {
           case "*":
             return `${nodot}${ONE_CHAR}${star}`;
           case ".*":
@@ -46294,7 +46294,7 @@ var require_parse3 = __commonJS({
           case "**/.*":
             return `(?:${nodot}${globstar(opts)}${SLASH_LITERAL})?${DOT_LITERAL}${ONE_CHAR}${star}`;
           default: {
-            const match2 = /^(.*?)\.(\w+)$/.exec(str2);
+            const match2 = /^(.*?)\.(\w+)$/.exec(str);
             if (!match2) return;
             const source2 = create(match2[1]);
             if (!source2) return;
@@ -46317,7 +46317,7 @@ var require_parse3 = __commonJS({
 var require_picomatch = __commonJS({
   "../../node_modules/.pnpm/picomatch@2.3.2/node_modules/picomatch/lib/picomatch.js"(exports, module) {
     "use strict";
-    var path2 = __require("path");
+    var path = __require("path");
     var scan = require_scan();
     var parse4 = require_parse3();
     var utils = require_utils5();
@@ -46326,9 +46326,9 @@ var require_picomatch = __commonJS({
     var picomatch = (glob, options, returnState = false) => {
       if (Array.isArray(glob)) {
         const fns = glob.map((input) => picomatch(input, options, returnState));
-        const arrayMatcher = (str2) => {
+        const arrayMatcher = (str) => {
           for (const isMatch of fns) {
-            const state2 = isMatch(str2);
+            const state2 = isMatch(str);
             if (state2) return state2;
           }
           return false;
@@ -46402,9 +46402,9 @@ var require_picomatch = __commonJS({
     };
     picomatch.matchBase = (input, glob, options, posix = utils.isWindows(options)) => {
       const regex = glob instanceof RegExp ? glob : picomatch.makeRe(glob, options);
-      return regex.test(path2.basename(input));
+      return regex.test(path.basename(input));
     };
-    picomatch.isMatch = (str2, patterns, options) => picomatch(patterns, options)(str2);
+    picomatch.isMatch = (str, patterns, options) => picomatch(patterns, options)(str);
     picomatch.parse = (pattern, options) => {
       if (Array.isArray(pattern)) return pattern.map((p) => picomatch.parse(p, options));
       return parse4(pattern, { ...options, fastpaths: false });
@@ -46466,7 +46466,7 @@ var require_picomatch2 = __commonJS({
 var require_micromatch = __commonJS({
   "../../node_modules/.pnpm/micromatch@4.0.8/node_modules/micromatch/index.js"(exports, module) {
     "use strict";
-    var util2 = __require("util");
+    var util = __require("util");
     var braces = require_braces();
     var picomatch = require_picomatch2();
     var utils = require_utils5();
@@ -46518,7 +46518,7 @@ var require_micromatch = __commonJS({
     };
     micromatch.match = micromatch;
     micromatch.matcher = (pattern, options) => picomatch(pattern, options);
-    micromatch.isMatch = (str2, patterns, options) => picomatch(patterns, options)(str2);
+    micromatch.isMatch = (str, patterns, options) => picomatch(patterns, options)(str);
     micromatch.any = micromatch.isMatch;
     micromatch.not = (list, patterns, options = {}) => {
       patterns = [].concat(patterns).map(String);
@@ -46536,22 +46536,22 @@ var require_micromatch = __commonJS({
       }
       return [...result];
     };
-    micromatch.contains = (str2, pattern, options) => {
-      if (typeof str2 !== "string") {
-        throw new TypeError(`Expected a string: "${util2.inspect(str2)}"`);
+    micromatch.contains = (str, pattern, options) => {
+      if (typeof str !== "string") {
+        throw new TypeError(`Expected a string: "${util.inspect(str)}"`);
       }
       if (Array.isArray(pattern)) {
-        return pattern.some((p) => micromatch.contains(str2, p, options));
+        return pattern.some((p) => micromatch.contains(str, p, options));
       }
       if (typeof pattern === "string") {
-        if (isEmptyString(str2) || isEmptyString(pattern)) {
+        if (isEmptyString(str) || isEmptyString(pattern)) {
           return false;
         }
-        if (str2.includes(pattern) || str2.startsWith("./") && str2.slice(2).includes(pattern)) {
+        if (str.includes(pattern) || str.startsWith("./") && str.slice(2).includes(pattern)) {
           return true;
         }
       }
-      return micromatch.isMatch(str2, pattern, { ...options, contains: true });
+      return micromatch.isMatch(str, pattern, { ...options, contains: true });
     };
     micromatch.matchKeys = (obj, patterns, options) => {
       if (!utils.isObject(obj)) {
@@ -46582,11 +46582,11 @@ var require_micromatch = __commonJS({
       }
       return true;
     };
-    micromatch.all = (str2, patterns, options) => {
-      if (typeof str2 !== "string") {
-        throw new TypeError(`Expected a string: "${util2.inspect(str2)}"`);
+    micromatch.all = (str, patterns, options) => {
+      if (typeof str !== "string") {
+        throw new TypeError(`Expected a string: "${util.inspect(str)}"`);
       }
-      return [].concat(patterns).every((p) => picomatch(p, options)(str2));
+      return [].concat(patterns).every((p) => picomatch(p, options)(str));
     };
     micromatch.capture = (glob, input, options) => {
       let posix = utils.isWindows(options);
@@ -46601,8 +46601,8 @@ var require_micromatch = __commonJS({
     micromatch.parse = (patterns, options) => {
       let res = [];
       for (let pattern of [].concat(patterns || [])) {
-        for (let str2 of braces(String(pattern), options)) {
-          res.push(picomatch.parse(str2, options));
+        for (let str of braces(String(pattern), options)) {
+          res.push(picomatch.parse(str, options));
         }
       }
       return res;
@@ -46735,12 +46735,12 @@ var require_path_rewriter = __commonJS({
         rulesCache = parsePathRewriteRules(rewriteConfig);
         return rewritePath;
       }
-      function rewritePath(path2) {
-        let result = path2;
+      function rewritePath(path) {
+        let result = path;
         for (const rule of rulesCache) {
-          if (rule.regex.test(path2)) {
+          if (rule.regex.test(path)) {
             result = result.replace(rule.regex, rule.value);
-            debug('rewriting path from "%s" to "%s"', path2, result);
+            debug('rewriting path from "%s" to "%s"', path, result);
             break;
           }
         }
@@ -46785,29 +46785,29 @@ var require_router2 = __commonJS({
     var debug = debug_1.Debug.extend("router");
     async function getTarget(req, config2) {
       let newTarget;
-      const router13 = config2.router;
-      if ((0, is_plain_object_1.isPlainObject)(router13)) {
-        newTarget = getTargetFromProxyTable(req, router13);
-      } else if (typeof router13 === "function") {
-        newTarget = await router13(req);
+      const router = config2.router;
+      if ((0, is_plain_object_1.isPlainObject)(router)) {
+        newTarget = getTargetFromProxyTable(req, router);
+      } else if (typeof router === "function") {
+        newTarget = await router(req);
       }
       return newTarget;
     }
     function getTargetFromProxyTable(req, table) {
       let result;
       const host = req.headers.host || "";
-      const path2 = req.url || "";
+      const path = req.url || "";
       for (const [key, value] of Object.entries(table)) {
         if (containsPath(key)) {
           if (isHostAndPathKey(key)) {
             const [keyHost, keyPath] = splitHostAndPathKey(key);
-            if (host === keyHost && path2.startsWith(keyPath)) {
+            if (host === keyHost && path.startsWith(keyPath)) {
               result = value;
               debug('match: "%s" -> "%s"', key, result);
               break;
             }
           } else {
-            if (path2.startsWith(key)) {
+            if (path.startsWith(key)) {
               result = value;
               debug('match: "%s" -> "%s"', key, result);
               break;
@@ -46849,7 +46849,7 @@ var require_http_proxy_middleware = __commonJS({
     var logger_1 = require_logger2();
     var path_filter_1 = require_path_filter();
     var PathRewriter = require_path_rewriter();
-    var Router13 = require_router2();
+    var Router = require_router2();
     var function_1 = require_function();
     var HttpProxyMiddleware = class {
       constructor(options) {
@@ -46918,7 +46918,7 @@ var require_http_proxy_middleware = __commonJS({
         this.applyRouter = async (req, options2) => {
           let newTarget;
           if (options2.router) {
-            newTarget = await Router13.getTarget(req, options2);
+            newTarget = await Router.getTarget(req, options2);
             if (newTarget) {
               (0, debug_1.Debug)('router new target: "%s"', newTarget);
               options2.target = newTarget;
@@ -46927,10 +46927,10 @@ var require_http_proxy_middleware = __commonJS({
         };
         this.applyPathRewrite = async (req, pathRewriter) => {
           if (pathRewriter) {
-            const path2 = await pathRewriter(req.url, req);
-            if (typeof path2 === "string") {
+            const path = await pathRewriter(req.url, req);
+            if (typeof path === "string") {
               (0, debug_1.Debug)("pathRewrite new path: %s", req.url);
-              req.url = path2;
+              req.url = path;
             } else {
               (0, debug_1.Debug)("pathRewrite: no rewritten path found: %s", req.url);
             }
@@ -47087,15 +47087,15 @@ var require_fix_request_body = __commonJS({
     }
     function handlerFormDataBodyData(contentType, data) {
       const boundary = contentType.replace(/^.*boundary=(.*)$/, "$1");
-      let str2 = "";
+      let str = "";
       for (const [key, value] of Object.entries(data)) {
-        str2 += `--${boundary}\r
+        str += `--${boundary}\r
 Content-Disposition: form-data; name="${key}"\r
 \r
 ${value}\r
 `;
       }
-      return str2;
+      return str;
     }
   }
 });
@@ -47436,9 +47436,9 @@ var require_postgres_date = __commonJS({
     var DATE_TIME = /(\d{1,})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})(\.\d{1,})?.*?( BC)?$/;
     var DATE = /^(\d{1,})-(\d{2})-(\d{2})( BC)?$/;
     var TIME_ZONE = /([Z+-])(\d{2})?:?(\d{2})?:?(\d{2})?/;
-    var INFINITY2 = /^-?infinity$/;
+    var INFINITY = /^-?infinity$/;
     module.exports = function parseDate(isoDate) {
-      if (INFINITY2.test(isoDate)) {
+      if (INFINITY.test(isoDate)) {
         return Number(isoDate.replace("i", "I"));
       }
       var matches2 = DATE_TIME.exec(isoDate);
@@ -48322,7 +48322,7 @@ var require_defaults = __commonJS({
 var require_utils6 = __commonJS({
   "../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/lib/utils.js"(exports, module) {
     "use strict";
-    var defaults3 = require_defaults();
+    var defaults2 = require_defaults();
     var { isDate } = __require("util/types");
     function escapeElement(elementRepresentation) {
       const escaped = elementRepresentation.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
@@ -48363,7 +48363,7 @@ var require_utils6 = __commonJS({
           return Buffer.from(val.buffer, val.byteOffset, val.byteLength);
         }
         if (isDate(val)) {
-          if (defaults3.parseInputDatesAsUTC) {
+          if (defaults2.parseInputDatesAsUTC) {
             return dateToStringUTC(val);
           } else {
             return dateToString(val);
@@ -48426,20 +48426,20 @@ var require_utils6 = __commonJS({
       }
       return config2;
     }
-    var escapeIdentifier2 = function(str2) {
-      return '"' + str2.replace(/"/g, '""') + '"';
+    var escapeIdentifier2 = function(str) {
+      return '"' + str.replace(/"/g, '""') + '"';
     };
-    var escapeLiteral2 = function(str2) {
+    var escapeLiteral2 = function(str) {
       let hasBackslash = false;
       let escaped = "'";
-      if (str2 == null) {
+      if (str == null) {
         return "''";
       }
-      if (typeof str2 !== "string") {
+      if (typeof str !== "string") {
         return "''";
       }
-      for (let i = 0; i < str2.length; i++) {
-        const c = str2[i];
+      for (let i = 0; i < str.length; i++) {
+        const c = str[i];
         if (c === "'") {
           escaped += c + c;
         } else if (c === "\\") {
@@ -48854,22 +48854,22 @@ var require_type_overrides = __commonJS({
 var require_pg_connection_string = __commonJS({
   "../../node_modules/.pnpm/pg-connection-string@2.13.0/node_modules/pg-connection-string/index.js"(exports, module) {
     "use strict";
-    function parse4(str2, options = {}) {
-      if (str2.charAt(0) === "/") {
-        const config3 = str2.split(" ");
+    function parse4(str, options = {}) {
+      if (str.charAt(0) === "/") {
+        const config3 = str.split(" ");
         return { host: config3[0], database: config3[1] };
       }
       const config2 = /* @__PURE__ */ Object.create(null);
       let result;
       let dummyHost = false;
-      if (/ |%[^a-f0-9]|%[a-f0-9][^a-f0-9]/i.test(str2)) {
-        str2 = encodeURI(str2).replace(/%25(\d\d)/g, "%$1");
+      if (/ |%[^a-f0-9]|%[a-f0-9][^a-f0-9]/i.test(str)) {
+        str = encodeURI(str).replace(/%25(\d\d)/g, "%$1");
       }
       try {
         try {
-          result = new URL(str2, "postgres://base");
+          result = new URL(str, "postgres://base");
         } catch (e) {
-          result = new URL(str2.replace("@/", "@___DUMMY___/"), "postgres://base");
+          result = new URL(str.replace("@/", "@___DUMMY___/"), "postgres://base");
           dummyHost = true;
         }
       } catch (err) {
@@ -49012,8 +49012,8 @@ var require_pg_connection_string = __commonJS({
       }, /* @__PURE__ */ Object.create(null));
       return poolConfig;
     }
-    function parseIntoClientConfig(str2) {
-      return toClientConfig(parse4(str2));
+    function parseIntoClientConfig(str) {
+      return toClientConfig(parse4(str));
     }
     function deprecatedSslModeWarning(sslmode) {
       if (!deprecatedSslModeWarning.warned && typeof process !== "undefined" && process.emitWarning) {
@@ -49040,7 +49040,7 @@ var require_connection_parameters = __commonJS({
   "../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/lib/connection-parameters.js"(exports, module) {
     "use strict";
     var dns = __require("dns");
-    var defaults3 = require_defaults();
+    var defaults2 = require_defaults();
     var parse4 = require_pg_connection_string().parse;
     var val = function(key, config2, envVar) {
       if (config2[key]) {
@@ -49052,7 +49052,7 @@ var require_connection_parameters = __commonJS({
       } else {
         envVar = process.env[envVar];
       }
-      return envVar || defaults3[key];
+      return envVar || defaults2[key];
     };
     var readSSLConfigFromEnvironment = function() {
       switch (process.env.PGSSLMODE) {
@@ -49066,7 +49066,7 @@ var require_connection_parameters = __commonJS({
         case "no-verify":
           return { rejectUnauthorized: false };
       }
-      return defaults3.ssl;
+      return defaults2.ssl;
     };
     var quoteParamValue = function(value) {
       return "'" + ("" + value).replace(/\\/g, "\\\\").replace(/'/g, "\\'") + "'";
@@ -50626,12 +50626,12 @@ var require_split2 = __commonJS({
         self2.push(val);
       }
     }
-    function noop3(incoming) {
+    function noop2(incoming) {
       return incoming;
     }
     function split2(matcher, mapper, options) {
       matcher = matcher || /\r?\n/;
-      mapper = mapper || noop3;
+      mapper = mapper || noop2;
       options = options || {};
       switch (arguments.length) {
         case 1:
@@ -50650,7 +50650,7 @@ var require_split2 = __commonJS({
             matcher = /\r?\n/;
           } else if (typeof mapper === "object") {
             options = mapper;
-            mapper = noop3;
+            mapper = noop2;
           }
       }
       options = Object.assign({}, options);
@@ -50680,10 +50680,10 @@ var require_split2 = __commonJS({
 var require_helper2 = __commonJS({
   "../../node_modules/.pnpm/pgpass@1.0.5/node_modules/pgpass/lib/helper.js"(exports, module) {
     "use strict";
-    var path2 = __require("path");
-    var Stream2 = __require("stream").Stream;
+    var path = __require("path");
+    var Stream = __require("stream").Stream;
     var split2 = require_split2();
-    var util2 = __require("util");
+    var util = __require("util");
     var defaultPort = 5432;
     var isWin = process.platform === "win32";
     var warnStream = process.stderr;
@@ -50698,10 +50698,10 @@ var require_helper2 = __commonJS({
     var nrOfFields = fieldNames.length;
     var passKey = fieldNames[nrOfFields - 1];
     function warn() {
-      var isWritable = warnStream instanceof Stream2 && true === warnStream.writable;
+      var isWritable = warnStream instanceof Stream && true === warnStream.writable;
       if (isWritable) {
         var args = Array.prototype.slice.call(arguments).concat("\n");
-        warnStream.write(util2.format.apply(util2, args));
+        warnStream.write(util.format.apply(util, args));
       }
     }
     Object.defineProperty(module.exports, "isWin", {
@@ -50719,7 +50719,7 @@ var require_helper2 = __commonJS({
     };
     module.exports.getFileName = function(rawEnv) {
       var env = rawEnv || process.env;
-      var file2 = env.PGPASSFILE || (isWin ? path2.join(env.APPDATA || "./", "postgresql", "pgpass.conf") : path2.join(env.HOME || "./", ".pgpass"));
+      var file2 = env.PGPASSFILE || (isWin ? path.join(env.APPDATA || "./", "postgresql", "pgpass.conf") : path.join(env.HOME || "./", ".pgpass"));
       return file2;
     };
     module.exports.usePgPass = function(stats, fname) {
@@ -50851,7 +50851,7 @@ var require_helper2 = __commonJS({
 var require_lib4 = __commonJS({
   "../../node_modules/.pnpm/pgpass@1.0.5/node_modules/pgpass/lib/index.js"(exports, module) {
     "use strict";
-    var path2 = __require("path");
+    var path = __require("path");
     var fs = __require("fs");
     var helper = require_helper2();
     module.exports = function(connInfo, cb) {
@@ -50878,7 +50878,7 @@ var require_client = __commonJS({
     var TypeOverrides2 = require_type_overrides();
     var ConnectionParameters = require_connection_parameters();
     var Query2 = require_query();
-    var defaults3 = require_defaults();
+    var defaults2 = require_defaults();
     var Connection2 = require_connection();
     var crypto2 = require_utils7();
     var activeQueryDeprecationNotice = nodeUtils.deprecate(
@@ -50955,7 +50955,7 @@ var require_client = __commonJS({
           encoding: this.connectionParameters.client_encoding || "utf8"
         });
         this._queryQueue = [];
-        this.binary = c.binary || defaults3.binary;
+        this.binary = c.binary || defaults2.binary;
         this.processID = null;
         this.secretKey = null;
         this.ssl = this.connectionParameters.ssl || false;
@@ -51361,11 +51361,11 @@ var require_client = __commonJS({
       // escapeIdentifier and escapeLiteral moved to utility functions & exported
       // on PG
       // re-exported here for backwards compatibility
-      escapeIdentifier(str2) {
-        return utils.escapeIdentifier(str2);
+      escapeIdentifier(str) {
+        return utils.escapeIdentifier(str);
       }
-      escapeLiteral(str2) {
-        return utils.escapeLiteral(str2);
+      escapeLiteral(str) {
+        return utils.escapeLiteral(str);
       }
       _pulseQueryQueue() {
         if (this.readyForQuery === true) {
@@ -51937,7 +51937,7 @@ var require_query2 = __commonJS({
   "../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/lib/native/query.js"(exports, module) {
     "use strict";
     var EventEmitter = __require("events").EventEmitter;
-    var util2 = __require("util");
+    var util = __require("util");
     var utils = require_utils6();
     var NativeQuery = module.exports = function(config2, values, callback) {
       EventEmitter.call(this);
@@ -51957,7 +51957,7 @@ var require_query2 = __commonJS({
         }.bind(this)
       );
     };
-    util2.inherits(NativeQuery, EventEmitter);
+    util.inherits(NativeQuery, EventEmitter);
     var errorFieldMap = {
       sqlState: "code",
       statementPosition: "position",
@@ -52085,7 +52085,7 @@ var require_client2 = __commonJS({
     }
     var TypeOverrides2 = require_type_overrides();
     var EventEmitter = __require("events").EventEmitter;
-    var util2 = __require("util");
+    var util = __require("util");
     var ConnectionParameters = require_connection_parameters();
     var NativeQuery = require_query2();
     var queryQueueLengthDeprecationNotice = nodeUtils.deprecate(
@@ -52121,7 +52121,7 @@ var require_client2 = __commonJS({
       this.namedQueries = {};
     };
     Client3.Query = NativeQuery;
-    util2.inherits(Client3, EventEmitter);
+    util.inherits(Client3, EventEmitter);
     Client3.prototype._errorAllQueries = function(err) {
       const enqueueError = (query) => {
         process.nextTick(() => {
@@ -52345,7 +52345,7 @@ var require_lib5 = __commonJS({
   "../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/lib/index.js"(exports, module) {
     "use strict";
     var Client3 = require_client();
-    var defaults3 = require_defaults();
+    var defaults2 = require_defaults();
     var Connection2 = require_connection();
     var Result2 = require_result();
     var utils = require_utils6();
@@ -52361,7 +52361,7 @@ var require_lib5 = __commonJS({
       };
     };
     var PG = function(clientConstructor2) {
-      this.defaults = defaults3;
+      this.defaults = defaults2;
       this.Client = clientConstructor2;
       this.Query = this.Client.Query;
       this.Pool = poolFactory(this.Client);
@@ -52406,298 +52406,8 @@ var require_lib5 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/@replit+connectors-sdk@0.4.1/node_modules/@replit/connectors-sdk/identity.js
-var require_identity = __commonJS({
-  "../../node_modules/.pnpm/@replit+connectors-sdk@0.4.1/node_modules/@replit/connectors-sdk/identity.js"(exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.resolveAudience = resolveAudience;
-    exports.createIdentityToken = createIdentityToken;
-    exports.resolveIdentityToken = resolveIdentityToken;
-    exports.resolveBaseUrl = resolveBaseUrl;
-    exports.buildHeaders = buildHeaders2;
-    var node_child_process_1 = __require("node:child_process");
-    var node_util_1 = __require("node:util");
-    var execFileAsync = (0, node_util_1.promisify)(node_child_process_1.execFile);
-    var DEFAULT_CONNECTORS_HOST = "connectors.replit.com";
-    function resolveAudience() {
-      const audience = process.env["REPLIT_CONNECTORS_AUDIENCE"];
-      if (audience) {
-        if (audience.startsWith("http://") || audience.startsWith("https://")) {
-          return audience;
-        }
-        return `https://${audience}`;
-      }
-      return `https://${DEFAULT_CONNECTORS_HOST}`;
-    }
-    async function createIdentityToken() {
-      const replitBinary = process.env["REPLIT_CLI"] || "replit";
-      const audience = resolveAudience();
-      const { stdout } = await execFileAsync(replitBinary, [
-        "identity",
-        "create",
-        "--audience",
-        audience
-      ]);
-      const token = stdout.trim();
-      if (!token) {
-        throw new Error(`replit identity create returned an empty token (audience: ${audience})`);
-      }
-      return token;
-    }
-    async function resolveIdentityToken() {
-      try {
-        const token = await createIdentityToken();
-        return token;
-      } catch {
-      }
-      const replIdentity = process.env["REPL_IDENTITY"];
-      if (replIdentity) {
-        return `repl ${replIdentity}`;
-      }
-      const deplToken = process.env["WEB_REPL_RENEWAL"];
-      if (deplToken) {
-        return `depl ${deplToken}`;
-      }
-      throw new Error("Replit identity token not found. Could not run `replit identity create` and neither REPL_IDENTITY nor WEB_REPL_RENEWAL are set in the environment. Are you running this inside a Repl?");
-    }
-    function resolveBaseUrl() {
-      const hostname2 = process.env["REPLIT_CONNECTORS_HOSTNAME"];
-      if (hostname2) {
-        if (hostname2.startsWith("http://") || hostname2.startsWith("https://")) {
-          return hostname2;
-        }
-        return `https://${hostname2}`;
-      }
-      return `https://${DEFAULT_CONNECTORS_HOST}`;
-    }
-    async function buildHeaders2() {
-      const token = await resolveIdentityToken();
-      const headers = {
-        Accept: "application/json"
-      };
-      if (token.startsWith("repl ") || token.startsWith("depl ")) {
-        headers["X-Replit-Token"] = token;
-      } else {
-        headers["Replit-Authentication"] = `Bearer ${token}`;
-      }
-      return headers;
-    }
-  }
-});
-
-// ../../node_modules/.pnpm/@replit+connectors-sdk@0.4.1/node_modules/@replit/connectors-sdk/client.js
-var require_client3 = __commonJS({
-  "../../node_modules/.pnpm/@replit+connectors-sdk@0.4.1/node_modules/@replit/connectors-sdk/client.js"(exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.ReplitConnectors = void 0;
-    var identity_1 = require_identity();
-    function resolveProxyTarget(url2, proxyBase) {
-      if (url2.startsWith(proxyBase)) {
-        return url2;
-      }
-      if (url2.startsWith("http://") || url2.startsWith("https://")) {
-        const parsed = new URL(url2);
-        return `${proxyBase}${parsed.pathname}${parsed.search}`;
-      }
-      return `${proxyBase}${url2.startsWith("/") ? "" : "/"}${url2}`;
-    }
-    function flattenHeaders(headers) {
-      if (!headers) {
-        return {};
-      }
-      const result = {};
-      if (headers instanceof Headers) {
-        headers.forEach((value, key) => {
-          result[key] = value;
-        });
-      } else if (Array.isArray(headers)) {
-        for (const pair of headers) {
-          result[pair[0]] = pair[1];
-        }
-      } else {
-        Object.assign(result, headers);
-      }
-      return result;
-    }
-    var dbxCompoundTokenStrategy = ({ baseUrl, connectorName, connectionId, rawIdentityToken }) => ({
-      host: baseUrl,
-      token: `${rawIdentityToken} dbx:${connectionId}`,
-      connectorName
-    });
-    var pathRouteStrategy = ({ baseUrl, connectorName, connectionId, rawIdentityToken }) => ({
-      host: `${baseUrl}/api/v2/cli-proxy/${connectorName}/${connectionId}`,
-      token: rawIdentityToken,
-      connectorName
-    });
-    var CLI_CONFIG_STRATEGIES = {
-      databricks: dbxCompoundTokenStrategy,
-      "databricks-m2m": dbxCompoundTokenStrategy,
-      "microsoft-fabric": pathRouteStrategy
-    };
-    var ReplitConnectors2 = class {
-      constructor(options) {
-        this.baseUrl = options?.baseUrl ?? (0, identity_1.resolveBaseUrl)();
-      }
-      async proxy(connectorName, path2, options) {
-        const method = options?.method ?? "GET";
-        const normalizedPath = path2.startsWith("/") ? path2 : `/${path2}`;
-        const url2 = `${this.getProxyUrl()}${normalizedPath}`;
-        const headers = {
-          ...await (0, identity_1.buildHeaders)(),
-          "Connector-Name": connectorName,
-          ...options?.headers ?? {}
-        };
-        const init = { method, headers };
-        if (options?.body !== void 0 && options.body !== null) {
-          if (typeof options.body === "string" || typeof Buffer !== "undefined" && options.body instanceof Buffer || options.body instanceof ArrayBuffer || options.body instanceof FormData || options.body instanceof URLSearchParams || options.body instanceof Blob || options.body instanceof ReadableStream) {
-            init.body = options.body;
-          } else {
-            init.body = JSON.stringify(options.body);
-            if (!headers["Content-Type"]) {
-              headers["Content-Type"] = "application/json";
-            }
-          }
-        }
-        const response = await fetch(url2, init);
-        if (response.status === 401) {
-          const freshAuth = await (0, identity_1.buildHeaders)();
-          const retryResponse = await fetch(url2, {
-            ...init,
-            headers: { ...headers, ...freshAuth }
-          });
-          return retryResponse;
-        }
-        return response;
-      }
-      async listConnections(options) {
-        const params = new URLSearchParams();
-        if (options?.connector_names) {
-          params.set("connector_names", options.connector_names);
-        }
-        for (const val of options?.expand ?? ["connector"]) {
-          params.append("expand", val);
-        }
-        params.set("refresh_policy", options?.refresh_policy ?? "none");
-        const qs = params.toString();
-        const url2 = `${this.baseUrl}/api/v2/connection${qs ? `?${qs}` : ""}`;
-        const headers = await (0, identity_1.buildHeaders)();
-        const response = await fetch(url2, { method: "GET", headers });
-        if (response.status === 401) {
-          const freshHeaders = await (0, identity_1.buildHeaders)();
-          const retryResponse = await fetch(url2, {
-            method: "GET",
-            headers: freshHeaders
-          });
-          if (!retryResponse.ok) {
-            throw new Error(`Failed to list connections: ${retryResponse.status} ${retryResponse.statusText}`);
-          }
-          const data2 = await retryResponse.json();
-          return data2.items ?? [];
-        }
-        if (!response.ok) {
-          throw new Error(`Failed to list connections: ${response.status} ${response.statusText}`);
-        }
-        const data = await response.json();
-        return data.items ?? [];
-      }
-      getProxyUrl() {
-        return `${this.baseUrl}/api/v2/proxy`;
-      }
-      async getProxyHeaders(connectorName) {
-        const headers = await (0, identity_1.buildHeaders)();
-        return { ...headers, "Connector-Name": connectorName };
-      }
-      async getCliConfig(connectorName) {
-        const strategy = CLI_CONFIG_STRATEGIES[connectorName];
-        if (!strategy) {
-          const supported = Object.keys(CLI_CONFIG_STRATEGIES).join(", ");
-          throw new Error(`getCliConfig() is only supported for ${supported}, got: ${connectorName}`);
-        }
-        const connections = await this.listConnections({
-          connector_names: connectorName
-        });
-        const connection = connections[0];
-        if (!connection) {
-          throw new Error(`No ${connectorName} connection found`);
-        }
-        const headers = await (0, identity_1.buildHeaders)();
-        const identityToken = headers["X-Replit-Token"] ?? headers["Replit-Authentication"];
-        if (!identityToken) {
-          throw new Error("Replit identity token not found");
-        }
-        const rawToken = identityToken.replace(/^Bearer\s+/i, "");
-        return strategy({
-          baseUrl: this.baseUrl,
-          connectorName,
-          connectionId: connection.id,
-          rawIdentityToken: rawToken
-        });
-      }
-      createProxyFetch(connectorName) {
-        const proxyBase = this.getProxyUrl();
-        return async (input, init) => {
-          const rawUrl = input instanceof Request ? input.url : String(input);
-          const targetUrl = resolveProxyTarget(rawUrl, proxyBase);
-          const authHeaders = await (0, identity_1.buildHeaders)();
-          const userHeaders = flattenHeaders(init?.headers ?? (input instanceof Request ? input.headers : void 0));
-          const headers = {
-            ...authHeaders,
-            "Connector-Name": connectorName,
-            ...userHeaders
-          };
-          const requestDefaults = input instanceof Request ? {
-            method: input.method,
-            body: input.body,
-            cache: input.cache,
-            credentials: input.credentials,
-            integrity: input.integrity,
-            keepalive: input.keepalive,
-            mode: input.mode,
-            redirect: input.redirect,
-            referrer: input.referrer,
-            referrerPolicy: input.referrerPolicy,
-            signal: input.signal,
-            // @ts-expect-error duplex is required for streaming bodies but missing from RequestInit
-            duplex: input.body ? "half" : void 0
-          } : {};
-          const fetchInit = { ...requestDefaults, ...init, headers };
-          const response = await fetch(targetUrl, fetchInit);
-          if (response.status === 401) {
-            const freshAuth = await (0, identity_1.buildHeaders)();
-            return fetch(targetUrl, {
-              ...fetchInit,
-              headers: {
-                ...freshAuth,
-                "Connector-Name": connectorName,
-                ...userHeaders
-              }
-            });
-          }
-          return response;
-        };
-      }
-    };
-    exports.ReplitConnectors = ReplitConnectors2;
-  }
-});
-
-// ../../node_modules/.pnpm/@replit+connectors-sdk@0.4.1/node_modules/@replit/connectors-sdk/index.js
-var require_connectors_sdk = __commonJS({
-  "../../node_modules/.pnpm/@replit+connectors-sdk@0.4.1/node_modules/@replit/connectors-sdk/index.js"(exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.ReplitConnectors = void 0;
-    var client_1 = require_client3();
-    Object.defineProperty(exports, "ReplitConnectors", { enumerable: true, get: function() {
-      return client_1.ReplitConnectors;
-    } });
-  }
-});
-
 // src/index.ts
-var import_express16 = __toESM(require_express2(), 1);
+var import_express4 = __toESM(require_express2(), 1);
 
 // ../../node_modules/.pnpm/@supabase+supabase-js@2.108.0/node_modules/@supabase/supabase-js/dist/index.mjs
 var dist_exports = {};
@@ -57761,8 +57471,8 @@ var IcebergError = class extends Error {
     return this.status === 419;
   }
 };
-function buildUrl(baseUrl, path2, query) {
-  const url2 = new URL(path2, baseUrl);
+function buildUrl(baseUrl, path, query) {
+  const url2 = new URL(path, baseUrl);
   if (query) {
     for (const [key, value] of Object.entries(query)) {
       if (value !== void 0) {
@@ -57792,12 +57502,12 @@ function createFetchClient(options) {
   return {
     async request({
       method,
-      path: path2,
+      path,
       query,
       body,
       headers
     }) {
-      const url2 = buildUrl(options.baseUrl, path2, query);
+      const url2 = buildUrl(options.baseUrl, path, query);
       const authHeaders = await buildAuthHeaders(options.auth);
       const res = await fetchFn(url2, {
         method,
@@ -58659,7 +58369,7 @@ var StorageFileApi = class extends BaseApiClient {
   * @param path The relative file path. Should be of the format `folder/subfolder/filename.png`. The bucket must already exist before attempting to upload.
   * @param fileBody The body of the file to be stored in the bucket.
   */
-  async uploadOrUpdate(method, path2, fileBody, fileOptions) {
+  async uploadOrUpdate(method, path, fileBody, fileOptions) {
     var _this = this;
     return _this.handleOperation(async () => {
       let body;
@@ -58683,7 +58393,7 @@ var StorageFileApi = class extends BaseApiClient {
         if ((typeof ReadableStream !== "undefined" && body instanceof ReadableStream || body && typeof body === "object" && "pipe" in body && typeof body.pipe === "function") && !options.duplex) options.duplex = "half";
       }
       if (fileOptions === null || fileOptions === void 0 ? void 0 : fileOptions.headers) for (const [key, value] of Object.entries(fileOptions.headers)) headers = setHeader(headers, key, value);
-      const cleanPath = _this._removeEmptyFolders(path2);
+      const cleanPath = _this._removeEmptyFolders(path);
       const _path = _this._getFinalPath(cleanPath);
       const data = await (method == "PUT" ? put : post)(_this.fetch, `${_this.url}/object/${_path}`, body, _objectSpread22({ headers }, (options === null || options === void 0 ? void 0 : options.duplex) ? { duplex: options.duplex } : {}));
       return {
@@ -58760,8 +58470,8 @@ var StorageFileApi = class extends BaseApiClient {
   * - Refer to the [Storage guide](/docs/guides/storage/security/access-control) on how access control works
   * - For React Native, using either `Blob`, `File` or `FormData` does not work as intended. Upload file using `ArrayBuffer` from base64 file data instead, see example below.
   */
-  async upload(path2, fileBody, fileOptions) {
-    return this.uploadOrUpdate("POST", path2, fileBody, fileOptions);
+  async upload(path, fileBody, fileOptions) {
+    return this.uploadOrUpdate("POST", path, fileBody, fileOptions);
   }
   /**
   * Upload a file with a token generated from `createSignedUploadUrl`.
@@ -58801,9 +58511,9 @@ var StorageFileApi = class extends BaseApiClient {
   *   - `objects` table permissions: none
   * - Refer to the [Storage guide](/docs/guides/storage/security/access-control) on how access control works
   */
-  async uploadToSignedUrl(path2, token, fileBody, fileOptions) {
+  async uploadToSignedUrl(path, token, fileBody, fileOptions) {
     var _this3 = this;
-    const cleanPath = _this3._removeEmptyFolders(path2);
+    const cleanPath = _this3._removeEmptyFolders(path);
     const _path = _this3._getFinalPath(cleanPath);
     const url2 = new URL(_this3.url + `/object/upload/sign/${_path}`);
     url2.searchParams.set("token", token);
@@ -58872,10 +58582,10 @@ var StorageFileApi = class extends BaseApiClient {
   *   - `objects` table permissions: `insert`
   * - Refer to the [Storage guide](/docs/guides/storage/security/access-control) on how access control works
   */
-  async createSignedUploadUrl(path2, options) {
+  async createSignedUploadUrl(path, options) {
     var _this4 = this;
     return _this4.handleOperation(async () => {
-      let _path = _this4._getFinalPath(path2);
+      let _path = _this4._getFinalPath(path);
       const headers = _objectSpread22({}, _this4.headers);
       if (options === null || options === void 0 ? void 0 : options.upsert) headers["x-upsert"] = "true";
       const data = await post(_this4.fetch, `${_this4.url}/object/upload/sign/${_path}`, {}, { headers });
@@ -58884,7 +58594,7 @@ var StorageFileApi = class extends BaseApiClient {
       if (!token) throw new StorageError("No token returned by API");
       return {
         signedUrl: url2.toString(),
-        path: path2,
+        path,
         token
       };
     });
@@ -58944,8 +58654,8 @@ var StorageFileApi = class extends BaseApiClient {
   * - Refer to the [Storage guide](/docs/guides/storage/security/access-control) on how access control works
   * - For React Native, using either `Blob`, `File` or `FormData` does not work as intended. Update file using `ArrayBuffer` from base64 file data instead, see example below.
   */
-  async update(path2, fileBody, fileOptions) {
-    return this.uploadOrUpdate("PUT", path2, fileBody, fileOptions);
+  async update(path, fileBody, fileOptions) {
+    return this.uploadOrUpdate("PUT", path, fileBody, fileOptions);
   }
   /**
   * Moves an existing file to a new path in the same bucket.
@@ -59096,10 +58806,10 @@ var StorageFileApi = class extends BaseApiClient {
   *   - `objects` table permissions: `select`
   * - Refer to the [Storage guide](/docs/guides/storage/security/access-control) on how access control works
   */
-  async createSignedUrl(path2, expiresIn, options) {
+  async createSignedUrl(path, expiresIn, options) {
     var _this8 = this;
     return _this8.handleOperation(async () => {
-      let _path = _this8._getFinalPath(path2);
+      let _path = _this8._getFinalPath(path);
       const hasTransform = typeof (options === null || options === void 0 ? void 0 : options.transform) === "object" && options.transform !== null && Object.keys(options.transform).length > 0;
       let data = await post(_this8.fetch, `${_this8.url}/object/sign/${_path}`, _objectSpread22({ expiresIn }, hasTransform ? { transform: options.transform } : {}), { headers: _this8.headers });
       const query = new URLSearchParams();
@@ -59235,13 +58945,13 @@ var StorageFileApi = class extends BaseApiClient {
   *   - `objects` table permissions: `select`
   * - Refer to the [Storage guide](/docs/guides/storage/security/access-control) on how access control works
   */
-  download(path2, options, parameters) {
+  download(path, options, parameters) {
     const renderPath = typeof (options === null || options === void 0 ? void 0 : options.transform) === "object" && options.transform !== null && Object.keys(options.transform).length > 0 ? "render/image/authenticated" : "object";
     const query = new URLSearchParams();
     if (options === null || options === void 0 ? void 0 : options.transform) this.applyTransformOptsToQuery(query, options.transform);
     if ((options === null || options === void 0 ? void 0 : options.cacheNonce) != null) query.set("cacheNonce", String(options.cacheNonce));
     const queryString = query.toString();
-    const _path = this._getFinalPath(path2);
+    const _path = this._getFinalPath(path);
     const downloadFn = () => get(this.fetch, `${this.url}/${renderPath}/${_path}${queryString ? `?${queryString}` : ""}`, {
       headers: this.headers,
       noResolveJson: true
@@ -59272,9 +58982,9 @@ var StorageFileApi = class extends BaseApiClient {
   * }
   * ```
   */
-  async info(path2) {
+  async info(path) {
     var _this10 = this;
-    const _path = _this10._getFinalPath(path2);
+    const _path = _this10._getFinalPath(path);
     return _this10.handleOperation(async () => {
       return recursiveToCamel(await get(_this10.fetch, `${_this10.url}/object/info/${_path}`, { headers: _this10.headers }));
     });
@@ -59295,9 +59005,9 @@ var StorageFileApi = class extends BaseApiClient {
   *   .exists('folder/avatar1.png')
   * ```
   */
-  async exists(path2) {
+  async exists(path) {
     var _this11 = this;
-    const _path = _this11._getFinalPath(path2);
+    const _path = _this11._getFinalPath(path);
     try {
       await head(_this11.fetch, `${_this11.url}/object/${_path}`, { headers: _this11.headers });
       return {
@@ -59376,8 +59086,8 @@ var StorageFileApi = class extends BaseApiClient {
   *   - `objects` table permissions: none
   * - Refer to the [Storage guide](/docs/guides/storage/security/access-control) on how access control works
   */
-  getPublicUrl(path2, options) {
-    const _path = this._getFinalPath(path2);
+  getPublicUrl(path, options) {
+    const _path = this._getFinalPath(path);
     const query = new URLSearchParams();
     if (options === null || options === void 0 ? void 0 : options.download) query.set("download", options.download === true ? "" : options.download);
     if (options === null || options === void 0 ? void 0 : options.transform) this.applyTransformOptsToQuery(query, options.transform);
@@ -59516,10 +59226,10 @@ var StorageFileApi = class extends BaseApiClient {
   *   - `objects` table permissions: `select`
   * - Refer to the [Storage guide](/docs/guides/storage/security/access-control) on how access control works
   */
-  async list(path2, options, parameters) {
+  async list(path, options, parameters) {
     var _this13 = this;
     return _this13.handleOperation(async () => {
-      const body = _objectSpread22(_objectSpread22(_objectSpread22({}, DEFAULT_SEARCH_OPTIONS), options), {}, { prefix: path2 || "" });
+      const body = _objectSpread22(_objectSpread22(_objectSpread22({}, DEFAULT_SEARCH_OPTIONS), options), {}, { prefix: path || "" });
       return await post(_this13.fetch, `${_this13.url}/object/list/${_this13.bucketId}`, body, { headers: _this13.headers }, parameters);
     });
   }
@@ -59584,11 +59294,11 @@ var StorageFileApi = class extends BaseApiClient {
     if (typeof Buffer !== "undefined") return Buffer.from(data).toString("base64");
     return btoa(data);
   }
-  _getFinalPath(path2) {
-    return `${this.bucketId}/${path2.replace(/^\/+/, "")}`;
+  _getFinalPath(path) {
+    return `${this.bucketId}/${path.replace(/^\/+/, "")}`;
   }
-  _removeEmptyFolders(path2) {
-    return path2.replace(/^\/|\/$/g, "").replace(/\/+/g, "/");
+  _removeEmptyFolders(path) {
+    return path.replace(/^\/|\/$/g, "").replace(/\/+/g, "/");
   }
   /** Modifies the `query`, appending values the from `transform` */
   applyTransformOptsToQuery(query, transform2) {
@@ -61042,7 +60752,7 @@ function extractTraceContext() {
         tracestate: carrier["tracestate"],
         baggage: carrier["baggage"]
       };
-    } catch (_a3) {
+    } catch (_a) {
       return null;
     }
   });
@@ -61204,12 +60914,12 @@ function normalizeTracePropagation(value) {
 function ensureTrailingSlash(url2) {
   return url2.endsWith("/") ? url2 : url2 + "/";
 }
-function applySettingDefaults(options, defaults3) {
+function applySettingDefaults(options, defaults2) {
   var _DEFAULT_GLOBAL_OPTIO, _globalOptions$header, _ref, _tracePropagationOpti, _ref2, _tracePropagationOpti2;
   const { db: dbOptions, auth: authOptions, realtime: realtimeOptions, global: globalOptions } = options;
-  const { db: DEFAULT_DB_OPTIONS$1, auth: DEFAULT_AUTH_OPTIONS$1, realtime: DEFAULT_REALTIME_OPTIONS$1, global: DEFAULT_GLOBAL_OPTIONS$1 } = defaults3;
+  const { db: DEFAULT_DB_OPTIONS$1, auth: DEFAULT_AUTH_OPTIONS$1, realtime: DEFAULT_REALTIME_OPTIONS$1, global: DEFAULT_GLOBAL_OPTIONS$1 } = defaults2;
   const tracePropagationOptions = normalizeTracePropagation(options.tracePropagation);
-  const DEFAULT_TRACE_PROPAGATION_OPTIONS$1 = normalizeTracePropagation(defaults3.tracePropagation);
+  const DEFAULT_TRACE_PROPAGATION_OPTIONS$1 = normalizeTracePropagation(defaults2.tracePropagation);
   const result = {
     db: _objectSpread23(_objectSpread23({}, DEFAULT_DB_OPTIONS$1), dbOptions),
     auth: _objectSpread23(_objectSpread23({}, DEFAULT_AUTH_OPTIONS$1), authOptions),
@@ -61685,16 +61395,16 @@ function shouldShowDeprecationWarning() {
 if (shouldShowDeprecationWarning()) console.warn("\u26A0\uFE0F  Node.js 18 and below are deprecated and will no longer be supported in future versions of @supabase/supabase-js. Please upgrade to Node.js 20 or later. For more information, visit: https://github.com/orgs/supabase/discussions/37217");
 
 // src/app.ts
-var import_express13 = __toESM(require_express2(), 1);
+var import_express = __toESM(require_express2(), 1);
 var import_cors = __toESM(require_lib3(), 1);
 var import_pino_http = __toESM(require_logger(), 1);
 
 // ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/_chunks/underscore-CPJSkOtE.mjs
-function snakeToCamel(str2) {
-  return str2 ? str2.replace(/([-_][a-z])/g, (match2) => match2.toUpperCase().replace(/-|_/, "")) : "";
+function snakeToCamel(str) {
+  return str ? str.replace(/([-_][a-z])/g, (match2) => match2.toUpperCase().replace(/-|_/, "")) : "";
 }
-function camelToSnake(str2) {
-  return str2 ? str2.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`) : "";
+function camelToSnake(str) {
+  return str ? str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`) : "";
 }
 var createDeepObjectTransformer = (transform2) => {
   const deepTransform = (obj) => {
@@ -63221,9 +62931,9 @@ function U(r, n, e) {
 function P(r, n, e) {
   return r instanceof RegExp ? $(r, n) : Array.isArray(r) ? W(r, n, e) : L(r, n, e);
 }
-function match(str2, options) {
+function match(str, options) {
   try {
-    return H(str2, options);
+    return H(str, options);
   } catch (e) {
     throw new Error(`Invalid path and options: Consult the documentation of path-to-regexp here: https://github.com/pillarjs/path-to-regexp/tree/6.x
 ${e.message}`);
@@ -63255,25 +62965,25 @@ var require_dist3 = __commonJS2({
       C.prototype = /* @__PURE__ */ Object.create(null);
       return C;
     })();
-    function parseCookie(str2, options) {
+    function parseCookie(str, options) {
       const obj = new NullObject();
-      const len = str2.length;
+      const len = str.length;
       if (len < 2)
         return obj;
       const dec = options?.decode || decode;
       let index = 0;
       do {
-        const eqIdx = eqIndex(str2, index, len);
+        const eqIdx = eqIndex(str, index, len);
         if (eqIdx === -1)
           break;
-        const endIdx = endIndex(str2, index, len);
+        const endIdx = endIndex(str, index, len);
         if (eqIdx > endIdx) {
-          index = str2.lastIndexOf(";", eqIdx - 1) + 1;
+          index = str.lastIndexOf(";", eqIdx - 1) + 1;
           continue;
         }
-        const key = valueSlice(str2, index, eqIdx);
+        const key = valueSlice(str, index, eqIdx);
         if (obj[key] === void 0) {
-          obj[key] = dec(valueSlice(str2, eqIdx + 1, endIdx));
+          obj[key] = dec(valueSlice(str, eqIdx + 1, endIdx));
         }
         index = endIdx + 1;
       } while (index < len);
@@ -63308,51 +63018,51 @@ var require_dist3 = __commonJS2({
       if (!cookieValueRegExp.test(value)) {
         throw new TypeError(`argument val is invalid: ${cookie.value}`);
       }
-      let str2 = cookie.name + "=" + value;
+      let str = cookie.name + "=" + value;
       if (cookie.maxAge !== void 0) {
         if (!Number.isInteger(cookie.maxAge)) {
           throw new TypeError(`option maxAge is invalid: ${cookie.maxAge}`);
         }
-        str2 += "; Max-Age=" + cookie.maxAge;
+        str += "; Max-Age=" + cookie.maxAge;
       }
       if (cookie.domain) {
         if (!domainValueRegExp.test(cookie.domain)) {
           throw new TypeError(`option domain is invalid: ${cookie.domain}`);
         }
-        str2 += "; Domain=" + cookie.domain;
+        str += "; Domain=" + cookie.domain;
       }
       if (cookie.path) {
         if (!pathValueRegExp.test(cookie.path)) {
           throw new TypeError(`option path is invalid: ${cookie.path}`);
         }
-        str2 += "; Path=" + cookie.path;
+        str += "; Path=" + cookie.path;
       }
       if (cookie.expires) {
         if (!isDate(cookie.expires) || !Number.isFinite(cookie.expires.valueOf())) {
           throw new TypeError(`option expires is invalid: ${cookie.expires}`);
         }
-        str2 += "; Expires=" + cookie.expires.toUTCString();
+        str += "; Expires=" + cookie.expires.toUTCString();
       }
       if (cookie.httpOnly) {
-        str2 += "; HttpOnly";
+        str += "; HttpOnly";
       }
       if (cookie.secure) {
-        str2 += "; Secure";
+        str += "; Secure";
       }
       if (cookie.partitioned) {
-        str2 += "; Partitioned";
+        str += "; Partitioned";
       }
       if (cookie.priority) {
         const priority = typeof cookie.priority === "string" ? cookie.priority.toLowerCase() : void 0;
         switch (priority) {
           case "low":
-            str2 += "; Priority=Low";
+            str += "; Priority=Low";
             break;
           case "medium":
-            str2 += "; Priority=Medium";
+            str += "; Priority=Medium";
             break;
           case "high":
-            str2 += "; Priority=High";
+            str += "; Priority=High";
             break;
           default:
             throw new TypeError(`option priority is invalid: ${cookie.priority}`);
@@ -63363,35 +63073,35 @@ var require_dist3 = __commonJS2({
         switch (sameSite) {
           case true:
           case "strict":
-            str2 += "; SameSite=Strict";
+            str += "; SameSite=Strict";
             break;
           case "lax":
-            str2 += "; SameSite=Lax";
+            str += "; SameSite=Lax";
             break;
           case "none":
-            str2 += "; SameSite=None";
+            str += "; SameSite=None";
             break;
           default:
             throw new TypeError(`option sameSite is invalid: ${cookie.sameSite}`);
         }
       }
-      return str2;
+      return str;
     }
-    function parseSetCookie(str2, options) {
+    function parseSetCookie(str, options) {
       const dec = options?.decode || decode;
-      const len = str2.length;
-      const endIdx = endIndex(str2, 0, len);
-      const eqIdx = eqIndex(str2, 0, endIdx);
-      const setCookie = eqIdx === -1 ? { name: "", value: dec(valueSlice(str2, 0, endIdx)) } : {
-        name: valueSlice(str2, 0, eqIdx),
-        value: dec(valueSlice(str2, eqIdx + 1, endIdx))
+      const len = str.length;
+      const endIdx = endIndex(str, 0, len);
+      const eqIdx = eqIndex(str, 0, endIdx);
+      const setCookie = eqIdx === -1 ? { name: "", value: dec(valueSlice(str, 0, endIdx)) } : {
+        name: valueSlice(str, 0, eqIdx),
+        value: dec(valueSlice(str, eqIdx + 1, endIdx))
       };
       let index = endIdx + 1;
       while (index < len) {
-        const endIdx2 = endIndex(str2, index, len);
-        const eqIdx2 = eqIndex(str2, index, endIdx2);
-        const attr = eqIdx2 === -1 ? valueSlice(str2, index, endIdx2) : valueSlice(str2, index, eqIdx2);
-        const val = eqIdx2 === -1 ? void 0 : valueSlice(str2, eqIdx2 + 1, endIdx2);
+        const endIdx2 = endIndex(str, index, len);
+        const eqIdx2 = eqIndex(str, index, endIdx2);
+        const attr = eqIdx2 === -1 ? valueSlice(str, index, endIdx2) : valueSlice(str, index, eqIdx2);
+        const val = eqIdx2 === -1 ? void 0 : valueSlice(str, eqIdx2 + 1, endIdx2);
         switch (attr.toLowerCase()) {
           case "httponly":
             setCookie.httpOnly = true;
@@ -63440,37 +63150,37 @@ var require_dist3 = __commonJS2({
       }
       return setCookie;
     }
-    function endIndex(str2, min, len) {
-      const index = str2.indexOf(";", min);
+    function endIndex(str, min, len) {
+      const index = str.indexOf(";", min);
       return index === -1 ? len : index;
     }
-    function eqIndex(str2, min, max) {
-      const index = str2.indexOf("=", min);
+    function eqIndex(str, min, max) {
+      const index = str.indexOf("=", min);
       return index < max ? index : -1;
     }
-    function valueSlice(str2, min, max) {
+    function valueSlice(str, min, max) {
       let start = min;
       let end = max;
       do {
-        const code = str2.charCodeAt(start);
+        const code = str.charCodeAt(start);
         if (code !== 32 && code !== 9)
           break;
       } while (++start < end);
       while (end > start) {
-        const code = str2.charCodeAt(end - 1);
+        const code = str.charCodeAt(end - 1);
         if (code !== 32 && code !== 9)
           break;
         end--;
       }
-      return str2.slice(start, end);
+      return str.slice(start, end);
     }
-    function decode(str2) {
-      if (str2.indexOf("%") === -1)
-        return str2;
+    function decode(str) {
+      if (str.indexOf("%") === -1)
+        return str;
       try {
-        return decodeURIComponent(str2);
+        return decodeURIComponent(str);
       } catch (e) {
-        return str2;
+        return str;
       }
     }
     function isDate(val) {
@@ -65293,10 +65003,10 @@ var SessionAPI = class extends AbstractAPI {
    */
   async getToken(sessionId, template, expiresInSeconds) {
     this.requireId(sessionId);
-    const path2 = template ? joinPaths(basePath25, sessionId, "tokens", template) : joinPaths(basePath25, sessionId, "tokens");
+    const path = template ? joinPaths(basePath25, sessionId, "tokens", template) : joinPaths(basePath25, sessionId, "tokens");
     const requestOptions = {
       method: "POST",
-      path: path2
+      path
     };
     if (expiresInSeconds !== void 0) {
       requestOptions.bodyParams = { expires_in_seconds: expiresInSeconds };
@@ -65361,7 +65071,7 @@ var TestingTokenAPI = class extends AbstractAPI {
 var basePath29 = "/users";
 var UserAPI = class extends AbstractAPI {
   async getUserList(params = {}) {
-    const { limit: limit2, offset, orderBy, ...userCountParams } = params;
+    const { limit, offset, orderBy, ...userCountParams } = params;
     const [data, totalCount] = await Promise.all([
       this.request({
         method: "GET",
@@ -65466,12 +65176,12 @@ var UserAPI = class extends AbstractAPI {
     });
   }
   async getOrganizationMembershipList(params) {
-    const { userId, limit: limit2, offset } = params;
+    const { userId, limit, offset } = params;
     this.requireId(userId);
     return this.request({
       method: "GET",
       path: joinPaths(basePath29, userId, "organization_memberships"),
-      queryParams: { limit: limit2, offset }
+      queryParams: { limit, offset }
     });
   }
   async getOrganizationInvitationList(params) {
@@ -67548,12 +67258,12 @@ function buildRequest(options) {
       userAgent = USER_AGENT,
       skipApiVersionInUrl = false
     } = options;
-    const { path: path2, method, queryParams, headerParams, bodyParams, formData, options: opts } = requestOptions;
+    const { path, method, queryParams, headerParams, bodyParams, formData, options: opts } = requestOptions;
     const { deepSnakecaseBodyParamKeys = false } = opts || {};
     if (requireSecretKey) {
       assertValidSecretKey(secretKey);
     }
-    const url2 = skipApiVersionInUrl ? joinPaths(apiUrl, path2) : joinPaths(apiUrl, apiVersion, path2);
+    const url2 = skipApiVersionInUrl ? joinPaths(apiUrl, path) : joinPaths(apiUrl, apiVersion, path);
     const finalUrl = new URL(url2);
     if (queryParams) {
       const snakecasedQueryParams = snakecase_keys_default({ ...queryParams });
@@ -68168,8 +67878,8 @@ var ClerkRequest = class extends Request {
     const cookiesRecord = (0, import_cookie.parse)(this.decodeCookieValue(req.headers.get("cookie") || ""));
     return new Map(Object.entries(cookiesRecord));
   }
-  decodeCookieValue(str2) {
-    return str2 ? str2.replace(/(%[0-9A-Z]{2})+/g, decodeURIComponent) : str2;
+  decodeCookieValue(str) {
+    return str ? str.replace(/(%[0-9A-Z]{2})+/g, decodeURIComponent) : str;
   }
 };
 var createClerkRequest = (...args) => {
@@ -69725,11 +69435,11 @@ function fapiUrlFromPublishableKey(publishableKey) {
   }
   return PROD_FAPI_URL;
 }
-function stripTrailingSlashes(str2) {
-  while (str2.endsWith("/")) {
-    str2 = str2.slice(0, -1);
+function stripTrailingSlashes(str) {
+  while (str.endsWith("/")) {
+    str = str.slice(0, -1);
   }
-  return str2;
+  return str;
 }
 function createErrorResponse(code, message, status) {
   const error40 = { code, message };
@@ -70122,7 +69832,7 @@ function clerkProxyMiddleware() {
   return (0, import_http_proxy_middleware.createProxyMiddleware)({
     target: CLERK_FAPI,
     changeOrigin: true,
-    pathRewrite: (path2) => path2.replace(new RegExp(`^${CLERK_PROXY_PATH}`), ""),
+    pathRewrite: (path) => path.replace(new RegExp(`^${CLERK_PROXY_PATH}`), ""),
     on: {
       proxyReq: (proxyReq, req) => {
         const protocol = req.headers["x-forwarded-proto"] || "https";
@@ -70140,4182 +69850,68 @@ function clerkProxyMiddleware() {
   });
 }
 
-// src/routes/index.ts
-var import_express12 = __toESM(require_express2(), 1);
-
-// src/routes/health.ts
-var import_express = __toESM(require_express2(), 1);
-
-// ../../node_modules/.pnpm/zod@3.25.76/node_modules/zod/v3/helpers/util.js
-var util;
-(function(util2) {
-  util2.assertEqual = (_2) => {
-  };
-  function assertIs2(_arg) {
-  }
-  util2.assertIs = assertIs2;
-  function assertNever4(_x) {
-    throw new Error();
-  }
-  util2.assertNever = assertNever4;
-  util2.arrayToEnum = (items) => {
-    const obj = {};
-    for (const item of items) {
-      obj[item] = item;
-    }
-    return obj;
-  };
-  util2.getValidEnumValues = (obj) => {
-    const validKeys = util2.objectKeys(obj).filter((k) => typeof obj[obj[k]] !== "number");
-    const filtered = {};
-    for (const k of validKeys) {
-      filtered[k] = obj[k];
-    }
-    return util2.objectValues(filtered);
-  };
-  util2.objectValues = (obj) => {
-    return util2.objectKeys(obj).map(function(e) {
-      return obj[e];
-    });
-  };
-  util2.objectKeys = typeof Object.keys === "function" ? (obj) => Object.keys(obj) : (object2) => {
-    const keys = [];
-    for (const key in object2) {
-      if (Object.prototype.hasOwnProperty.call(object2, key)) {
-        keys.push(key);
-      }
-    }
-    return keys;
-  };
-  util2.find = (arr, checker) => {
-    for (const item of arr) {
-      if (checker(item))
-        return item;
-    }
-    return void 0;
-  };
-  util2.isInteger = typeof Number.isInteger === "function" ? (val) => Number.isInteger(val) : (val) => typeof val === "number" && Number.isFinite(val) && Math.floor(val) === val;
-  function joinValues2(array2, separator = " | ") {
-    return array2.map((val) => typeof val === "string" ? `'${val}'` : val).join(separator);
-  }
-  util2.joinValues = joinValues2;
-  util2.jsonStringifyReplacer = (_2, value) => {
-    if (typeof value === "bigint") {
-      return value.toString();
-    }
-    return value;
-  };
-})(util || (util = {}));
-var objectUtil;
-(function(objectUtil2) {
-  objectUtil2.mergeShapes = (first, second) => {
-    return {
-      ...first,
-      ...second
-      // second overwrites first
-    };
-  };
-})(objectUtil || (objectUtil = {}));
-var ZodParsedType = util.arrayToEnum([
-  "string",
-  "nan",
-  "number",
-  "integer",
-  "float",
-  "boolean",
-  "date",
-  "bigint",
-  "symbol",
-  "function",
-  "undefined",
-  "null",
-  "array",
-  "object",
-  "unknown",
-  "promise",
-  "void",
-  "never",
-  "map",
-  "set"
-]);
-var getParsedType = (data) => {
-  const t = typeof data;
-  switch (t) {
-    case "undefined":
-      return ZodParsedType.undefined;
-    case "string":
-      return ZodParsedType.string;
-    case "number":
-      return Number.isNaN(data) ? ZodParsedType.nan : ZodParsedType.number;
-    case "boolean":
-      return ZodParsedType.boolean;
-    case "function":
-      return ZodParsedType.function;
-    case "bigint":
-      return ZodParsedType.bigint;
-    case "symbol":
-      return ZodParsedType.symbol;
-    case "object":
-      if (Array.isArray(data)) {
-        return ZodParsedType.array;
-      }
-      if (data === null) {
-        return ZodParsedType.null;
-      }
-      if (data.then && typeof data.then === "function" && data.catch && typeof data.catch === "function") {
-        return ZodParsedType.promise;
-      }
-      if (typeof Map !== "undefined" && data instanceof Map) {
-        return ZodParsedType.map;
-      }
-      if (typeof Set !== "undefined" && data instanceof Set) {
-        return ZodParsedType.set;
-      }
-      if (typeof Date !== "undefined" && data instanceof Date) {
-        return ZodParsedType.date;
-      }
-      return ZodParsedType.object;
-    default:
-      return ZodParsedType.unknown;
-  }
-};
-
-// ../../node_modules/.pnpm/zod@3.25.76/node_modules/zod/v3/ZodError.js
-var ZodIssueCode = util.arrayToEnum([
-  "invalid_type",
-  "invalid_literal",
-  "custom",
-  "invalid_union",
-  "invalid_union_discriminator",
-  "invalid_enum_value",
-  "unrecognized_keys",
-  "invalid_arguments",
-  "invalid_return_type",
-  "invalid_date",
-  "invalid_string",
-  "too_small",
-  "too_big",
-  "invalid_intersection_types",
-  "not_multiple_of",
-  "not_finite"
-]);
-var ZodError = class _ZodError extends Error {
-  get errors() {
-    return this.issues;
-  }
-  constructor(issues) {
-    super();
-    this.issues = [];
-    this.addIssue = (sub) => {
-      this.issues = [...this.issues, sub];
-    };
-    this.addIssues = (subs = []) => {
-      this.issues = [...this.issues, ...subs];
-    };
-    const actualProto = new.target.prototype;
-    if (Object.setPrototypeOf) {
-      Object.setPrototypeOf(this, actualProto);
-    } else {
-      this.__proto__ = actualProto;
-    }
-    this.name = "ZodError";
-    this.issues = issues;
-  }
-  format(_mapper) {
-    const mapper = _mapper || function(issue2) {
-      return issue2.message;
-    };
-    const fieldErrors = { _errors: [] };
-    const processError = (error40) => {
-      for (const issue2 of error40.issues) {
-        if (issue2.code === "invalid_union") {
-          issue2.unionErrors.map(processError);
-        } else if (issue2.code === "invalid_return_type") {
-          processError(issue2.returnTypeError);
-        } else if (issue2.code === "invalid_arguments") {
-          processError(issue2.argumentsError);
-        } else if (issue2.path.length === 0) {
-          fieldErrors._errors.push(mapper(issue2));
-        } else {
-          let curr = fieldErrors;
-          let i = 0;
-          while (i < issue2.path.length) {
-            const el = issue2.path[i];
-            const terminal = i === issue2.path.length - 1;
-            if (!terminal) {
-              curr[el] = curr[el] || { _errors: [] };
-            } else {
-              curr[el] = curr[el] || { _errors: [] };
-              curr[el]._errors.push(mapper(issue2));
-            }
-            curr = curr[el];
-            i++;
-          }
-        }
-      }
-    };
-    processError(this);
-    return fieldErrors;
-  }
-  static assert(value) {
-    if (!(value instanceof _ZodError)) {
-      throw new Error(`Not a ZodError: ${value}`);
+// src/lib/logger.ts
+var import_pino = __toESM(require_pino(), 1);
+var isProduction = process.env.NODE_ENV === "production";
+var logger2 = (0, import_pino.default)({
+  level: process.env.LOG_LEVEL ?? "info",
+  redact: [
+    "req.headers.authorization",
+    "req.headers.cookie",
+    "res.headers['set-cookie']"
+  ],
+  ...isProduction ? {} : {
+    transport: {
+      target: "pino-pretty",
+      options: { colorize: true }
     }
   }
-  toString() {
-    return this.message;
-  }
-  get message() {
-    return JSON.stringify(this.issues, util.jsonStringifyReplacer, 2);
-  }
-  get isEmpty() {
-    return this.issues.length === 0;
-  }
-  flatten(mapper = (issue2) => issue2.message) {
-    const fieldErrors = {};
-    const formErrors = [];
-    for (const sub of this.issues) {
-      if (sub.path.length > 0) {
-        const firstEl = sub.path[0];
-        fieldErrors[firstEl] = fieldErrors[firstEl] || [];
-        fieldErrors[firstEl].push(mapper(sub));
-      } else {
-        formErrors.push(mapper(sub));
-      }
-    }
-    return { formErrors, fieldErrors };
-  }
-  get formErrors() {
-    return this.flatten();
-  }
-};
-ZodError.create = (issues) => {
-  const error40 = new ZodError(issues);
-  return error40;
-};
-
-// ../../node_modules/.pnpm/zod@3.25.76/node_modules/zod/v3/locales/en.js
-var errorMap = (issue2, _ctx) => {
-  let message;
-  switch (issue2.code) {
-    case ZodIssueCode.invalid_type:
-      if (issue2.received === ZodParsedType.undefined) {
-        message = "Required";
-      } else {
-        message = `Expected ${issue2.expected}, received ${issue2.received}`;
-      }
-      break;
-    case ZodIssueCode.invalid_literal:
-      message = `Invalid literal value, expected ${JSON.stringify(issue2.expected, util.jsonStringifyReplacer)}`;
-      break;
-    case ZodIssueCode.unrecognized_keys:
-      message = `Unrecognized key(s) in object: ${util.joinValues(issue2.keys, ", ")}`;
-      break;
-    case ZodIssueCode.invalid_union:
-      message = `Invalid input`;
-      break;
-    case ZodIssueCode.invalid_union_discriminator:
-      message = `Invalid discriminator value. Expected ${util.joinValues(issue2.options)}`;
-      break;
-    case ZodIssueCode.invalid_enum_value:
-      message = `Invalid enum value. Expected ${util.joinValues(issue2.options)}, received '${issue2.received}'`;
-      break;
-    case ZodIssueCode.invalid_arguments:
-      message = `Invalid function arguments`;
-      break;
-    case ZodIssueCode.invalid_return_type:
-      message = `Invalid function return type`;
-      break;
-    case ZodIssueCode.invalid_date:
-      message = `Invalid date`;
-      break;
-    case ZodIssueCode.invalid_string:
-      if (typeof issue2.validation === "object") {
-        if ("includes" in issue2.validation) {
-          message = `Invalid input: must include "${issue2.validation.includes}"`;
-          if (typeof issue2.validation.position === "number") {
-            message = `${message} at one or more positions greater than or equal to ${issue2.validation.position}`;
-          }
-        } else if ("startsWith" in issue2.validation) {
-          message = `Invalid input: must start with "${issue2.validation.startsWith}"`;
-        } else if ("endsWith" in issue2.validation) {
-          message = `Invalid input: must end with "${issue2.validation.endsWith}"`;
-        } else {
-          util.assertNever(issue2.validation);
-        }
-      } else if (issue2.validation !== "regex") {
-        message = `Invalid ${issue2.validation}`;
-      } else {
-        message = "Invalid";
-      }
-      break;
-    case ZodIssueCode.too_small:
-      if (issue2.type === "array")
-        message = `Array must contain ${issue2.exact ? "exactly" : issue2.inclusive ? `at least` : `more than`} ${issue2.minimum} element(s)`;
-      else if (issue2.type === "string")
-        message = `String must contain ${issue2.exact ? "exactly" : issue2.inclusive ? `at least` : `over`} ${issue2.minimum} character(s)`;
-      else if (issue2.type === "number")
-        message = `Number must be ${issue2.exact ? `exactly equal to ` : issue2.inclusive ? `greater than or equal to ` : `greater than `}${issue2.minimum}`;
-      else if (issue2.type === "bigint")
-        message = `Number must be ${issue2.exact ? `exactly equal to ` : issue2.inclusive ? `greater than or equal to ` : `greater than `}${issue2.minimum}`;
-      else if (issue2.type === "date")
-        message = `Date must be ${issue2.exact ? `exactly equal to ` : issue2.inclusive ? `greater than or equal to ` : `greater than `}${new Date(Number(issue2.minimum))}`;
-      else
-        message = "Invalid input";
-      break;
-    case ZodIssueCode.too_big:
-      if (issue2.type === "array")
-        message = `Array must contain ${issue2.exact ? `exactly` : issue2.inclusive ? `at most` : `less than`} ${issue2.maximum} element(s)`;
-      else if (issue2.type === "string")
-        message = `String must contain ${issue2.exact ? `exactly` : issue2.inclusive ? `at most` : `under`} ${issue2.maximum} character(s)`;
-      else if (issue2.type === "number")
-        message = `Number must be ${issue2.exact ? `exactly` : issue2.inclusive ? `less than or equal to` : `less than`} ${issue2.maximum}`;
-      else if (issue2.type === "bigint")
-        message = `BigInt must be ${issue2.exact ? `exactly` : issue2.inclusive ? `less than or equal to` : `less than`} ${issue2.maximum}`;
-      else if (issue2.type === "date")
-        message = `Date must be ${issue2.exact ? `exactly` : issue2.inclusive ? `smaller than or equal to` : `smaller than`} ${new Date(Number(issue2.maximum))}`;
-      else
-        message = "Invalid input";
-      break;
-    case ZodIssueCode.custom:
-      message = `Invalid input`;
-      break;
-    case ZodIssueCode.invalid_intersection_types:
-      message = `Intersection results could not be merged`;
-      break;
-    case ZodIssueCode.not_multiple_of:
-      message = `Number must be a multiple of ${issue2.multipleOf}`;
-      break;
-    case ZodIssueCode.not_finite:
-      message = "Number must be finite";
-      break;
-    default:
-      message = _ctx.defaultError;
-      util.assertNever(issue2);
-  }
-  return { message };
-};
-var en_default = errorMap;
-
-// ../../node_modules/.pnpm/zod@3.25.76/node_modules/zod/v3/errors.js
-var overrideErrorMap = en_default;
-function getErrorMap() {
-  return overrideErrorMap;
-}
-
-// ../../node_modules/.pnpm/zod@3.25.76/node_modules/zod/v3/helpers/parseUtil.js
-var makeIssue = (params) => {
-  const { data, path: path2, errorMaps, issueData } = params;
-  const fullPath = [...path2, ...issueData.path || []];
-  const fullIssue = {
-    ...issueData,
-    path: fullPath
-  };
-  if (issueData.message !== void 0) {
-    return {
-      ...issueData,
-      path: fullPath,
-      message: issueData.message
-    };
-  }
-  let errorMessage = "";
-  const maps = errorMaps.filter((m) => !!m).slice().reverse();
-  for (const map2 of maps) {
-    errorMessage = map2(fullIssue, { data, defaultError: errorMessage }).message;
-  }
-  return {
-    ...issueData,
-    path: fullPath,
-    message: errorMessage
-  };
-};
-function addIssueToContext(ctx, issueData) {
-  const overrideMap = getErrorMap();
-  const issue2 = makeIssue({
-    issueData,
-    data: ctx.data,
-    path: ctx.path,
-    errorMaps: [
-      ctx.common.contextualErrorMap,
-      // contextual error map is first priority
-      ctx.schemaErrorMap,
-      // then schema-bound map if available
-      overrideMap,
-      // then global override map
-      overrideMap === en_default ? void 0 : en_default
-      // then global default map
-    ].filter((x) => !!x)
-  });
-  ctx.common.issues.push(issue2);
-}
-var ParseStatus = class _ParseStatus {
-  constructor() {
-    this.value = "valid";
-  }
-  dirty() {
-    if (this.value === "valid")
-      this.value = "dirty";
-  }
-  abort() {
-    if (this.value !== "aborted")
-      this.value = "aborted";
-  }
-  static mergeArray(status, results) {
-    const arrayValue = [];
-    for (const s2 of results) {
-      if (s2.status === "aborted")
-        return INVALID;
-      if (s2.status === "dirty")
-        status.dirty();
-      arrayValue.push(s2.value);
-    }
-    return { status: status.value, value: arrayValue };
-  }
-  static async mergeObjectAsync(status, pairs) {
-    const syncPairs = [];
-    for (const pair of pairs) {
-      const key = await pair.key;
-      const value = await pair.value;
-      syncPairs.push({
-        key,
-        value
-      });
-    }
-    return _ParseStatus.mergeObjectSync(status, syncPairs);
-  }
-  static mergeObjectSync(status, pairs) {
-    const finalObject = {};
-    for (const pair of pairs) {
-      const { key, value } = pair;
-      if (key.status === "aborted")
-        return INVALID;
-      if (value.status === "aborted")
-        return INVALID;
-      if (key.status === "dirty")
-        status.dirty();
-      if (value.status === "dirty")
-        status.dirty();
-      if (key.value !== "__proto__" && (typeof value.value !== "undefined" || pair.alwaysSet)) {
-        finalObject[key.value] = value.value;
-      }
-    }
-    return { status: status.value, value: finalObject };
-  }
-};
-var INVALID = Object.freeze({
-  status: "aborted"
 });
-var DIRTY = (value) => ({ status: "dirty", value });
-var OK = (value) => ({ status: "valid", value });
-var isAborted = (x) => x.status === "aborted";
-var isDirty = (x) => x.status === "dirty";
-var isValid = (x) => x.status === "valid";
-var isAsync = (x) => typeof Promise !== "undefined" && x instanceof Promise;
 
-// ../../node_modules/.pnpm/zod@3.25.76/node_modules/zod/v3/helpers/errorUtil.js
-var errorUtil;
-(function(errorUtil2) {
-  errorUtil2.errToObj = (message) => typeof message === "string" ? { message } : message || {};
-  errorUtil2.toString = (message) => typeof message === "string" ? message : message?.message;
-})(errorUtil || (errorUtil = {}));
-
-// ../../node_modules/.pnpm/zod@3.25.76/node_modules/zod/v3/types.js
-var ParseInputLazyPath = class {
-  constructor(parent, value, path2, key) {
-    this._cachedPath = [];
-    this.parent = parent;
-    this.data = value;
-    this._path = path2;
-    this._key = key;
-  }
-  get path() {
-    if (!this._cachedPath.length) {
-      if (Array.isArray(this._key)) {
-        this._cachedPath.push(...this._path, ...this._key);
-      } else {
-        this._cachedPath.push(...this._path, this._key);
-      }
-    }
-    return this._cachedPath;
-  }
-};
-var handleResult = (ctx, result) => {
-  if (isValid(result)) {
-    return { success: true, data: result.value };
-  } else {
-    if (!ctx.common.issues.length) {
-      throw new Error("Validation failed but no issues detected.");
-    }
-    return {
-      success: false,
-      get error() {
-        if (this._error)
-          return this._error;
-        const error40 = new ZodError(ctx.common.issues);
-        this._error = error40;
-        return this._error;
-      }
-    };
-  }
-};
-function processCreateParams(params) {
-  if (!params)
-    return {};
-  const { errorMap: errorMap2, invalid_type_error, required_error, description } = params;
-  if (errorMap2 && (invalid_type_error || required_error)) {
-    throw new Error(`Can't use "invalid_type_error" or "required_error" in conjunction with custom error map.`);
-  }
-  if (errorMap2)
-    return { errorMap: errorMap2, description };
-  const customMap = (iss, ctx) => {
-    const { message } = params;
-    if (iss.code === "invalid_enum_value") {
-      return { message: message ?? ctx.defaultError };
-    }
-    if (typeof ctx.data === "undefined") {
-      return { message: message ?? required_error ?? ctx.defaultError };
-    }
-    if (iss.code !== "invalid_type")
-      return { message: ctx.defaultError };
-    return { message: message ?? invalid_type_error ?? ctx.defaultError };
-  };
-  return { errorMap: customMap, description };
-}
-var ZodType = class {
-  get description() {
-    return this._def.description;
-  }
-  _getType(input) {
-    return getParsedType(input.data);
-  }
-  _getOrReturnCtx(input, ctx) {
-    return ctx || {
-      common: input.parent.common,
-      data: input.data,
-      parsedType: getParsedType(input.data),
-      schemaErrorMap: this._def.errorMap,
-      path: input.path,
-      parent: input.parent
-    };
-  }
-  _processInputParams(input) {
-    return {
-      status: new ParseStatus(),
-      ctx: {
-        common: input.parent.common,
-        data: input.data,
-        parsedType: getParsedType(input.data),
-        schemaErrorMap: this._def.errorMap,
-        path: input.path,
-        parent: input.parent
-      }
-    };
-  }
-  _parseSync(input) {
-    const result = this._parse(input);
-    if (isAsync(result)) {
-      throw new Error("Synchronous parse encountered promise.");
-    }
-    return result;
-  }
-  _parseAsync(input) {
-    const result = this._parse(input);
-    return Promise.resolve(result);
-  }
-  parse(data, params) {
-    const result = this.safeParse(data, params);
-    if (result.success)
-      return result.data;
-    throw result.error;
-  }
-  safeParse(data, params) {
-    const ctx = {
-      common: {
-        issues: [],
-        async: params?.async ?? false,
-        contextualErrorMap: params?.errorMap
+// src/app.ts
+var app = (0, import_express.default)();
+app.use(
+  (0, import_pino_http.default)({
+    logger: logger2,
+    serializers: {
+      req(req) {
+        return { id: req.id, method: req.method, url: req.url?.split("?")[0] };
       },
-      path: params?.path || [],
-      schemaErrorMap: this._def.errorMap,
-      parent: null,
-      data,
-      parsedType: getParsedType(data)
-    };
-    const result = this._parseSync({ data, path: ctx.path, parent: ctx });
-    return handleResult(ctx, result);
-  }
-  "~validate"(data) {
-    const ctx = {
-      common: {
-        issues: [],
-        async: !!this["~standard"].async
-      },
-      path: [],
-      schemaErrorMap: this._def.errorMap,
-      parent: null,
-      data,
-      parsedType: getParsedType(data)
-    };
-    if (!this["~standard"].async) {
-      try {
-        const result = this._parseSync({ data, path: [], parent: ctx });
-        return isValid(result) ? {
-          value: result.value
-        } : {
-          issues: ctx.common.issues
-        };
-      } catch (err) {
-        if (err?.message?.toLowerCase()?.includes("encountered")) {
-          this["~standard"].async = true;
-        }
-        ctx.common = {
-          issues: [],
-          async: true
-        };
+      res(res) {
+        return { statusCode: res.statusCode };
       }
     }
-    return this._parseAsync({ data, path: [], parent: ctx }).then((result) => isValid(result) ? {
-      value: result.value
-    } : {
-      issues: ctx.common.issues
-    });
-  }
-  async parseAsync(data, params) {
-    const result = await this.safeParseAsync(data, params);
-    if (result.success)
-      return result.data;
-    throw result.error;
-  }
-  async safeParseAsync(data, params) {
-    const ctx = {
-      common: {
-        issues: [],
-        contextualErrorMap: params?.errorMap,
-        async: true
-      },
-      path: params?.path || [],
-      schemaErrorMap: this._def.errorMap,
-      parent: null,
-      data,
-      parsedType: getParsedType(data)
-    };
-    const maybeAsyncResult = this._parse({ data, path: ctx.path, parent: ctx });
-    const result = await (isAsync(maybeAsyncResult) ? maybeAsyncResult : Promise.resolve(maybeAsyncResult));
-    return handleResult(ctx, result);
-  }
-  refine(check2, message) {
-    const getIssueProperties = (val) => {
-      if (typeof message === "string" || typeof message === "undefined") {
-        return { message };
-      } else if (typeof message === "function") {
-        return message(val);
-      } else {
-        return message;
-      }
-    };
-    return this._refinement((val, ctx) => {
-      const result = check2(val);
-      const setError = () => ctx.addIssue({
-        code: ZodIssueCode.custom,
-        ...getIssueProperties(val)
-      });
-      if (typeof Promise !== "undefined" && result instanceof Promise) {
-        return result.then((data) => {
-          if (!data) {
-            setError();
-            return false;
-          } else {
-            return true;
-          }
-        });
-      }
-      if (!result) {
-        setError();
-        return false;
-      } else {
-        return true;
-      }
-    });
-  }
-  refinement(check2, refinementData) {
-    return this._refinement((val, ctx) => {
-      if (!check2(val)) {
-        ctx.addIssue(typeof refinementData === "function" ? refinementData(val, ctx) : refinementData);
-        return false;
-      } else {
-        return true;
-      }
-    });
-  }
-  _refinement(refinement) {
-    return new ZodEffects({
-      schema: this,
-      typeName: ZodFirstPartyTypeKind.ZodEffects,
-      effect: { type: "refinement", refinement }
-    });
-  }
-  superRefine(refinement) {
-    return this._refinement(refinement);
-  }
-  constructor(def) {
-    this.spa = this.safeParseAsync;
-    this._def = def;
-    this.parse = this.parse.bind(this);
-    this.safeParse = this.safeParse.bind(this);
-    this.parseAsync = this.parseAsync.bind(this);
-    this.safeParseAsync = this.safeParseAsync.bind(this);
-    this.spa = this.spa.bind(this);
-    this.refine = this.refine.bind(this);
-    this.refinement = this.refinement.bind(this);
-    this.superRefine = this.superRefine.bind(this);
-    this.optional = this.optional.bind(this);
-    this.nullable = this.nullable.bind(this);
-    this.nullish = this.nullish.bind(this);
-    this.array = this.array.bind(this);
-    this.promise = this.promise.bind(this);
-    this.or = this.or.bind(this);
-    this.and = this.and.bind(this);
-    this.transform = this.transform.bind(this);
-    this.brand = this.brand.bind(this);
-    this.default = this.default.bind(this);
-    this.catch = this.catch.bind(this);
-    this.describe = this.describe.bind(this);
-    this.pipe = this.pipe.bind(this);
-    this.readonly = this.readonly.bind(this);
-    this.isNullable = this.isNullable.bind(this);
-    this.isOptional = this.isOptional.bind(this);
-    this["~standard"] = {
-      version: 1,
-      vendor: "zod",
-      validate: (data) => this["~validate"](data)
-    };
-  }
-  optional() {
-    return ZodOptional.create(this, this._def);
-  }
-  nullable() {
-    return ZodNullable.create(this, this._def);
-  }
-  nullish() {
-    return this.nullable().optional();
-  }
-  array() {
-    return ZodArray.create(this);
-  }
-  promise() {
-    return ZodPromise.create(this, this._def);
-  }
-  or(option) {
-    return ZodUnion.create([this, option], this._def);
-  }
-  and(incoming) {
-    return ZodIntersection.create(this, incoming, this._def);
-  }
-  transform(transform2) {
-    return new ZodEffects({
-      ...processCreateParams(this._def),
-      schema: this,
-      typeName: ZodFirstPartyTypeKind.ZodEffects,
-      effect: { type: "transform", transform: transform2 }
-    });
-  }
-  default(def) {
-    const defaultValueFunc = typeof def === "function" ? def : () => def;
-    return new ZodDefault({
-      ...processCreateParams(this._def),
-      innerType: this,
-      defaultValue: defaultValueFunc,
-      typeName: ZodFirstPartyTypeKind.ZodDefault
-    });
-  }
-  brand() {
-    return new ZodBranded({
-      typeName: ZodFirstPartyTypeKind.ZodBranded,
-      type: this,
-      ...processCreateParams(this._def)
-    });
-  }
-  catch(def) {
-    const catchValueFunc = typeof def === "function" ? def : () => def;
-    return new ZodCatch({
-      ...processCreateParams(this._def),
-      innerType: this,
-      catchValue: catchValueFunc,
-      typeName: ZodFirstPartyTypeKind.ZodCatch
-    });
-  }
-  describe(description) {
-    const This = this.constructor;
-    return new This({
-      ...this._def,
-      description
-    });
-  }
-  pipe(target) {
-    return ZodPipeline.create(this, target);
-  }
-  readonly() {
-    return ZodReadonly.create(this);
-  }
-  isOptional() {
-    return this.safeParse(void 0).success;
-  }
-  isNullable() {
-    return this.safeParse(null).success;
-  }
-};
-var cuidRegex = /^c[^\s-]{8,}$/i;
-var cuid2Regex = /^[0-9a-z]+$/;
-var ulidRegex = /^[0-9A-HJKMNP-TV-Z]{26}$/i;
-var uuidRegex = /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/i;
-var nanoidRegex = /^[a-z0-9_-]{21}$/i;
-var jwtRegex = /^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]*$/;
-var durationRegex = /^[-+]?P(?!$)(?:(?:[-+]?\d+Y)|(?:[-+]?\d+[.,]\d+Y$))?(?:(?:[-+]?\d+M)|(?:[-+]?\d+[.,]\d+M$))?(?:(?:[-+]?\d+W)|(?:[-+]?\d+[.,]\d+W$))?(?:(?:[-+]?\d+D)|(?:[-+]?\d+[.,]\d+D$))?(?:T(?=[\d+-])(?:(?:[-+]?\d+H)|(?:[-+]?\d+[.,]\d+H$))?(?:(?:[-+]?\d+M)|(?:[-+]?\d+[.,]\d+M$))?(?:[-+]?\d+(?:[.,]\d+)?S)?)??$/;
-var emailRegex = /^(?!\.)(?!.*\.\.)([A-Z0-9_'+\-\.]*)[A-Z0-9_+-]@([A-Z0-9][A-Z0-9\-]*\.)+[A-Z]{2,}$/i;
-var _emojiRegex = `^(\\p{Extended_Pictographic}|\\p{Emoji_Component})+$`;
-var emojiRegex;
-var ipv4Regex = /^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])$/;
-var ipv4CidrRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\/(3[0-2]|[12]?[0-9])$/;
-var ipv6Regex = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/;
-var ipv6CidrRegex = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))\/(12[0-8]|1[01][0-9]|[1-9]?[0-9])$/;
-var base64Regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
-var base64urlRegex = /^([0-9a-zA-Z-_]{4})*(([0-9a-zA-Z-_]{2}(==)?)|([0-9a-zA-Z-_]{3}(=)?))?$/;
-var dateRegexSource = `((\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-((0[13578]|1[02])-(0[1-9]|[12]\\d|3[01])|(0[469]|11)-(0[1-9]|[12]\\d|30)|(02)-(0[1-9]|1\\d|2[0-8])))`;
-var dateRegex = new RegExp(`^${dateRegexSource}$`);
-function timeRegexSource(args) {
-  let secondsRegexSource = `[0-5]\\d`;
-  if (args.precision) {
-    secondsRegexSource = `${secondsRegexSource}\\.\\d{${args.precision}}`;
-  } else if (args.precision == null) {
-    secondsRegexSource = `${secondsRegexSource}(\\.\\d+)?`;
-  }
-  const secondsQuantifier = args.precision ? "+" : "?";
-  return `([01]\\d|2[0-3]):[0-5]\\d(:${secondsRegexSource})${secondsQuantifier}`;
-}
-function timeRegex(args) {
-  return new RegExp(`^${timeRegexSource(args)}$`);
-}
-function datetimeRegex(args) {
-  let regex = `${dateRegexSource}T${timeRegexSource(args)}`;
-  const opts = [];
-  opts.push(args.local ? `Z?` : `Z`);
-  if (args.offset)
-    opts.push(`([+-]\\d{2}:?\\d{2})`);
-  regex = `${regex}(${opts.join("|")})`;
-  return new RegExp(`^${regex}$`);
-}
-function isValidIP(ip, version5) {
-  if ((version5 === "v4" || !version5) && ipv4Regex.test(ip)) {
-    return true;
-  }
-  if ((version5 === "v6" || !version5) && ipv6Regex.test(ip)) {
-    return true;
-  }
-  return false;
-}
-function isValidJWT(jwt2, alg) {
-  if (!jwtRegex.test(jwt2))
-    return false;
-  try {
-    const [header] = jwt2.split(".");
-    if (!header)
-      return false;
-    const base643 = header.replace(/-/g, "+").replace(/_/g, "/").padEnd(header.length + (4 - header.length % 4) % 4, "=");
-    const decoded = JSON.parse(atob(base643));
-    if (typeof decoded !== "object" || decoded === null)
-      return false;
-    if ("typ" in decoded && decoded?.typ !== "JWT")
-      return false;
-    if (!decoded.alg)
-      return false;
-    if (alg && decoded.alg !== alg)
-      return false;
-    return true;
-  } catch {
-    return false;
-  }
-}
-function isValidCidr(ip, version5) {
-  if ((version5 === "v4" || !version5) && ipv4CidrRegex.test(ip)) {
-    return true;
-  }
-  if ((version5 === "v6" || !version5) && ipv6CidrRegex.test(ip)) {
-    return true;
-  }
-  return false;
-}
-var ZodString = class _ZodString2 extends ZodType {
-  _parse(input) {
-    if (this._def.coerce) {
-      input.data = String(input.data);
-    }
-    const parsedType4 = this._getType(input);
-    if (parsedType4 !== ZodParsedType.string) {
-      const ctx2 = this._getOrReturnCtx(input);
-      addIssueToContext(ctx2, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.string,
-        received: ctx2.parsedType
-      });
-      return INVALID;
-    }
-    const status = new ParseStatus();
-    let ctx = void 0;
-    for (const check2 of this._def.checks) {
-      if (check2.kind === "min") {
-        if (input.data.length < check2.value) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.too_small,
-            minimum: check2.value,
-            type: "string",
-            inclusive: true,
-            exact: false,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "max") {
-        if (input.data.length > check2.value) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.too_big,
-            maximum: check2.value,
-            type: "string",
-            inclusive: true,
-            exact: false,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "length") {
-        const tooBig = input.data.length > check2.value;
-        const tooSmall = input.data.length < check2.value;
-        if (tooBig || tooSmall) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          if (tooBig) {
-            addIssueToContext(ctx, {
-              code: ZodIssueCode.too_big,
-              maximum: check2.value,
-              type: "string",
-              inclusive: true,
-              exact: true,
-              message: check2.message
-            });
-          } else if (tooSmall) {
-            addIssueToContext(ctx, {
-              code: ZodIssueCode.too_small,
-              minimum: check2.value,
-              type: "string",
-              inclusive: true,
-              exact: true,
-              message: check2.message
-            });
-          }
-          status.dirty();
-        }
-      } else if (check2.kind === "email") {
-        if (!emailRegex.test(input.data)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            validation: "email",
-            code: ZodIssueCode.invalid_string,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "emoji") {
-        if (!emojiRegex) {
-          emojiRegex = new RegExp(_emojiRegex, "u");
-        }
-        if (!emojiRegex.test(input.data)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            validation: "emoji",
-            code: ZodIssueCode.invalid_string,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "uuid") {
-        if (!uuidRegex.test(input.data)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            validation: "uuid",
-            code: ZodIssueCode.invalid_string,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "nanoid") {
-        if (!nanoidRegex.test(input.data)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            validation: "nanoid",
-            code: ZodIssueCode.invalid_string,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "cuid") {
-        if (!cuidRegex.test(input.data)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            validation: "cuid",
-            code: ZodIssueCode.invalid_string,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "cuid2") {
-        if (!cuid2Regex.test(input.data)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            validation: "cuid2",
-            code: ZodIssueCode.invalid_string,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "ulid") {
-        if (!ulidRegex.test(input.data)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            validation: "ulid",
-            code: ZodIssueCode.invalid_string,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "url") {
-        try {
-          new URL(input.data);
-        } catch {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            validation: "url",
-            code: ZodIssueCode.invalid_string,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "regex") {
-        check2.regex.lastIndex = 0;
-        const testResult = check2.regex.test(input.data);
-        if (!testResult) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            validation: "regex",
-            code: ZodIssueCode.invalid_string,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "trim") {
-        input.data = input.data.trim();
-      } else if (check2.kind === "includes") {
-        if (!input.data.includes(check2.value, check2.position)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.invalid_string,
-            validation: { includes: check2.value, position: check2.position },
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "toLowerCase") {
-        input.data = input.data.toLowerCase();
-      } else if (check2.kind === "toUpperCase") {
-        input.data = input.data.toUpperCase();
-      } else if (check2.kind === "startsWith") {
-        if (!input.data.startsWith(check2.value)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.invalid_string,
-            validation: { startsWith: check2.value },
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "endsWith") {
-        if (!input.data.endsWith(check2.value)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.invalid_string,
-            validation: { endsWith: check2.value },
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "datetime") {
-        const regex = datetimeRegex(check2);
-        if (!regex.test(input.data)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.invalid_string,
-            validation: "datetime",
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "date") {
-        const regex = dateRegex;
-        if (!regex.test(input.data)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.invalid_string,
-            validation: "date",
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "time") {
-        const regex = timeRegex(check2);
-        if (!regex.test(input.data)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.invalid_string,
-            validation: "time",
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "duration") {
-        if (!durationRegex.test(input.data)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            validation: "duration",
-            code: ZodIssueCode.invalid_string,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "ip") {
-        if (!isValidIP(input.data, check2.version)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            validation: "ip",
-            code: ZodIssueCode.invalid_string,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "jwt") {
-        if (!isValidJWT(input.data, check2.alg)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            validation: "jwt",
-            code: ZodIssueCode.invalid_string,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "cidr") {
-        if (!isValidCidr(input.data, check2.version)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            validation: "cidr",
-            code: ZodIssueCode.invalid_string,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "base64") {
-        if (!base64Regex.test(input.data)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            validation: "base64",
-            code: ZodIssueCode.invalid_string,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "base64url") {
-        if (!base64urlRegex.test(input.data)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            validation: "base64url",
-            code: ZodIssueCode.invalid_string,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else {
-        util.assertNever(check2);
-      }
-    }
-    return { status: status.value, value: input.data };
-  }
-  _regex(regex, validation, message) {
-    return this.refinement((data) => regex.test(data), {
-      validation,
-      code: ZodIssueCode.invalid_string,
-      ...errorUtil.errToObj(message)
-    });
-  }
-  _addCheck(check2) {
-    return new _ZodString2({
-      ...this._def,
-      checks: [...this._def.checks, check2]
-    });
-  }
-  email(message) {
-    return this._addCheck({ kind: "email", ...errorUtil.errToObj(message) });
-  }
-  url(message) {
-    return this._addCheck({ kind: "url", ...errorUtil.errToObj(message) });
-  }
-  emoji(message) {
-    return this._addCheck({ kind: "emoji", ...errorUtil.errToObj(message) });
-  }
-  uuid(message) {
-    return this._addCheck({ kind: "uuid", ...errorUtil.errToObj(message) });
-  }
-  nanoid(message) {
-    return this._addCheck({ kind: "nanoid", ...errorUtil.errToObj(message) });
-  }
-  cuid(message) {
-    return this._addCheck({ kind: "cuid", ...errorUtil.errToObj(message) });
-  }
-  cuid2(message) {
-    return this._addCheck({ kind: "cuid2", ...errorUtil.errToObj(message) });
-  }
-  ulid(message) {
-    return this._addCheck({ kind: "ulid", ...errorUtil.errToObj(message) });
-  }
-  base64(message) {
-    return this._addCheck({ kind: "base64", ...errorUtil.errToObj(message) });
-  }
-  base64url(message) {
-    return this._addCheck({
-      kind: "base64url",
-      ...errorUtil.errToObj(message)
-    });
-  }
-  jwt(options) {
-    return this._addCheck({ kind: "jwt", ...errorUtil.errToObj(options) });
-  }
-  ip(options) {
-    return this._addCheck({ kind: "ip", ...errorUtil.errToObj(options) });
-  }
-  cidr(options) {
-    return this._addCheck({ kind: "cidr", ...errorUtil.errToObj(options) });
-  }
-  datetime(options) {
-    if (typeof options === "string") {
-      return this._addCheck({
-        kind: "datetime",
-        precision: null,
-        offset: false,
-        local: false,
-        message: options
-      });
-    }
-    return this._addCheck({
-      kind: "datetime",
-      precision: typeof options?.precision === "undefined" ? null : options?.precision,
-      offset: options?.offset ?? false,
-      local: options?.local ?? false,
-      ...errorUtil.errToObj(options?.message)
-    });
-  }
-  date(message) {
-    return this._addCheck({ kind: "date", message });
-  }
-  time(options) {
-    if (typeof options === "string") {
-      return this._addCheck({
-        kind: "time",
-        precision: null,
-        message: options
-      });
-    }
-    return this._addCheck({
-      kind: "time",
-      precision: typeof options?.precision === "undefined" ? null : options?.precision,
-      ...errorUtil.errToObj(options?.message)
-    });
-  }
-  duration(message) {
-    return this._addCheck({ kind: "duration", ...errorUtil.errToObj(message) });
-  }
-  regex(regex, message) {
-    return this._addCheck({
-      kind: "regex",
-      regex,
-      ...errorUtil.errToObj(message)
-    });
-  }
-  includes(value, options) {
-    return this._addCheck({
-      kind: "includes",
-      value,
-      position: options?.position,
-      ...errorUtil.errToObj(options?.message)
-    });
-  }
-  startsWith(value, message) {
-    return this._addCheck({
-      kind: "startsWith",
-      value,
-      ...errorUtil.errToObj(message)
-    });
-  }
-  endsWith(value, message) {
-    return this._addCheck({
-      kind: "endsWith",
-      value,
-      ...errorUtil.errToObj(message)
-    });
-  }
-  min(minLength, message) {
-    return this._addCheck({
-      kind: "min",
-      value: minLength,
-      ...errorUtil.errToObj(message)
-    });
-  }
-  max(maxLength, message) {
-    return this._addCheck({
-      kind: "max",
-      value: maxLength,
-      ...errorUtil.errToObj(message)
-    });
-  }
-  length(len, message) {
-    return this._addCheck({
-      kind: "length",
-      value: len,
-      ...errorUtil.errToObj(message)
-    });
-  }
-  /**
-   * Equivalent to `.min(1)`
-   */
-  nonempty(message) {
-    return this.min(1, errorUtil.errToObj(message));
-  }
-  trim() {
-    return new _ZodString2({
-      ...this._def,
-      checks: [...this._def.checks, { kind: "trim" }]
-    });
-  }
-  toLowerCase() {
-    return new _ZodString2({
-      ...this._def,
-      checks: [...this._def.checks, { kind: "toLowerCase" }]
-    });
-  }
-  toUpperCase() {
-    return new _ZodString2({
-      ...this._def,
-      checks: [...this._def.checks, { kind: "toUpperCase" }]
-    });
-  }
-  get isDatetime() {
-    return !!this._def.checks.find((ch) => ch.kind === "datetime");
-  }
-  get isDate() {
-    return !!this._def.checks.find((ch) => ch.kind === "date");
-  }
-  get isTime() {
-    return !!this._def.checks.find((ch) => ch.kind === "time");
-  }
-  get isDuration() {
-    return !!this._def.checks.find((ch) => ch.kind === "duration");
-  }
-  get isEmail() {
-    return !!this._def.checks.find((ch) => ch.kind === "email");
-  }
-  get isURL() {
-    return !!this._def.checks.find((ch) => ch.kind === "url");
-  }
-  get isEmoji() {
-    return !!this._def.checks.find((ch) => ch.kind === "emoji");
-  }
-  get isUUID() {
-    return !!this._def.checks.find((ch) => ch.kind === "uuid");
-  }
-  get isNANOID() {
-    return !!this._def.checks.find((ch) => ch.kind === "nanoid");
-  }
-  get isCUID() {
-    return !!this._def.checks.find((ch) => ch.kind === "cuid");
-  }
-  get isCUID2() {
-    return !!this._def.checks.find((ch) => ch.kind === "cuid2");
-  }
-  get isULID() {
-    return !!this._def.checks.find((ch) => ch.kind === "ulid");
-  }
-  get isIP() {
-    return !!this._def.checks.find((ch) => ch.kind === "ip");
-  }
-  get isCIDR() {
-    return !!this._def.checks.find((ch) => ch.kind === "cidr");
-  }
-  get isBase64() {
-    return !!this._def.checks.find((ch) => ch.kind === "base64");
-  }
-  get isBase64url() {
-    return !!this._def.checks.find((ch) => ch.kind === "base64url");
-  }
-  get minLength() {
-    let min = null;
-    for (const ch of this._def.checks) {
-      if (ch.kind === "min") {
-        if (min === null || ch.value > min)
-          min = ch.value;
-      }
-    }
-    return min;
-  }
-  get maxLength() {
-    let max = null;
-    for (const ch of this._def.checks) {
-      if (ch.kind === "max") {
-        if (max === null || ch.value < max)
-          max = ch.value;
-      }
-    }
-    return max;
-  }
-};
-ZodString.create = (params) => {
-  return new ZodString({
-    checks: [],
-    typeName: ZodFirstPartyTypeKind.ZodString,
-    coerce: params?.coerce ?? false,
-    ...processCreateParams(params)
-  });
-};
-function floatSafeRemainder(val, step) {
-  const valDecCount = (val.toString().split(".")[1] || "").length;
-  const stepDecCount = (step.toString().split(".")[1] || "").length;
-  const decCount = valDecCount > stepDecCount ? valDecCount : stepDecCount;
-  const valInt = Number.parseInt(val.toFixed(decCount).replace(".", ""));
-  const stepInt = Number.parseInt(step.toFixed(decCount).replace(".", ""));
-  return valInt % stepInt / 10 ** decCount;
-}
-var ZodNumber = class _ZodNumber extends ZodType {
-  constructor() {
-    super(...arguments);
-    this.min = this.gte;
-    this.max = this.lte;
-    this.step = this.multipleOf;
-  }
-  _parse(input) {
-    if (this._def.coerce) {
-      input.data = Number(input.data);
-    }
-    const parsedType4 = this._getType(input);
-    if (parsedType4 !== ZodParsedType.number) {
-      const ctx2 = this._getOrReturnCtx(input);
-      addIssueToContext(ctx2, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.number,
-        received: ctx2.parsedType
-      });
-      return INVALID;
-    }
-    let ctx = void 0;
-    const status = new ParseStatus();
-    for (const check2 of this._def.checks) {
-      if (check2.kind === "int") {
-        if (!util.isInteger(input.data)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.invalid_type,
-            expected: "integer",
-            received: "float",
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "min") {
-        const tooSmall = check2.inclusive ? input.data < check2.value : input.data <= check2.value;
-        if (tooSmall) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.too_small,
-            minimum: check2.value,
-            type: "number",
-            inclusive: check2.inclusive,
-            exact: false,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "max") {
-        const tooBig = check2.inclusive ? input.data > check2.value : input.data >= check2.value;
-        if (tooBig) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.too_big,
-            maximum: check2.value,
-            type: "number",
-            inclusive: check2.inclusive,
-            exact: false,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "multipleOf") {
-        if (floatSafeRemainder(input.data, check2.value) !== 0) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.not_multiple_of,
-            multipleOf: check2.value,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "finite") {
-        if (!Number.isFinite(input.data)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.not_finite,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else {
-        util.assertNever(check2);
-      }
-    }
-    return { status: status.value, value: input.data };
-  }
-  gte(value, message) {
-    return this.setLimit("min", value, true, errorUtil.toString(message));
-  }
-  gt(value, message) {
-    return this.setLimit("min", value, false, errorUtil.toString(message));
-  }
-  lte(value, message) {
-    return this.setLimit("max", value, true, errorUtil.toString(message));
-  }
-  lt(value, message) {
-    return this.setLimit("max", value, false, errorUtil.toString(message));
-  }
-  setLimit(kind, value, inclusive, message) {
-    return new _ZodNumber({
-      ...this._def,
-      checks: [
-        ...this._def.checks,
-        {
-          kind,
-          value,
-          inclusive,
-          message: errorUtil.toString(message)
-        }
-      ]
-    });
-  }
-  _addCheck(check2) {
-    return new _ZodNumber({
-      ...this._def,
-      checks: [...this._def.checks, check2]
-    });
-  }
-  int(message) {
-    return this._addCheck({
-      kind: "int",
-      message: errorUtil.toString(message)
-    });
-  }
-  positive(message) {
-    return this._addCheck({
-      kind: "min",
-      value: 0,
-      inclusive: false,
-      message: errorUtil.toString(message)
-    });
-  }
-  negative(message) {
-    return this._addCheck({
-      kind: "max",
-      value: 0,
-      inclusive: false,
-      message: errorUtil.toString(message)
-    });
-  }
-  nonpositive(message) {
-    return this._addCheck({
-      kind: "max",
-      value: 0,
-      inclusive: true,
-      message: errorUtil.toString(message)
-    });
-  }
-  nonnegative(message) {
-    return this._addCheck({
-      kind: "min",
-      value: 0,
-      inclusive: true,
-      message: errorUtil.toString(message)
-    });
-  }
-  multipleOf(value, message) {
-    return this._addCheck({
-      kind: "multipleOf",
-      value,
-      message: errorUtil.toString(message)
-    });
-  }
-  finite(message) {
-    return this._addCheck({
-      kind: "finite",
-      message: errorUtil.toString(message)
-    });
-  }
-  safe(message) {
-    return this._addCheck({
-      kind: "min",
-      inclusive: true,
-      value: Number.MIN_SAFE_INTEGER,
-      message: errorUtil.toString(message)
-    })._addCheck({
-      kind: "max",
-      inclusive: true,
-      value: Number.MAX_SAFE_INTEGER,
-      message: errorUtil.toString(message)
-    });
-  }
-  get minValue() {
-    let min = null;
-    for (const ch of this._def.checks) {
-      if (ch.kind === "min") {
-        if (min === null || ch.value > min)
-          min = ch.value;
-      }
-    }
-    return min;
-  }
-  get maxValue() {
-    let max = null;
-    for (const ch of this._def.checks) {
-      if (ch.kind === "max") {
-        if (max === null || ch.value < max)
-          max = ch.value;
-      }
-    }
-    return max;
-  }
-  get isInt() {
-    return !!this._def.checks.find((ch) => ch.kind === "int" || ch.kind === "multipleOf" && util.isInteger(ch.value));
-  }
-  get isFinite() {
-    let max = null;
-    let min = null;
-    for (const ch of this._def.checks) {
-      if (ch.kind === "finite" || ch.kind === "int" || ch.kind === "multipleOf") {
-        return true;
-      } else if (ch.kind === "min") {
-        if (min === null || ch.value > min)
-          min = ch.value;
-      } else if (ch.kind === "max") {
-        if (max === null || ch.value < max)
-          max = ch.value;
-      }
-    }
-    return Number.isFinite(min) && Number.isFinite(max);
-  }
-};
-ZodNumber.create = (params) => {
-  return new ZodNumber({
-    checks: [],
-    typeName: ZodFirstPartyTypeKind.ZodNumber,
-    coerce: params?.coerce || false,
-    ...processCreateParams(params)
-  });
-};
-var ZodBigInt = class _ZodBigInt extends ZodType {
-  constructor() {
-    super(...arguments);
-    this.min = this.gte;
-    this.max = this.lte;
-  }
-  _parse(input) {
-    if (this._def.coerce) {
-      try {
-        input.data = BigInt(input.data);
-      } catch {
-        return this._getInvalidInput(input);
-      }
-    }
-    const parsedType4 = this._getType(input);
-    if (parsedType4 !== ZodParsedType.bigint) {
-      return this._getInvalidInput(input);
-    }
-    let ctx = void 0;
-    const status = new ParseStatus();
-    for (const check2 of this._def.checks) {
-      if (check2.kind === "min") {
-        const tooSmall = check2.inclusive ? input.data < check2.value : input.data <= check2.value;
-        if (tooSmall) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.too_small,
-            type: "bigint",
-            minimum: check2.value,
-            inclusive: check2.inclusive,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "max") {
-        const tooBig = check2.inclusive ? input.data > check2.value : input.data >= check2.value;
-        if (tooBig) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.too_big,
-            type: "bigint",
-            maximum: check2.value,
-            inclusive: check2.inclusive,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "multipleOf") {
-        if (input.data % check2.value !== BigInt(0)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.not_multiple_of,
-            multipleOf: check2.value,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else {
-        util.assertNever(check2);
-      }
-    }
-    return { status: status.value, value: input.data };
-  }
-  _getInvalidInput(input) {
-    const ctx = this._getOrReturnCtx(input);
-    addIssueToContext(ctx, {
-      code: ZodIssueCode.invalid_type,
-      expected: ZodParsedType.bigint,
-      received: ctx.parsedType
-    });
-    return INVALID;
-  }
-  gte(value, message) {
-    return this.setLimit("min", value, true, errorUtil.toString(message));
-  }
-  gt(value, message) {
-    return this.setLimit("min", value, false, errorUtil.toString(message));
-  }
-  lte(value, message) {
-    return this.setLimit("max", value, true, errorUtil.toString(message));
-  }
-  lt(value, message) {
-    return this.setLimit("max", value, false, errorUtil.toString(message));
-  }
-  setLimit(kind, value, inclusive, message) {
-    return new _ZodBigInt({
-      ...this._def,
-      checks: [
-        ...this._def.checks,
-        {
-          kind,
-          value,
-          inclusive,
-          message: errorUtil.toString(message)
-        }
-      ]
-    });
-  }
-  _addCheck(check2) {
-    return new _ZodBigInt({
-      ...this._def,
-      checks: [...this._def.checks, check2]
-    });
-  }
-  positive(message) {
-    return this._addCheck({
-      kind: "min",
-      value: BigInt(0),
-      inclusive: false,
-      message: errorUtil.toString(message)
-    });
-  }
-  negative(message) {
-    return this._addCheck({
-      kind: "max",
-      value: BigInt(0),
-      inclusive: false,
-      message: errorUtil.toString(message)
-    });
-  }
-  nonpositive(message) {
-    return this._addCheck({
-      kind: "max",
-      value: BigInt(0),
-      inclusive: true,
-      message: errorUtil.toString(message)
-    });
-  }
-  nonnegative(message) {
-    return this._addCheck({
-      kind: "min",
-      value: BigInt(0),
-      inclusive: true,
-      message: errorUtil.toString(message)
-    });
-  }
-  multipleOf(value, message) {
-    return this._addCheck({
-      kind: "multipleOf",
-      value,
-      message: errorUtil.toString(message)
-    });
-  }
-  get minValue() {
-    let min = null;
-    for (const ch of this._def.checks) {
-      if (ch.kind === "min") {
-        if (min === null || ch.value > min)
-          min = ch.value;
-      }
-    }
-    return min;
-  }
-  get maxValue() {
-    let max = null;
-    for (const ch of this._def.checks) {
-      if (ch.kind === "max") {
-        if (max === null || ch.value < max)
-          max = ch.value;
-      }
-    }
-    return max;
-  }
-};
-ZodBigInt.create = (params) => {
-  return new ZodBigInt({
-    checks: [],
-    typeName: ZodFirstPartyTypeKind.ZodBigInt,
-    coerce: params?.coerce ?? false,
-    ...processCreateParams(params)
-  });
-};
-var ZodBoolean = class extends ZodType {
-  _parse(input) {
-    if (this._def.coerce) {
-      input.data = Boolean(input.data);
-    }
-    const parsedType4 = this._getType(input);
-    if (parsedType4 !== ZodParsedType.boolean) {
-      const ctx = this._getOrReturnCtx(input);
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.boolean,
-        received: ctx.parsedType
-      });
-      return INVALID;
-    }
-    return OK(input.data);
-  }
-};
-ZodBoolean.create = (params) => {
-  return new ZodBoolean({
-    typeName: ZodFirstPartyTypeKind.ZodBoolean,
-    coerce: params?.coerce || false,
-    ...processCreateParams(params)
-  });
-};
-var ZodDate = class _ZodDate extends ZodType {
-  _parse(input) {
-    if (this._def.coerce) {
-      input.data = new Date(input.data);
-    }
-    const parsedType4 = this._getType(input);
-    if (parsedType4 !== ZodParsedType.date) {
-      const ctx2 = this._getOrReturnCtx(input);
-      addIssueToContext(ctx2, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.date,
-        received: ctx2.parsedType
-      });
-      return INVALID;
-    }
-    if (Number.isNaN(input.data.getTime())) {
-      const ctx2 = this._getOrReturnCtx(input);
-      addIssueToContext(ctx2, {
-        code: ZodIssueCode.invalid_date
-      });
-      return INVALID;
-    }
-    const status = new ParseStatus();
-    let ctx = void 0;
-    for (const check2 of this._def.checks) {
-      if (check2.kind === "min") {
-        if (input.data.getTime() < check2.value) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.too_small,
-            message: check2.message,
-            inclusive: true,
-            exact: false,
-            minimum: check2.value,
-            type: "date"
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "max") {
-        if (input.data.getTime() > check2.value) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.too_big,
-            message: check2.message,
-            inclusive: true,
-            exact: false,
-            maximum: check2.value,
-            type: "date"
-          });
-          status.dirty();
-        }
-      } else {
-        util.assertNever(check2);
-      }
-    }
-    return {
-      status: status.value,
-      value: new Date(input.data.getTime())
-    };
-  }
-  _addCheck(check2) {
-    return new _ZodDate({
-      ...this._def,
-      checks: [...this._def.checks, check2]
-    });
-  }
-  min(minDate, message) {
-    return this._addCheck({
-      kind: "min",
-      value: minDate.getTime(),
-      message: errorUtil.toString(message)
-    });
-  }
-  max(maxDate, message) {
-    return this._addCheck({
-      kind: "max",
-      value: maxDate.getTime(),
-      message: errorUtil.toString(message)
-    });
-  }
-  get minDate() {
-    let min = null;
-    for (const ch of this._def.checks) {
-      if (ch.kind === "min") {
-        if (min === null || ch.value > min)
-          min = ch.value;
-      }
-    }
-    return min != null ? new Date(min) : null;
-  }
-  get maxDate() {
-    let max = null;
-    for (const ch of this._def.checks) {
-      if (ch.kind === "max") {
-        if (max === null || ch.value < max)
-          max = ch.value;
-      }
-    }
-    return max != null ? new Date(max) : null;
-  }
-};
-ZodDate.create = (params) => {
-  return new ZodDate({
-    checks: [],
-    coerce: params?.coerce || false,
-    typeName: ZodFirstPartyTypeKind.ZodDate,
-    ...processCreateParams(params)
-  });
-};
-var ZodSymbol = class extends ZodType {
-  _parse(input) {
-    const parsedType4 = this._getType(input);
-    if (parsedType4 !== ZodParsedType.symbol) {
-      const ctx = this._getOrReturnCtx(input);
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.symbol,
-        received: ctx.parsedType
-      });
-      return INVALID;
-    }
-    return OK(input.data);
-  }
-};
-ZodSymbol.create = (params) => {
-  return new ZodSymbol({
-    typeName: ZodFirstPartyTypeKind.ZodSymbol,
-    ...processCreateParams(params)
-  });
-};
-var ZodUndefined = class extends ZodType {
-  _parse(input) {
-    const parsedType4 = this._getType(input);
-    if (parsedType4 !== ZodParsedType.undefined) {
-      const ctx = this._getOrReturnCtx(input);
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.undefined,
-        received: ctx.parsedType
-      });
-      return INVALID;
-    }
-    return OK(input.data);
-  }
-};
-ZodUndefined.create = (params) => {
-  return new ZodUndefined({
-    typeName: ZodFirstPartyTypeKind.ZodUndefined,
-    ...processCreateParams(params)
-  });
-};
-var ZodNull = class extends ZodType {
-  _parse(input) {
-    const parsedType4 = this._getType(input);
-    if (parsedType4 !== ZodParsedType.null) {
-      const ctx = this._getOrReturnCtx(input);
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.null,
-        received: ctx.parsedType
-      });
-      return INVALID;
-    }
-    return OK(input.data);
-  }
-};
-ZodNull.create = (params) => {
-  return new ZodNull({
-    typeName: ZodFirstPartyTypeKind.ZodNull,
-    ...processCreateParams(params)
-  });
-};
-var ZodAny = class extends ZodType {
-  constructor() {
-    super(...arguments);
-    this._any = true;
-  }
-  _parse(input) {
-    return OK(input.data);
-  }
-};
-ZodAny.create = (params) => {
-  return new ZodAny({
-    typeName: ZodFirstPartyTypeKind.ZodAny,
-    ...processCreateParams(params)
-  });
-};
-var ZodUnknown = class extends ZodType {
-  constructor() {
-    super(...arguments);
-    this._unknown = true;
-  }
-  _parse(input) {
-    return OK(input.data);
-  }
-};
-ZodUnknown.create = (params) => {
-  return new ZodUnknown({
-    typeName: ZodFirstPartyTypeKind.ZodUnknown,
-    ...processCreateParams(params)
-  });
-};
-var ZodNever = class extends ZodType {
-  _parse(input) {
-    const ctx = this._getOrReturnCtx(input);
-    addIssueToContext(ctx, {
-      code: ZodIssueCode.invalid_type,
-      expected: ZodParsedType.never,
-      received: ctx.parsedType
-    });
-    return INVALID;
-  }
-};
-ZodNever.create = (params) => {
-  return new ZodNever({
-    typeName: ZodFirstPartyTypeKind.ZodNever,
-    ...processCreateParams(params)
-  });
-};
-var ZodVoid = class extends ZodType {
-  _parse(input) {
-    const parsedType4 = this._getType(input);
-    if (parsedType4 !== ZodParsedType.undefined) {
-      const ctx = this._getOrReturnCtx(input);
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.void,
-        received: ctx.parsedType
-      });
-      return INVALID;
-    }
-    return OK(input.data);
-  }
-};
-ZodVoid.create = (params) => {
-  return new ZodVoid({
-    typeName: ZodFirstPartyTypeKind.ZodVoid,
-    ...processCreateParams(params)
-  });
-};
-var ZodArray = class _ZodArray extends ZodType {
-  _parse(input) {
-    const { ctx, status } = this._processInputParams(input);
-    const def = this._def;
-    if (ctx.parsedType !== ZodParsedType.array) {
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.array,
-        received: ctx.parsedType
-      });
-      return INVALID;
-    }
-    if (def.exactLength !== null) {
-      const tooBig = ctx.data.length > def.exactLength.value;
-      const tooSmall = ctx.data.length < def.exactLength.value;
-      if (tooBig || tooSmall) {
-        addIssueToContext(ctx, {
-          code: tooBig ? ZodIssueCode.too_big : ZodIssueCode.too_small,
-          minimum: tooSmall ? def.exactLength.value : void 0,
-          maximum: tooBig ? def.exactLength.value : void 0,
-          type: "array",
-          inclusive: true,
-          exact: true,
-          message: def.exactLength.message
-        });
-        status.dirty();
-      }
-    }
-    if (def.minLength !== null) {
-      if (ctx.data.length < def.minLength.value) {
-        addIssueToContext(ctx, {
-          code: ZodIssueCode.too_small,
-          minimum: def.minLength.value,
-          type: "array",
-          inclusive: true,
-          exact: false,
-          message: def.minLength.message
-        });
-        status.dirty();
-      }
-    }
-    if (def.maxLength !== null) {
-      if (ctx.data.length > def.maxLength.value) {
-        addIssueToContext(ctx, {
-          code: ZodIssueCode.too_big,
-          maximum: def.maxLength.value,
-          type: "array",
-          inclusive: true,
-          exact: false,
-          message: def.maxLength.message
-        });
-        status.dirty();
-      }
-    }
-    if (ctx.common.async) {
-      return Promise.all([...ctx.data].map((item, i) => {
-        return def.type._parseAsync(new ParseInputLazyPath(ctx, item, ctx.path, i));
-      })).then((result2) => {
-        return ParseStatus.mergeArray(status, result2);
-      });
-    }
-    const result = [...ctx.data].map((item, i) => {
-      return def.type._parseSync(new ParseInputLazyPath(ctx, item, ctx.path, i));
-    });
-    return ParseStatus.mergeArray(status, result);
-  }
-  get element() {
-    return this._def.type;
-  }
-  min(minLength, message) {
-    return new _ZodArray({
-      ...this._def,
-      minLength: { value: minLength, message: errorUtil.toString(message) }
-    });
-  }
-  max(maxLength, message) {
-    return new _ZodArray({
-      ...this._def,
-      maxLength: { value: maxLength, message: errorUtil.toString(message) }
-    });
-  }
-  length(len, message) {
-    return new _ZodArray({
-      ...this._def,
-      exactLength: { value: len, message: errorUtil.toString(message) }
-    });
-  }
-  nonempty(message) {
-    return this.min(1, message);
-  }
-};
-ZodArray.create = (schema, params) => {
-  return new ZodArray({
-    type: schema,
-    minLength: null,
-    maxLength: null,
-    exactLength: null,
-    typeName: ZodFirstPartyTypeKind.ZodArray,
-    ...processCreateParams(params)
-  });
-};
-function deepPartialify(schema) {
-  if (schema instanceof ZodObject) {
-    const newShape = {};
-    for (const key in schema.shape) {
-      const fieldSchema = schema.shape[key];
-      newShape[key] = ZodOptional.create(deepPartialify(fieldSchema));
-    }
-    return new ZodObject({
-      ...schema._def,
-      shape: () => newShape
-    });
-  } else if (schema instanceof ZodArray) {
-    return new ZodArray({
-      ...schema._def,
-      type: deepPartialify(schema.element)
-    });
-  } else if (schema instanceof ZodOptional) {
-    return ZodOptional.create(deepPartialify(schema.unwrap()));
-  } else if (schema instanceof ZodNullable) {
-    return ZodNullable.create(deepPartialify(schema.unwrap()));
-  } else if (schema instanceof ZodTuple) {
-    return ZodTuple.create(schema.items.map((item) => deepPartialify(item)));
-  } else {
-    return schema;
-  }
-}
-var ZodObject = class _ZodObject extends ZodType {
-  constructor() {
-    super(...arguments);
-    this._cached = null;
-    this.nonstrict = this.passthrough;
-    this.augment = this.extend;
-  }
-  _getCached() {
-    if (this._cached !== null)
-      return this._cached;
-    const shape = this._def.shape();
-    const keys = util.objectKeys(shape);
-    this._cached = { shape, keys };
-    return this._cached;
-  }
-  _parse(input) {
-    const parsedType4 = this._getType(input);
-    if (parsedType4 !== ZodParsedType.object) {
-      const ctx2 = this._getOrReturnCtx(input);
-      addIssueToContext(ctx2, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.object,
-        received: ctx2.parsedType
-      });
-      return INVALID;
-    }
-    const { status, ctx } = this._processInputParams(input);
-    const { shape, keys: shapeKeys } = this._getCached();
-    const extraKeys = [];
-    if (!(this._def.catchall instanceof ZodNever && this._def.unknownKeys === "strip")) {
-      for (const key in ctx.data) {
-        if (!shapeKeys.includes(key)) {
-          extraKeys.push(key);
-        }
-      }
-    }
-    const pairs = [];
-    for (const key of shapeKeys) {
-      const keyValidator = shape[key];
-      const value = ctx.data[key];
-      pairs.push({
-        key: { status: "valid", value: key },
-        value: keyValidator._parse(new ParseInputLazyPath(ctx, value, ctx.path, key)),
-        alwaysSet: key in ctx.data
-      });
-    }
-    if (this._def.catchall instanceof ZodNever) {
-      const unknownKeys = this._def.unknownKeys;
-      if (unknownKeys === "passthrough") {
-        for (const key of extraKeys) {
-          pairs.push({
-            key: { status: "valid", value: key },
-            value: { status: "valid", value: ctx.data[key] }
-          });
-        }
-      } else if (unknownKeys === "strict") {
-        if (extraKeys.length > 0) {
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.unrecognized_keys,
-            keys: extraKeys
-          });
-          status.dirty();
-        }
-      } else if (unknownKeys === "strip") {
-      } else {
-        throw new Error(`Internal ZodObject error: invalid unknownKeys value.`);
-      }
-    } else {
-      const catchall = this._def.catchall;
-      for (const key of extraKeys) {
-        const value = ctx.data[key];
-        pairs.push({
-          key: { status: "valid", value: key },
-          value: catchall._parse(
-            new ParseInputLazyPath(ctx, value, ctx.path, key)
-            //, ctx.child(key), value, getParsedType(value)
-          ),
-          alwaysSet: key in ctx.data
-        });
-      }
-    }
-    if (ctx.common.async) {
-      return Promise.resolve().then(async () => {
-        const syncPairs = [];
-        for (const pair of pairs) {
-          const key = await pair.key;
-          const value = await pair.value;
-          syncPairs.push({
-            key,
-            value,
-            alwaysSet: pair.alwaysSet
-          });
-        }
-        return syncPairs;
-      }).then((syncPairs) => {
-        return ParseStatus.mergeObjectSync(status, syncPairs);
-      });
-    } else {
-      return ParseStatus.mergeObjectSync(status, pairs);
-    }
-  }
-  get shape() {
-    return this._def.shape();
-  }
-  strict(message) {
-    errorUtil.errToObj;
-    return new _ZodObject({
-      ...this._def,
-      unknownKeys: "strict",
-      ...message !== void 0 ? {
-        errorMap: (issue2, ctx) => {
-          const defaultError = this._def.errorMap?.(issue2, ctx).message ?? ctx.defaultError;
-          if (issue2.code === "unrecognized_keys")
-            return {
-              message: errorUtil.errToObj(message).message ?? defaultError
-            };
-          return {
-            message: defaultError
-          };
-        }
-      } : {}
-    });
-  }
-  strip() {
-    return new _ZodObject({
-      ...this._def,
-      unknownKeys: "strip"
-    });
-  }
-  passthrough() {
-    return new _ZodObject({
-      ...this._def,
-      unknownKeys: "passthrough"
-    });
-  }
-  // const AugmentFactory =
-  //   <Def extends ZodObjectDef>(def: Def) =>
-  //   <Augmentation extends ZodRawShape>(
-  //     augmentation: Augmentation
-  //   ): ZodObject<
-  //     extendShape<ReturnType<Def["shape"]>, Augmentation>,
-  //     Def["unknownKeys"],
-  //     Def["catchall"]
-  //   > => {
-  //     return new ZodObject({
-  //       ...def,
-  //       shape: () => ({
-  //         ...def.shape(),
-  //         ...augmentation,
-  //       }),
-  //     }) as any;
-  //   };
-  extend(augmentation) {
-    return new _ZodObject({
-      ...this._def,
-      shape: () => ({
-        ...this._def.shape(),
-        ...augmentation
-      })
-    });
-  }
-  /**
-   * Prior to zod@1.0.12 there was a bug in the
-   * inferred type of merged objects. Please
-   * upgrade if you are experiencing issues.
-   */
-  merge(merging) {
-    const merged = new _ZodObject({
-      unknownKeys: merging._def.unknownKeys,
-      catchall: merging._def.catchall,
-      shape: () => ({
-        ...this._def.shape(),
-        ...merging._def.shape()
-      }),
-      typeName: ZodFirstPartyTypeKind.ZodObject
-    });
-    return merged;
-  }
-  // merge<
-  //   Incoming extends AnyZodObject,
-  //   Augmentation extends Incoming["shape"],
-  //   NewOutput extends {
-  //     [k in keyof Augmentation | keyof Output]: k extends keyof Augmentation
-  //       ? Augmentation[k]["_output"]
-  //       : k extends keyof Output
-  //       ? Output[k]
-  //       : never;
-  //   },
-  //   NewInput extends {
-  //     [k in keyof Augmentation | keyof Input]: k extends keyof Augmentation
-  //       ? Augmentation[k]["_input"]
-  //       : k extends keyof Input
-  //       ? Input[k]
-  //       : never;
-  //   }
-  // >(
-  //   merging: Incoming
-  // ): ZodObject<
-  //   extendShape<T, ReturnType<Incoming["_def"]["shape"]>>,
-  //   Incoming["_def"]["unknownKeys"],
-  //   Incoming["_def"]["catchall"],
-  //   NewOutput,
-  //   NewInput
-  // > {
-  //   const merged: any = new ZodObject({
-  //     unknownKeys: merging._def.unknownKeys,
-  //     catchall: merging._def.catchall,
-  //     shape: () =>
-  //       objectUtil.mergeShapes(this._def.shape(), merging._def.shape()),
-  //     typeName: ZodFirstPartyTypeKind.ZodObject,
-  //   }) as any;
-  //   return merged;
-  // }
-  setKey(key, schema) {
-    return this.augment({ [key]: schema });
-  }
-  // merge<Incoming extends AnyZodObject>(
-  //   merging: Incoming
-  // ): //ZodObject<T & Incoming["_shape"], UnknownKeys, Catchall> = (merging) => {
-  // ZodObject<
-  //   extendShape<T, ReturnType<Incoming["_def"]["shape"]>>,
-  //   Incoming["_def"]["unknownKeys"],
-  //   Incoming["_def"]["catchall"]
-  // > {
-  //   // const mergedShape = objectUtil.mergeShapes(
-  //   //   this._def.shape(),
-  //   //   merging._def.shape()
-  //   // );
-  //   const merged: any = new ZodObject({
-  //     unknownKeys: merging._def.unknownKeys,
-  //     catchall: merging._def.catchall,
-  //     shape: () =>
-  //       objectUtil.mergeShapes(this._def.shape(), merging._def.shape()),
-  //     typeName: ZodFirstPartyTypeKind.ZodObject,
-  //   }) as any;
-  //   return merged;
-  // }
-  catchall(index) {
-    return new _ZodObject({
-      ...this._def,
-      catchall: index
-    });
-  }
-  pick(mask) {
-    const shape = {};
-    for (const key of util.objectKeys(mask)) {
-      if (mask[key] && this.shape[key]) {
-        shape[key] = this.shape[key];
-      }
-    }
-    return new _ZodObject({
-      ...this._def,
-      shape: () => shape
-    });
-  }
-  omit(mask) {
-    const shape = {};
-    for (const key of util.objectKeys(this.shape)) {
-      if (!mask[key]) {
-        shape[key] = this.shape[key];
-      }
-    }
-    return new _ZodObject({
-      ...this._def,
-      shape: () => shape
-    });
-  }
-  /**
-   * @deprecated
-   */
-  deepPartial() {
-    return deepPartialify(this);
-  }
-  partial(mask) {
-    const newShape = {};
-    for (const key of util.objectKeys(this.shape)) {
-      const fieldSchema = this.shape[key];
-      if (mask && !mask[key]) {
-        newShape[key] = fieldSchema;
-      } else {
-        newShape[key] = fieldSchema.optional();
-      }
-    }
-    return new _ZodObject({
-      ...this._def,
-      shape: () => newShape
-    });
-  }
-  required(mask) {
-    const newShape = {};
-    for (const key of util.objectKeys(this.shape)) {
-      if (mask && !mask[key]) {
-        newShape[key] = this.shape[key];
-      } else {
-        const fieldSchema = this.shape[key];
-        let newField = fieldSchema;
-        while (newField instanceof ZodOptional) {
-          newField = newField._def.innerType;
-        }
-        newShape[key] = newField;
-      }
-    }
-    return new _ZodObject({
-      ...this._def,
-      shape: () => newShape
-    });
-  }
-  keyof() {
-    return createZodEnum(util.objectKeys(this.shape));
-  }
-};
-ZodObject.create = (shape, params) => {
-  return new ZodObject({
-    shape: () => shape,
-    unknownKeys: "strip",
-    catchall: ZodNever.create(),
-    typeName: ZodFirstPartyTypeKind.ZodObject,
-    ...processCreateParams(params)
-  });
-};
-ZodObject.strictCreate = (shape, params) => {
-  return new ZodObject({
-    shape: () => shape,
-    unknownKeys: "strict",
-    catchall: ZodNever.create(),
-    typeName: ZodFirstPartyTypeKind.ZodObject,
-    ...processCreateParams(params)
-  });
-};
-ZodObject.lazycreate = (shape, params) => {
-  return new ZodObject({
-    shape,
-    unknownKeys: "strip",
-    catchall: ZodNever.create(),
-    typeName: ZodFirstPartyTypeKind.ZodObject,
-    ...processCreateParams(params)
-  });
-};
-var ZodUnion = class extends ZodType {
-  _parse(input) {
-    const { ctx } = this._processInputParams(input);
-    const options = this._def.options;
-    function handleResults(results) {
-      for (const result of results) {
-        if (result.result.status === "valid") {
-          return result.result;
-        }
-      }
-      for (const result of results) {
-        if (result.result.status === "dirty") {
-          ctx.common.issues.push(...result.ctx.common.issues);
-          return result.result;
-        }
-      }
-      const unionErrors = results.map((result) => new ZodError(result.ctx.common.issues));
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.invalid_union,
-        unionErrors
-      });
-      return INVALID;
-    }
-    if (ctx.common.async) {
-      return Promise.all(options.map(async (option) => {
-        const childCtx = {
-          ...ctx,
-          common: {
-            ...ctx.common,
-            issues: []
-          },
-          parent: null
-        };
-        return {
-          result: await option._parseAsync({
-            data: ctx.data,
-            path: ctx.path,
-            parent: childCtx
-          }),
-          ctx: childCtx
-        };
-      })).then(handleResults);
-    } else {
-      let dirty = void 0;
-      const issues = [];
-      for (const option of options) {
-        const childCtx = {
-          ...ctx,
-          common: {
-            ...ctx.common,
-            issues: []
-          },
-          parent: null
-        };
-        const result = option._parseSync({
-          data: ctx.data,
-          path: ctx.path,
-          parent: childCtx
-        });
-        if (result.status === "valid") {
-          return result;
-        } else if (result.status === "dirty" && !dirty) {
-          dirty = { result, ctx: childCtx };
-        }
-        if (childCtx.common.issues.length) {
-          issues.push(childCtx.common.issues);
-        }
-      }
-      if (dirty) {
-        ctx.common.issues.push(...dirty.ctx.common.issues);
-        return dirty.result;
-      }
-      const unionErrors = issues.map((issues2) => new ZodError(issues2));
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.invalid_union,
-        unionErrors
-      });
-      return INVALID;
-    }
-  }
-  get options() {
-    return this._def.options;
-  }
-};
-ZodUnion.create = (types3, params) => {
-  return new ZodUnion({
-    options: types3,
-    typeName: ZodFirstPartyTypeKind.ZodUnion,
-    ...processCreateParams(params)
-  });
-};
-var getDiscriminator = (type) => {
-  if (type instanceof ZodLazy) {
-    return getDiscriminator(type.schema);
-  } else if (type instanceof ZodEffects) {
-    return getDiscriminator(type.innerType());
-  } else if (type instanceof ZodLiteral) {
-    return [type.value];
-  } else if (type instanceof ZodEnum) {
-    return type.options;
-  } else if (type instanceof ZodNativeEnum) {
-    return util.objectValues(type.enum);
-  } else if (type instanceof ZodDefault) {
-    return getDiscriminator(type._def.innerType);
-  } else if (type instanceof ZodUndefined) {
-    return [void 0];
-  } else if (type instanceof ZodNull) {
-    return [null];
-  } else if (type instanceof ZodOptional) {
-    return [void 0, ...getDiscriminator(type.unwrap())];
-  } else if (type instanceof ZodNullable) {
-    return [null, ...getDiscriminator(type.unwrap())];
-  } else if (type instanceof ZodBranded) {
-    return getDiscriminator(type.unwrap());
-  } else if (type instanceof ZodReadonly) {
-    return getDiscriminator(type.unwrap());
-  } else if (type instanceof ZodCatch) {
-    return getDiscriminator(type._def.innerType);
-  } else {
-    return [];
-  }
-};
-var ZodDiscriminatedUnion = class _ZodDiscriminatedUnion extends ZodType {
-  _parse(input) {
-    const { ctx } = this._processInputParams(input);
-    if (ctx.parsedType !== ZodParsedType.object) {
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.object,
-        received: ctx.parsedType
-      });
-      return INVALID;
-    }
-    const discriminator = this.discriminator;
-    const discriminatorValue = ctx.data[discriminator];
-    const option = this.optionsMap.get(discriminatorValue);
-    if (!option) {
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.invalid_union_discriminator,
-        options: Array.from(this.optionsMap.keys()),
-        path: [discriminator]
-      });
-      return INVALID;
-    }
-    if (ctx.common.async) {
-      return option._parseAsync({
-        data: ctx.data,
-        path: ctx.path,
-        parent: ctx
-      });
-    } else {
-      return option._parseSync({
-        data: ctx.data,
-        path: ctx.path,
-        parent: ctx
-      });
-    }
-  }
-  get discriminator() {
-    return this._def.discriminator;
-  }
-  get options() {
-    return this._def.options;
-  }
-  get optionsMap() {
-    return this._def.optionsMap;
-  }
-  /**
-   * The constructor of the discriminated union schema. Its behaviour is very similar to that of the normal z.union() constructor.
-   * However, it only allows a union of objects, all of which need to share a discriminator property. This property must
-   * have a different value for each object in the union.
-   * @param discriminator the name of the discriminator property
-   * @param types an array of object schemas
-   * @param params
-   */
-  static create(discriminator, options, params) {
-    const optionsMap = /* @__PURE__ */ new Map();
-    for (const type of options) {
-      const discriminatorValues = getDiscriminator(type.shape[discriminator]);
-      if (!discriminatorValues.length) {
-        throw new Error(`A discriminator value for key \`${discriminator}\` could not be extracted from all schema options`);
-      }
-      for (const value of discriminatorValues) {
-        if (optionsMap.has(value)) {
-          throw new Error(`Discriminator property ${String(discriminator)} has duplicate value ${String(value)}`);
-        }
-        optionsMap.set(value, type);
-      }
-    }
-    return new _ZodDiscriminatedUnion({
-      typeName: ZodFirstPartyTypeKind.ZodDiscriminatedUnion,
-      discriminator,
-      options,
-      optionsMap,
-      ...processCreateParams(params)
-    });
-  }
-};
-function mergeValues(a, b) {
-  const aType = getParsedType(a);
-  const bType = getParsedType(b);
-  if (a === b) {
-    return { valid: true, data: a };
-  } else if (aType === ZodParsedType.object && bType === ZodParsedType.object) {
-    const bKeys = util.objectKeys(b);
-    const sharedKeys = util.objectKeys(a).filter((key) => bKeys.indexOf(key) !== -1);
-    const newObj = { ...a, ...b };
-    for (const key of sharedKeys) {
-      const sharedValue = mergeValues(a[key], b[key]);
-      if (!sharedValue.valid) {
-        return { valid: false };
-      }
-      newObj[key] = sharedValue.data;
-    }
-    return { valid: true, data: newObj };
-  } else if (aType === ZodParsedType.array && bType === ZodParsedType.array) {
-    if (a.length !== b.length) {
-      return { valid: false };
-    }
-    const newArray = [];
-    for (let index = 0; index < a.length; index++) {
-      const itemA = a[index];
-      const itemB = b[index];
-      const sharedValue = mergeValues(itemA, itemB);
-      if (!sharedValue.valid) {
-        return { valid: false };
-      }
-      newArray.push(sharedValue.data);
-    }
-    return { valid: true, data: newArray };
-  } else if (aType === ZodParsedType.date && bType === ZodParsedType.date && +a === +b) {
-    return { valid: true, data: a };
-  } else {
-    return { valid: false };
-  }
-}
-var ZodIntersection = class extends ZodType {
-  _parse(input) {
-    const { status, ctx } = this._processInputParams(input);
-    const handleParsed = (parsedLeft, parsedRight) => {
-      if (isAborted(parsedLeft) || isAborted(parsedRight)) {
-        return INVALID;
-      }
-      const merged = mergeValues(parsedLeft.value, parsedRight.value);
-      if (!merged.valid) {
-        addIssueToContext(ctx, {
-          code: ZodIssueCode.invalid_intersection_types
-        });
-        return INVALID;
-      }
-      if (isDirty(parsedLeft) || isDirty(parsedRight)) {
-        status.dirty();
-      }
-      return { status: status.value, value: merged.data };
-    };
-    if (ctx.common.async) {
-      return Promise.all([
-        this._def.left._parseAsync({
-          data: ctx.data,
-          path: ctx.path,
-          parent: ctx
-        }),
-        this._def.right._parseAsync({
-          data: ctx.data,
-          path: ctx.path,
-          parent: ctx
-        })
-      ]).then(([left, right]) => handleParsed(left, right));
-    } else {
-      return handleParsed(this._def.left._parseSync({
-        data: ctx.data,
-        path: ctx.path,
-        parent: ctx
-      }), this._def.right._parseSync({
-        data: ctx.data,
-        path: ctx.path,
-        parent: ctx
-      }));
-    }
-  }
-};
-ZodIntersection.create = (left, right, params) => {
-  return new ZodIntersection({
-    left,
-    right,
-    typeName: ZodFirstPartyTypeKind.ZodIntersection,
-    ...processCreateParams(params)
-  });
-};
-var ZodTuple = class _ZodTuple extends ZodType {
-  _parse(input) {
-    const { status, ctx } = this._processInputParams(input);
-    if (ctx.parsedType !== ZodParsedType.array) {
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.array,
-        received: ctx.parsedType
-      });
-      return INVALID;
-    }
-    if (ctx.data.length < this._def.items.length) {
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.too_small,
-        minimum: this._def.items.length,
-        inclusive: true,
-        exact: false,
-        type: "array"
-      });
-      return INVALID;
-    }
-    const rest = this._def.rest;
-    if (!rest && ctx.data.length > this._def.items.length) {
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.too_big,
-        maximum: this._def.items.length,
-        inclusive: true,
-        exact: false,
-        type: "array"
-      });
-      status.dirty();
-    }
-    const items = [...ctx.data].map((item, itemIndex) => {
-      const schema = this._def.items[itemIndex] || this._def.rest;
-      if (!schema)
-        return null;
-      return schema._parse(new ParseInputLazyPath(ctx, item, ctx.path, itemIndex));
-    }).filter((x) => !!x);
-    if (ctx.common.async) {
-      return Promise.all(items).then((results) => {
-        return ParseStatus.mergeArray(status, results);
-      });
-    } else {
-      return ParseStatus.mergeArray(status, items);
-    }
-  }
-  get items() {
-    return this._def.items;
-  }
-  rest(rest) {
-    return new _ZodTuple({
-      ...this._def,
-      rest
-    });
-  }
-};
-ZodTuple.create = (schemas, params) => {
-  if (!Array.isArray(schemas)) {
-    throw new Error("You must pass an array of schemas to z.tuple([ ... ])");
-  }
-  return new ZodTuple({
-    items: schemas,
-    typeName: ZodFirstPartyTypeKind.ZodTuple,
-    rest: null,
-    ...processCreateParams(params)
-  });
-};
-var ZodRecord = class _ZodRecord extends ZodType {
-  get keySchema() {
-    return this._def.keyType;
-  }
-  get valueSchema() {
-    return this._def.valueType;
-  }
-  _parse(input) {
-    const { status, ctx } = this._processInputParams(input);
-    if (ctx.parsedType !== ZodParsedType.object) {
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.object,
-        received: ctx.parsedType
-      });
-      return INVALID;
-    }
-    const pairs = [];
-    const keyType = this._def.keyType;
-    const valueType = this._def.valueType;
-    for (const key in ctx.data) {
-      pairs.push({
-        key: keyType._parse(new ParseInputLazyPath(ctx, key, ctx.path, key)),
-        value: valueType._parse(new ParseInputLazyPath(ctx, ctx.data[key], ctx.path, key)),
-        alwaysSet: key in ctx.data
-      });
-    }
-    if (ctx.common.async) {
-      return ParseStatus.mergeObjectAsync(status, pairs);
-    } else {
-      return ParseStatus.mergeObjectSync(status, pairs);
-    }
-  }
-  get element() {
-    return this._def.valueType;
-  }
-  static create(first, second, third) {
-    if (second instanceof ZodType) {
-      return new _ZodRecord({
-        keyType: first,
-        valueType: second,
-        typeName: ZodFirstPartyTypeKind.ZodRecord,
-        ...processCreateParams(third)
-      });
-    }
-    return new _ZodRecord({
-      keyType: ZodString.create(),
-      valueType: first,
-      typeName: ZodFirstPartyTypeKind.ZodRecord,
-      ...processCreateParams(second)
-    });
-  }
-};
-var ZodMap = class extends ZodType {
-  get keySchema() {
-    return this._def.keyType;
-  }
-  get valueSchema() {
-    return this._def.valueType;
-  }
-  _parse(input) {
-    const { status, ctx } = this._processInputParams(input);
-    if (ctx.parsedType !== ZodParsedType.map) {
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.map,
-        received: ctx.parsedType
-      });
-      return INVALID;
-    }
-    const keyType = this._def.keyType;
-    const valueType = this._def.valueType;
-    const pairs = [...ctx.data.entries()].map(([key, value], index) => {
-      return {
-        key: keyType._parse(new ParseInputLazyPath(ctx, key, ctx.path, [index, "key"])),
-        value: valueType._parse(new ParseInputLazyPath(ctx, value, ctx.path, [index, "value"]))
-      };
-    });
-    if (ctx.common.async) {
-      const finalMap = /* @__PURE__ */ new Map();
-      return Promise.resolve().then(async () => {
-        for (const pair of pairs) {
-          const key = await pair.key;
-          const value = await pair.value;
-          if (key.status === "aborted" || value.status === "aborted") {
-            return INVALID;
-          }
-          if (key.status === "dirty" || value.status === "dirty") {
-            status.dirty();
-          }
-          finalMap.set(key.value, value.value);
-        }
-        return { status: status.value, value: finalMap };
-      });
-    } else {
-      const finalMap = /* @__PURE__ */ new Map();
-      for (const pair of pairs) {
-        const key = pair.key;
-        const value = pair.value;
-        if (key.status === "aborted" || value.status === "aborted") {
-          return INVALID;
-        }
-        if (key.status === "dirty" || value.status === "dirty") {
-          status.dirty();
-        }
-        finalMap.set(key.value, value.value);
-      }
-      return { status: status.value, value: finalMap };
-    }
-  }
-};
-ZodMap.create = (keyType, valueType, params) => {
-  return new ZodMap({
-    valueType,
-    keyType,
-    typeName: ZodFirstPartyTypeKind.ZodMap,
-    ...processCreateParams(params)
-  });
-};
-var ZodSet = class _ZodSet extends ZodType {
-  _parse(input) {
-    const { status, ctx } = this._processInputParams(input);
-    if (ctx.parsedType !== ZodParsedType.set) {
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.set,
-        received: ctx.parsedType
-      });
-      return INVALID;
-    }
-    const def = this._def;
-    if (def.minSize !== null) {
-      if (ctx.data.size < def.minSize.value) {
-        addIssueToContext(ctx, {
-          code: ZodIssueCode.too_small,
-          minimum: def.minSize.value,
-          type: "set",
-          inclusive: true,
-          exact: false,
-          message: def.minSize.message
-        });
-        status.dirty();
-      }
-    }
-    if (def.maxSize !== null) {
-      if (ctx.data.size > def.maxSize.value) {
-        addIssueToContext(ctx, {
-          code: ZodIssueCode.too_big,
-          maximum: def.maxSize.value,
-          type: "set",
-          inclusive: true,
-          exact: false,
-          message: def.maxSize.message
-        });
-        status.dirty();
-      }
-    }
-    const valueType = this._def.valueType;
-    function finalizeSet(elements2) {
-      const parsedSet = /* @__PURE__ */ new Set();
-      for (const element of elements2) {
-        if (element.status === "aborted")
-          return INVALID;
-        if (element.status === "dirty")
-          status.dirty();
-        parsedSet.add(element.value);
-      }
-      return { status: status.value, value: parsedSet };
-    }
-    const elements = [...ctx.data.values()].map((item, i) => valueType._parse(new ParseInputLazyPath(ctx, item, ctx.path, i)));
-    if (ctx.common.async) {
-      return Promise.all(elements).then((elements2) => finalizeSet(elements2));
-    } else {
-      return finalizeSet(elements);
-    }
-  }
-  min(minSize, message) {
-    return new _ZodSet({
-      ...this._def,
-      minSize: { value: minSize, message: errorUtil.toString(message) }
-    });
-  }
-  max(maxSize, message) {
-    return new _ZodSet({
-      ...this._def,
-      maxSize: { value: maxSize, message: errorUtil.toString(message) }
-    });
-  }
-  size(size, message) {
-    return this.min(size, message).max(size, message);
-  }
-  nonempty(message) {
-    return this.min(1, message);
-  }
-};
-ZodSet.create = (valueType, params) => {
-  return new ZodSet({
-    valueType,
-    minSize: null,
-    maxSize: null,
-    typeName: ZodFirstPartyTypeKind.ZodSet,
-    ...processCreateParams(params)
-  });
-};
-var ZodFunction = class _ZodFunction extends ZodType {
-  constructor() {
-    super(...arguments);
-    this.validate = this.implement;
-  }
-  _parse(input) {
-    const { ctx } = this._processInputParams(input);
-    if (ctx.parsedType !== ZodParsedType.function) {
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.function,
-        received: ctx.parsedType
-      });
-      return INVALID;
-    }
-    function makeArgsIssue(args, error40) {
-      return makeIssue({
-        data: args,
-        path: ctx.path,
-        errorMaps: [ctx.common.contextualErrorMap, ctx.schemaErrorMap, getErrorMap(), en_default].filter((x) => !!x),
-        issueData: {
-          code: ZodIssueCode.invalid_arguments,
-          argumentsError: error40
-        }
-      });
-    }
-    function makeReturnsIssue(returns, error40) {
-      return makeIssue({
-        data: returns,
-        path: ctx.path,
-        errorMaps: [ctx.common.contextualErrorMap, ctx.schemaErrorMap, getErrorMap(), en_default].filter((x) => !!x),
-        issueData: {
-          code: ZodIssueCode.invalid_return_type,
-          returnTypeError: error40
-        }
-      });
-    }
-    const params = { errorMap: ctx.common.contextualErrorMap };
-    const fn = ctx.data;
-    if (this._def.returns instanceof ZodPromise) {
-      const me = this;
-      return OK(async function(...args) {
-        const error40 = new ZodError([]);
-        const parsedArgs = await me._def.args.parseAsync(args, params).catch((e) => {
-          error40.addIssue(makeArgsIssue(args, e));
-          throw error40;
-        });
-        const result = await Reflect.apply(fn, this, parsedArgs);
-        const parsedReturns = await me._def.returns._def.type.parseAsync(result, params).catch((e) => {
-          error40.addIssue(makeReturnsIssue(result, e));
-          throw error40;
-        });
-        return parsedReturns;
-      });
-    } else {
-      const me = this;
-      return OK(function(...args) {
-        const parsedArgs = me._def.args.safeParse(args, params);
-        if (!parsedArgs.success) {
-          throw new ZodError([makeArgsIssue(args, parsedArgs.error)]);
-        }
-        const result = Reflect.apply(fn, this, parsedArgs.data);
-        const parsedReturns = me._def.returns.safeParse(result, params);
-        if (!parsedReturns.success) {
-          throw new ZodError([makeReturnsIssue(result, parsedReturns.error)]);
-        }
-        return parsedReturns.data;
-      });
-    }
-  }
-  parameters() {
-    return this._def.args;
-  }
-  returnType() {
-    return this._def.returns;
-  }
-  args(...items) {
-    return new _ZodFunction({
-      ...this._def,
-      args: ZodTuple.create(items).rest(ZodUnknown.create())
-    });
-  }
-  returns(returnType) {
-    return new _ZodFunction({
-      ...this._def,
-      returns: returnType
-    });
-  }
-  implement(func) {
-    const validatedFunc = this.parse(func);
-    return validatedFunc;
-  }
-  strictImplement(func) {
-    const validatedFunc = this.parse(func);
-    return validatedFunc;
-  }
-  static create(args, returns, params) {
-    return new _ZodFunction({
-      args: args ? args : ZodTuple.create([]).rest(ZodUnknown.create()),
-      returns: returns || ZodUnknown.create(),
-      typeName: ZodFirstPartyTypeKind.ZodFunction,
-      ...processCreateParams(params)
-    });
-  }
-};
-var ZodLazy = class extends ZodType {
-  get schema() {
-    return this._def.getter();
-  }
-  _parse(input) {
-    const { ctx } = this._processInputParams(input);
-    const lazySchema = this._def.getter();
-    return lazySchema._parse({ data: ctx.data, path: ctx.path, parent: ctx });
-  }
-};
-ZodLazy.create = (getter, params) => {
-  return new ZodLazy({
-    getter,
-    typeName: ZodFirstPartyTypeKind.ZodLazy,
-    ...processCreateParams(params)
-  });
-};
-var ZodLiteral = class extends ZodType {
-  _parse(input) {
-    if (input.data !== this._def.value) {
-      const ctx = this._getOrReturnCtx(input);
-      addIssueToContext(ctx, {
-        received: ctx.data,
-        code: ZodIssueCode.invalid_literal,
-        expected: this._def.value
-      });
-      return INVALID;
-    }
-    return { status: "valid", value: input.data };
-  }
-  get value() {
-    return this._def.value;
-  }
-};
-ZodLiteral.create = (value, params) => {
-  return new ZodLiteral({
-    value,
-    typeName: ZodFirstPartyTypeKind.ZodLiteral,
-    ...processCreateParams(params)
-  });
-};
-function createZodEnum(values, params) {
-  return new ZodEnum({
-    values,
-    typeName: ZodFirstPartyTypeKind.ZodEnum,
-    ...processCreateParams(params)
-  });
-}
-var ZodEnum = class _ZodEnum extends ZodType {
-  _parse(input) {
-    if (typeof input.data !== "string") {
-      const ctx = this._getOrReturnCtx(input);
-      const expectedValues = this._def.values;
-      addIssueToContext(ctx, {
-        expected: util.joinValues(expectedValues),
-        received: ctx.parsedType,
-        code: ZodIssueCode.invalid_type
-      });
-      return INVALID;
-    }
-    if (!this._cache) {
-      this._cache = new Set(this._def.values);
-    }
-    if (!this._cache.has(input.data)) {
-      const ctx = this._getOrReturnCtx(input);
-      const expectedValues = this._def.values;
-      addIssueToContext(ctx, {
-        received: ctx.data,
-        code: ZodIssueCode.invalid_enum_value,
-        options: expectedValues
-      });
-      return INVALID;
-    }
-    return OK(input.data);
-  }
-  get options() {
-    return this._def.values;
-  }
-  get enum() {
-    const enumValues = {};
-    for (const val of this._def.values) {
-      enumValues[val] = val;
-    }
-    return enumValues;
-  }
-  get Values() {
-    const enumValues = {};
-    for (const val of this._def.values) {
-      enumValues[val] = val;
-    }
-    return enumValues;
-  }
-  get Enum() {
-    const enumValues = {};
-    for (const val of this._def.values) {
-      enumValues[val] = val;
-    }
-    return enumValues;
-  }
-  extract(values, newDef = this._def) {
-    return _ZodEnum.create(values, {
-      ...this._def,
-      ...newDef
-    });
-  }
-  exclude(values, newDef = this._def) {
-    return _ZodEnum.create(this.options.filter((opt) => !values.includes(opt)), {
-      ...this._def,
-      ...newDef
-    });
-  }
-};
-ZodEnum.create = createZodEnum;
-var ZodNativeEnum = class extends ZodType {
-  _parse(input) {
-    const nativeEnumValues = util.getValidEnumValues(this._def.values);
-    const ctx = this._getOrReturnCtx(input);
-    if (ctx.parsedType !== ZodParsedType.string && ctx.parsedType !== ZodParsedType.number) {
-      const expectedValues = util.objectValues(nativeEnumValues);
-      addIssueToContext(ctx, {
-        expected: util.joinValues(expectedValues),
-        received: ctx.parsedType,
-        code: ZodIssueCode.invalid_type
-      });
-      return INVALID;
-    }
-    if (!this._cache) {
-      this._cache = new Set(util.getValidEnumValues(this._def.values));
-    }
-    if (!this._cache.has(input.data)) {
-      const expectedValues = util.objectValues(nativeEnumValues);
-      addIssueToContext(ctx, {
-        received: ctx.data,
-        code: ZodIssueCode.invalid_enum_value,
-        options: expectedValues
-      });
-      return INVALID;
-    }
-    return OK(input.data);
-  }
-  get enum() {
-    return this._def.values;
-  }
-};
-ZodNativeEnum.create = (values, params) => {
-  return new ZodNativeEnum({
-    values,
-    typeName: ZodFirstPartyTypeKind.ZodNativeEnum,
-    ...processCreateParams(params)
-  });
-};
-var ZodPromise = class extends ZodType {
-  unwrap() {
-    return this._def.type;
-  }
-  _parse(input) {
-    const { ctx } = this._processInputParams(input);
-    if (ctx.parsedType !== ZodParsedType.promise && ctx.common.async === false) {
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.promise,
-        received: ctx.parsedType
-      });
-      return INVALID;
-    }
-    const promisified = ctx.parsedType === ZodParsedType.promise ? ctx.data : Promise.resolve(ctx.data);
-    return OK(promisified.then((data) => {
-      return this._def.type.parseAsync(data, {
-        path: ctx.path,
-        errorMap: ctx.common.contextualErrorMap
-      });
-    }));
-  }
-};
-ZodPromise.create = (schema, params) => {
-  return new ZodPromise({
-    type: schema,
-    typeName: ZodFirstPartyTypeKind.ZodPromise,
-    ...processCreateParams(params)
-  });
-};
-var ZodEffects = class extends ZodType {
-  innerType() {
-    return this._def.schema;
-  }
-  sourceType() {
-    return this._def.schema._def.typeName === ZodFirstPartyTypeKind.ZodEffects ? this._def.schema.sourceType() : this._def.schema;
-  }
-  _parse(input) {
-    const { status, ctx } = this._processInputParams(input);
-    const effect = this._def.effect || null;
-    const checkCtx = {
-      addIssue: (arg) => {
-        addIssueToContext(ctx, arg);
-        if (arg.fatal) {
-          status.abort();
-        } else {
-          status.dirty();
-        }
-      },
-      get path() {
-        return ctx.path;
-      }
-    };
-    checkCtx.addIssue = checkCtx.addIssue.bind(checkCtx);
-    if (effect.type === "preprocess") {
-      const processed = effect.transform(ctx.data, checkCtx);
-      if (ctx.common.async) {
-        return Promise.resolve(processed).then(async (processed2) => {
-          if (status.value === "aborted")
-            return INVALID;
-          const result = await this._def.schema._parseAsync({
-            data: processed2,
-            path: ctx.path,
-            parent: ctx
-          });
-          if (result.status === "aborted")
-            return INVALID;
-          if (result.status === "dirty")
-            return DIRTY(result.value);
-          if (status.value === "dirty")
-            return DIRTY(result.value);
-          return result;
-        });
-      } else {
-        if (status.value === "aborted")
-          return INVALID;
-        const result = this._def.schema._parseSync({
-          data: processed,
-          path: ctx.path,
-          parent: ctx
-        });
-        if (result.status === "aborted")
-          return INVALID;
-        if (result.status === "dirty")
-          return DIRTY(result.value);
-        if (status.value === "dirty")
-          return DIRTY(result.value);
-        return result;
-      }
-    }
-    if (effect.type === "refinement") {
-      const executeRefinement = (acc) => {
-        const result = effect.refinement(acc, checkCtx);
-        if (ctx.common.async) {
-          return Promise.resolve(result);
-        }
-        if (result instanceof Promise) {
-          throw new Error("Async refinement encountered during synchronous parse operation. Use .parseAsync instead.");
-        }
-        return acc;
-      };
-      if (ctx.common.async === false) {
-        const inner = this._def.schema._parseSync({
-          data: ctx.data,
-          path: ctx.path,
-          parent: ctx
-        });
-        if (inner.status === "aborted")
-          return INVALID;
-        if (inner.status === "dirty")
-          status.dirty();
-        executeRefinement(inner.value);
-        return { status: status.value, value: inner.value };
-      } else {
-        return this._def.schema._parseAsync({ data: ctx.data, path: ctx.path, parent: ctx }).then((inner) => {
-          if (inner.status === "aborted")
-            return INVALID;
-          if (inner.status === "dirty")
-            status.dirty();
-          return executeRefinement(inner.value).then(() => {
-            return { status: status.value, value: inner.value };
-          });
-        });
-      }
-    }
-    if (effect.type === "transform") {
-      if (ctx.common.async === false) {
-        const base = this._def.schema._parseSync({
-          data: ctx.data,
-          path: ctx.path,
-          parent: ctx
-        });
-        if (!isValid(base))
-          return INVALID;
-        const result = effect.transform(base.value, checkCtx);
-        if (result instanceof Promise) {
-          throw new Error(`Asynchronous transform encountered during synchronous parse operation. Use .parseAsync instead.`);
-        }
-        return { status: status.value, value: result };
-      } else {
-        return this._def.schema._parseAsync({ data: ctx.data, path: ctx.path, parent: ctx }).then((base) => {
-          if (!isValid(base))
-            return INVALID;
-          return Promise.resolve(effect.transform(base.value, checkCtx)).then((result) => ({
-            status: status.value,
-            value: result
-          }));
-        });
-      }
-    }
-    util.assertNever(effect);
-  }
-};
-ZodEffects.create = (schema, effect, params) => {
-  return new ZodEffects({
-    schema,
-    typeName: ZodFirstPartyTypeKind.ZodEffects,
-    effect,
-    ...processCreateParams(params)
-  });
-};
-ZodEffects.createWithPreprocess = (preprocess2, schema, params) => {
-  return new ZodEffects({
-    schema,
-    effect: { type: "preprocess", transform: preprocess2 },
-    typeName: ZodFirstPartyTypeKind.ZodEffects,
-    ...processCreateParams(params)
-  });
-};
-var ZodOptional = class extends ZodType {
-  _parse(input) {
-    const parsedType4 = this._getType(input);
-    if (parsedType4 === ZodParsedType.undefined) {
-      return OK(void 0);
-    }
-    return this._def.innerType._parse(input);
-  }
-  unwrap() {
-    return this._def.innerType;
-  }
-};
-ZodOptional.create = (type, params) => {
-  return new ZodOptional({
-    innerType: type,
-    typeName: ZodFirstPartyTypeKind.ZodOptional,
-    ...processCreateParams(params)
-  });
-};
-var ZodNullable = class extends ZodType {
-  _parse(input) {
-    const parsedType4 = this._getType(input);
-    if (parsedType4 === ZodParsedType.null) {
-      return OK(null);
-    }
-    return this._def.innerType._parse(input);
-  }
-  unwrap() {
-    return this._def.innerType;
-  }
-};
-ZodNullable.create = (type, params) => {
-  return new ZodNullable({
-    innerType: type,
-    typeName: ZodFirstPartyTypeKind.ZodNullable,
-    ...processCreateParams(params)
-  });
-};
-var ZodDefault = class extends ZodType {
-  _parse(input) {
-    const { ctx } = this._processInputParams(input);
-    let data = ctx.data;
-    if (ctx.parsedType === ZodParsedType.undefined) {
-      data = this._def.defaultValue();
-    }
-    return this._def.innerType._parse({
-      data,
-      path: ctx.path,
-      parent: ctx
-    });
-  }
-  removeDefault() {
-    return this._def.innerType;
-  }
-};
-ZodDefault.create = (type, params) => {
-  return new ZodDefault({
-    innerType: type,
-    typeName: ZodFirstPartyTypeKind.ZodDefault,
-    defaultValue: typeof params.default === "function" ? params.default : () => params.default,
-    ...processCreateParams(params)
-  });
-};
-var ZodCatch = class extends ZodType {
-  _parse(input) {
-    const { ctx } = this._processInputParams(input);
-    const newCtx = {
-      ...ctx,
-      common: {
-        ...ctx.common,
-        issues: []
-      }
-    };
-    const result = this._def.innerType._parse({
-      data: newCtx.data,
-      path: newCtx.path,
-      parent: {
-        ...newCtx
-      }
-    });
-    if (isAsync(result)) {
-      return result.then((result2) => {
-        return {
-          status: "valid",
-          value: result2.status === "valid" ? result2.value : this._def.catchValue({
-            get error() {
-              return new ZodError(newCtx.common.issues);
-            },
-            input: newCtx.data
-          })
-        };
-      });
-    } else {
-      return {
-        status: "valid",
-        value: result.status === "valid" ? result.value : this._def.catchValue({
-          get error() {
-            return new ZodError(newCtx.common.issues);
-          },
-          input: newCtx.data
-        })
-      };
-    }
-  }
-  removeCatch() {
-    return this._def.innerType;
-  }
-};
-ZodCatch.create = (type, params) => {
-  return new ZodCatch({
-    innerType: type,
-    typeName: ZodFirstPartyTypeKind.ZodCatch,
-    catchValue: typeof params.catch === "function" ? params.catch : () => params.catch,
-    ...processCreateParams(params)
-  });
-};
-var ZodNaN = class extends ZodType {
-  _parse(input) {
-    const parsedType4 = this._getType(input);
-    if (parsedType4 !== ZodParsedType.nan) {
-      const ctx = this._getOrReturnCtx(input);
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.nan,
-        received: ctx.parsedType
-      });
-      return INVALID;
-    }
-    return { status: "valid", value: input.data };
-  }
-};
-ZodNaN.create = (params) => {
-  return new ZodNaN({
-    typeName: ZodFirstPartyTypeKind.ZodNaN,
-    ...processCreateParams(params)
-  });
-};
-var ZodBranded = class extends ZodType {
-  _parse(input) {
-    const { ctx } = this._processInputParams(input);
-    const data = ctx.data;
-    return this._def.type._parse({
-      data,
-      path: ctx.path,
-      parent: ctx
-    });
-  }
-  unwrap() {
-    return this._def.type;
-  }
-};
-var ZodPipeline = class _ZodPipeline extends ZodType {
-  _parse(input) {
-    const { status, ctx } = this._processInputParams(input);
-    if (ctx.common.async) {
-      const handleAsync = async () => {
-        const inResult = await this._def.in._parseAsync({
-          data: ctx.data,
-          path: ctx.path,
-          parent: ctx
-        });
-        if (inResult.status === "aborted")
-          return INVALID;
-        if (inResult.status === "dirty") {
-          status.dirty();
-          return DIRTY(inResult.value);
-        } else {
-          return this._def.out._parseAsync({
-            data: inResult.value,
-            path: ctx.path,
-            parent: ctx
-          });
-        }
-      };
-      return handleAsync();
-    } else {
-      const inResult = this._def.in._parseSync({
-        data: ctx.data,
-        path: ctx.path,
-        parent: ctx
-      });
-      if (inResult.status === "aborted")
-        return INVALID;
-      if (inResult.status === "dirty") {
-        status.dirty();
-        return {
-          status: "dirty",
-          value: inResult.value
-        };
-      } else {
-        return this._def.out._parseSync({
-          data: inResult.value,
-          path: ctx.path,
-          parent: ctx
-        });
-      }
-    }
-  }
-  static create(a, b) {
-    return new _ZodPipeline({
-      in: a,
-      out: b,
-      typeName: ZodFirstPartyTypeKind.ZodPipeline
-    });
-  }
-};
-var ZodReadonly = class extends ZodType {
-  _parse(input) {
-    const result = this._def.innerType._parse(input);
-    const freeze = (data) => {
-      if (isValid(data)) {
-        data.value = Object.freeze(data.value);
-      }
-      return data;
-    };
-    return isAsync(result) ? result.then((data) => freeze(data)) : freeze(result);
-  }
-  unwrap() {
-    return this._def.innerType;
-  }
-};
-ZodReadonly.create = (type, params) => {
-  return new ZodReadonly({
-    innerType: type,
-    typeName: ZodFirstPartyTypeKind.ZodReadonly,
-    ...processCreateParams(params)
-  });
-};
-var late = {
-  object: ZodObject.lazycreate
-};
-var ZodFirstPartyTypeKind;
-(function(ZodFirstPartyTypeKind2) {
-  ZodFirstPartyTypeKind2["ZodString"] = "ZodString";
-  ZodFirstPartyTypeKind2["ZodNumber"] = "ZodNumber";
-  ZodFirstPartyTypeKind2["ZodNaN"] = "ZodNaN";
-  ZodFirstPartyTypeKind2["ZodBigInt"] = "ZodBigInt";
-  ZodFirstPartyTypeKind2["ZodBoolean"] = "ZodBoolean";
-  ZodFirstPartyTypeKind2["ZodDate"] = "ZodDate";
-  ZodFirstPartyTypeKind2["ZodSymbol"] = "ZodSymbol";
-  ZodFirstPartyTypeKind2["ZodUndefined"] = "ZodUndefined";
-  ZodFirstPartyTypeKind2["ZodNull"] = "ZodNull";
-  ZodFirstPartyTypeKind2["ZodAny"] = "ZodAny";
-  ZodFirstPartyTypeKind2["ZodUnknown"] = "ZodUnknown";
-  ZodFirstPartyTypeKind2["ZodNever"] = "ZodNever";
-  ZodFirstPartyTypeKind2["ZodVoid"] = "ZodVoid";
-  ZodFirstPartyTypeKind2["ZodArray"] = "ZodArray";
-  ZodFirstPartyTypeKind2["ZodObject"] = "ZodObject";
-  ZodFirstPartyTypeKind2["ZodUnion"] = "ZodUnion";
-  ZodFirstPartyTypeKind2["ZodDiscriminatedUnion"] = "ZodDiscriminatedUnion";
-  ZodFirstPartyTypeKind2["ZodIntersection"] = "ZodIntersection";
-  ZodFirstPartyTypeKind2["ZodTuple"] = "ZodTuple";
-  ZodFirstPartyTypeKind2["ZodRecord"] = "ZodRecord";
-  ZodFirstPartyTypeKind2["ZodMap"] = "ZodMap";
-  ZodFirstPartyTypeKind2["ZodSet"] = "ZodSet";
-  ZodFirstPartyTypeKind2["ZodFunction"] = "ZodFunction";
-  ZodFirstPartyTypeKind2["ZodLazy"] = "ZodLazy";
-  ZodFirstPartyTypeKind2["ZodLiteral"] = "ZodLiteral";
-  ZodFirstPartyTypeKind2["ZodEnum"] = "ZodEnum";
-  ZodFirstPartyTypeKind2["ZodEffects"] = "ZodEffects";
-  ZodFirstPartyTypeKind2["ZodNativeEnum"] = "ZodNativeEnum";
-  ZodFirstPartyTypeKind2["ZodOptional"] = "ZodOptional";
-  ZodFirstPartyTypeKind2["ZodNullable"] = "ZodNullable";
-  ZodFirstPartyTypeKind2["ZodDefault"] = "ZodDefault";
-  ZodFirstPartyTypeKind2["ZodCatch"] = "ZodCatch";
-  ZodFirstPartyTypeKind2["ZodPromise"] = "ZodPromise";
-  ZodFirstPartyTypeKind2["ZodBranded"] = "ZodBranded";
-  ZodFirstPartyTypeKind2["ZodPipeline"] = "ZodPipeline";
-  ZodFirstPartyTypeKind2["ZodReadonly"] = "ZodReadonly";
-})(ZodFirstPartyTypeKind || (ZodFirstPartyTypeKind = {}));
-var stringType = ZodString.create;
-var numberType = ZodNumber.create;
-var nanType = ZodNaN.create;
-var bigIntType = ZodBigInt.create;
-var booleanType = ZodBoolean.create;
-var dateType = ZodDate.create;
-var symbolType = ZodSymbol.create;
-var undefinedType = ZodUndefined.create;
-var nullType = ZodNull.create;
-var anyType = ZodAny.create;
-var unknownType = ZodUnknown.create;
-var neverType = ZodNever.create;
-var voidType = ZodVoid.create;
-var arrayType = ZodArray.create;
-var objectType = ZodObject.create;
-var strictObjectType = ZodObject.strictCreate;
-var unionType = ZodUnion.create;
-var discriminatedUnionType = ZodDiscriminatedUnion.create;
-var intersectionType = ZodIntersection.create;
-var tupleType = ZodTuple.create;
-var recordType = ZodRecord.create;
-var mapType = ZodMap.create;
-var setType = ZodSet.create;
-var functionType = ZodFunction.create;
-var lazyType = ZodLazy.create;
-var literalType = ZodLiteral.create;
-var enumType = ZodEnum.create;
-var nativeEnumType = ZodNativeEnum.create;
-var promiseType = ZodPromise.create;
-var effectsType = ZodEffects.create;
-var optionalType = ZodOptional.create;
-var nullableType = ZodNullable.create;
-var preprocessType = ZodEffects.createWithPreprocess;
-var pipelineType = ZodPipeline.create;
-var coerce = {
-  string: ((arg) => ZodString.create({ ...arg, coerce: true })),
-  number: ((arg) => ZodNumber.create({ ...arg, coerce: true })),
-  boolean: ((arg) => ZodBoolean.create({
-    ...arg,
-    coerce: true
-  })),
-  bigint: ((arg) => ZodBigInt.create({ ...arg, coerce: true })),
-  date: ((arg) => ZodDate.create({ ...arg, coerce: true }))
-};
-
-// ../../lib/api-zod/src/generated/api.ts
-var HealthCheckResponse = objectType({
-  status: stringType()
-});
-var AnalyzeFoodImageBody = objectType({
-  imageBase64: stringType().describe("Base64-encoded image (without data URL prefix)"),
-  mimeType: stringType().describe("MIME type of the image (e.g. image/jpeg)")
-});
-var AnalyzeFoodImageResponse = objectType({
-  foodName: stringType(),
-  servingSize: stringType(),
-  calories: numberType(),
-  protein: numberType(),
-  carbs: numberType(),
-  fat: numberType(),
-  confidence: enumType(["high", "medium", "low"]),
-  notes: stringType()
-});
-var ListFoodsQueryParams = objectType({
-  search: coerce.string().optional().describe("Search foods by name")
-});
-var ListFoodsResponseItem = objectType({
-  id: numberType(),
-  name: stringType(),
-  calories: numberType(),
-  protein: numberType(),
-  carbs: numberType(),
-  fat: numberType(),
-  servingSize: stringType(),
-  createdAt: coerce.date()
-});
-var ListFoodsResponse = arrayType(ListFoodsResponseItem);
-var CreateFoodBody = objectType({
-  name: stringType(),
-  calories: numberType(),
-  protein: numberType(),
-  carbs: numberType(),
-  fat: numberType(),
-  servingSize: stringType()
-});
-var GetFoodParams = objectType({
-  id: coerce.number()
-});
-var GetFoodResponse = objectType({
-  id: numberType(),
-  name: stringType(),
-  calories: numberType(),
-  protein: numberType(),
-  carbs: numberType(),
-  fat: numberType(),
-  servingSize: stringType(),
-  createdAt: coerce.date()
-});
-var UpdateFoodParams = objectType({
-  id: coerce.number()
-});
-var UpdateFoodBody = objectType({
-  name: stringType().optional(),
-  calories: numberType().optional(),
-  protein: numberType().optional(),
-  carbs: numberType().optional(),
-  fat: numberType().optional(),
-  servingSize: stringType().optional()
-});
-var UpdateFoodResponse = objectType({
-  id: numberType(),
-  name: stringType(),
-  calories: numberType(),
-  protein: numberType(),
-  carbs: numberType(),
-  fat: numberType(),
-  servingSize: stringType(),
-  createdAt: coerce.date()
-});
-var DeleteFoodParams = objectType({
-  id: coerce.number()
-});
-var ListMealsQueryParams = objectType({
-  date: coerce.string().describe("Date in YYYY-MM-DD format")
-});
-var ListMealsResponseItem = objectType({
-  id: numberType(),
-  foodId: numberType(),
-  foodName: stringType(),
-  mealType: enumType(["breakfast", "lunch", "dinner", "snack"]),
-  servings: numberType(),
-  calories: numberType(),
-  protein: numberType(),
-  carbs: numberType(),
-  fat: numberType(),
-  date: coerce.date(),
-  createdAt: coerce.date()
-});
-var ListMealsResponse = arrayType(ListMealsResponseItem);
-var CreateMealBody = objectType({
-  foodId: numberType(),
-  mealType: enumType(["breakfast", "lunch", "dinner", "snack"]),
-  servings: numberType(),
-  date: coerce.date()
-});
-var GetMealParams = objectType({
-  id: coerce.number()
-});
-var GetMealResponse = objectType({
-  id: numberType(),
-  foodId: numberType(),
-  foodName: stringType(),
-  mealType: enumType(["breakfast", "lunch", "dinner", "snack"]),
-  servings: numberType(),
-  calories: numberType(),
-  protein: numberType(),
-  carbs: numberType(),
-  fat: numberType(),
-  date: coerce.date(),
-  createdAt: coerce.date()
-});
-var UpdateMealParams = objectType({
-  id: coerce.number()
-});
-var UpdateMealBody = objectType({
-  mealType: enumType(["breakfast", "lunch", "dinner", "snack"]).optional(),
-  servings: numberType().optional()
-});
-var UpdateMealResponse = objectType({
-  id: numberType(),
-  foodId: numberType(),
-  foodName: stringType(),
-  mealType: enumType(["breakfast", "lunch", "dinner", "snack"]),
-  servings: numberType(),
-  calories: numberType(),
-  protein: numberType(),
-  carbs: numberType(),
-  fat: numberType(),
-  date: coerce.date(),
-  createdAt: coerce.date()
-});
-var DeleteMealParams = objectType({
-  id: coerce.number()
-});
-var GetGoalResponse = objectType({
-  id: numberType(),
-  dailyCalories: numberType(),
-  dailyProtein: numberType(),
-  dailyCarbs: numberType(),
-  dailyFat: numberType(),
-  updatedAt: coerce.date()
-});
-var SetGoalBody = objectType({
-  dailyCalories: numberType(),
-  dailyProtein: numberType(),
-  dailyCarbs: numberType(),
-  dailyFat: numberType()
-});
-var SetGoalResponse = objectType({
-  id: numberType(),
-  dailyCalories: numberType(),
-  dailyProtein: numberType(),
-  dailyCarbs: numberType(),
-  dailyFat: numberType(),
-  updatedAt: coerce.date()
-});
-var GetDailySummaryQueryParams = objectType({
-  date: coerce.string().describe("Date in YYYY-MM-DD format")
-});
-var GetDailySummaryResponse = objectType({
-  date: coerce.date(),
-  totalCalories: numberType(),
-  totalProtein: numberType(),
-  totalCarbs: numberType(),
-  totalFat: numberType(),
-  goalCalories: numberType(),
-  goalProtein: numberType(),
-  goalCarbs: numberType(),
-  goalFat: numberType(),
-  mealCount: numberType()
-});
-var GetWeeklyStatsQueryParams = objectType({
-  date: coerce.string().describe("Any date within the desired week (YYYY-MM-DD)")
-});
-var GetWeeklyStatsResponseItem = objectType({
-  date: coerce.date(),
-  totalCalories: numberType(),
-  goalCalories: numberType()
-});
-var GetWeeklyStatsResponse = arrayType(GetWeeklyStatsResponseItem);
-var getRecentMealsQueryLimitDefault = 5;
-var GetRecentMealsQueryParams = objectType({
-  limit: coerce.number().default(getRecentMealsQueryLimitDefault)
-});
-var GetRecentMealsResponseItem = objectType({
-  id: numberType(),
-  foodId: numberType(),
-  foodName: stringType(),
-  mealType: enumType(["breakfast", "lunch", "dinner", "snack"]),
-  servings: numberType(),
-  calories: numberType(),
-  protein: numberType(),
-  carbs: numberType(),
-  fat: numberType(),
-  date: coerce.date(),
-  createdAt: coerce.date()
-});
-var GetRecentMealsResponse = arrayType(GetRecentMealsResponseItem);
-var GetMealTypeBreakdownQueryParams = objectType({
-  date: coerce.string()
-});
-var GetMealTypeBreakdownResponseItem = objectType({
-  mealType: stringType(),
-  totalCalories: numberType(),
-  count: numberType()
-});
-var GetMealTypeBreakdownResponse = arrayType(
-  GetMealTypeBreakdownResponseItem
+  })
 );
-var GetWellnessEntryQueryParams = objectType({
-  date: coerce.string().describe("Date in YYYY-MM-DD format")
+app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
+app.use((0, import_cors.default)({ credentials: true, origin: true }));
+app.use(import_express.default.json({ limit: "20mb" }));
+app.use(import_express.default.urlencoded({ extended: true, limit: "20mb" }));
+app.use(clerkMiddleware());
+app.use((req, res, next) => {
+  const auth = getAuth(req);
+  const userId = auth?.sessionClaims?.userId || auth?.userId;
+  if (userId) {
+    req.userId = userId;
+  }
+  next();
 });
-var GetWellnessEntryResponse = objectType({
-  id: numberType(),
-  date: stringType(),
-  caloriesBurned: numberType().nullish(),
-  mood: stringType().nullish(),
-  stressLevel: numberType().nullish(),
-  bedtime: stringType().nullish(),
-  wakeTime: stringType().nullish(),
-  supplements: stringType().nullish(),
-  medications: stringType().nullish(),
-  recordedAt: coerce.date(),
-  updatedAt: coerce.date()
-});
-var UpsertWellnessEntryBody = objectType({
-  date: stringType().describe("Date in YYYY-MM-DD format"),
-  caloriesBurned: numberType().nullish(),
-  mood: stringType().nullish(),
-  stressLevel: numberType().nullish(),
-  bedtime: stringType().nullish(),
-  wakeTime: stringType().nullish(),
-  supplements: stringType().nullish(),
-  medications: stringType().nullish()
-});
-var UpsertWellnessEntryResponse = objectType({
-  id: numberType(),
-  date: stringType(),
-  caloriesBurned: numberType().nullish(),
-  mood: stringType().nullish(),
-  stressLevel: numberType().nullish(),
-  bedtime: stringType().nullish(),
-  wakeTime: stringType().nullish(),
-  supplements: stringType().nullish(),
-  medications: stringType().nullish(),
-  recordedAt: coerce.date(),
-  updatedAt: coerce.date()
-});
-var GetWellnessHistoryQueryParams = objectType({
-  from: coerce.string().describe("Start date YYYY-MM-DD"),
-  to: coerce.string().describe("End date YYYY-MM-DD")
-});
-var GetWellnessHistoryResponseItem = objectType({
-  id: numberType(),
-  date: stringType(),
-  caloriesBurned: numberType().nullish(),
-  mood: stringType().nullish(),
-  stressLevel: numberType().nullish(),
-  bedtime: stringType().nullish(),
-  wakeTime: stringType().nullish(),
-  supplements: stringType().nullish(),
-  medications: stringType().nullish(),
-  recordedAt: coerce.date(),
-  updatedAt: coerce.date()
-});
-var GetWellnessHistoryResponse = arrayType(
-  GetWellnessHistoryResponseItem
-);
+var app_default = app;
 
-// src/routes/health.ts
-var router = (0, import_express.Router)();
-router.get("/healthz", (_req, res) => {
-  const data = HealthCheckResponse.parse({ status: "ok" });
-  res.json(data);
-});
-var health_default = router;
-
-// src/routes/foods.ts
-var import_express2 = __toESM(require_express2(), 1);
+// ../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/esm/index.mjs
+var import_lib = __toESM(require_lib5(), 1);
+var Client2 = import_lib.default.Client;
+var Pool = import_lib.default.Pool;
+var Connection = import_lib.default.Connection;
+var types = import_lib.default.types;
+var Query = import_lib.default.Query;
+var DatabaseError = import_lib.default.DatabaseError;
+var escapeIdentifier = import_lib.default.escapeIdentifier;
+var escapeLiteral = import_lib.default.escapeLiteral;
+var Result = import_lib.default.Result;
+var TypeOverrides = import_lib.default.TypeOverrides;
+var defaults = import_lib.default.defaults;
+var esm_default = import_lib.default;
 
 // ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/entity.js
 var entityKind = /* @__PURE__ */ Symbol.for("drizzle:entityKind");
@@ -74342,6 +69938,61 @@ function is(value, type) {
   }
   return false;
 }
+
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/logger.js
+var ConsoleLogWriter = class {
+  static [entityKind] = "ConsoleLogWriter";
+  write(message) {
+    console.log(message);
+  }
+};
+var DefaultLogger = class {
+  static [entityKind] = "DefaultLogger";
+  writer;
+  constructor(config2) {
+    this.writer = config2?.writer ?? new ConsoleLogWriter();
+  }
+  logQuery(query, params) {
+    const stringifiedParams = params.map((p) => {
+      try {
+        return JSON.stringify(p);
+      } catch {
+        return String(p);
+      }
+    });
+    const paramsStr = stringifiedParams.length ? ` -- params: [${stringifiedParams.join(", ")}]` : "";
+    this.writer.write(`Query: ${query}${paramsStr}`);
+  }
+};
+var NoopLogger = class {
+  static [entityKind] = "NoopLogger";
+  logQuery() {
+  }
+};
+
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/query-promise.js
+var QueryPromise = class {
+  static [entityKind] = "QueryPromise";
+  [Symbol.toStringTag] = "QueryPromise";
+  catch(onRejected) {
+    return this.then(void 0, onRejected);
+  }
+  finally(onFinally) {
+    return this.then(
+      (value) => {
+        onFinally?.();
+        return value;
+      },
+      (reason) => {
+        onFinally?.();
+        throw reason;
+      }
+    );
+  }
+  then(onFulfilled, onRejected) {
+    return this.execute().then(onFulfilled, onRejected);
+  }
+};
 
 // ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/column.js
 var Column = class {
@@ -75346,8 +70997,8 @@ function sql(strings, ...params) {
     return new SQL(list);
   }
   sql2.fromList = fromList;
-  function raw(str2) {
-    return new SQL([new StringChunk(str2)]);
+  function raw(str) {
+    return new SQL([new StringChunk(str)]);
   }
   sql2.raw = raw;
   function join(chunks, separator) {
@@ -75550,85 +71201,71 @@ function mapColumnsInSQLToAlias(query, alias) {
   }));
 }
 
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/errors.js
-var DrizzleError = class extends Error {
-  static [entityKind] = "DrizzleError";
-  constructor({ message, cause }) {
-    super(message);
-    this.name = "DrizzleError";
-    this.cause = cause;
-  }
-};
-var DrizzleQueryError = class _DrizzleQueryError extends Error {
-  constructor(query, params, cause) {
-    super(`Failed query: ${query}
-params: ${params}`);
-    this.query = query;
-    this.params = params;
-    this.cause = cause;
-    Error.captureStackTrace(this, _DrizzleQueryError);
-    if (cause) this.cause = cause;
-  }
-};
-var TransactionRollbackError = class extends DrizzleError {
-  static [entityKind] = "TransactionRollbackError";
-  constructor() {
-    super({ message: "Rollback" });
-  }
-};
-
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/logger.js
-var ConsoleLogWriter = class {
-  static [entityKind] = "ConsoleLogWriter";
-  write(message) {
-    console.log(message);
-  }
-};
-var DefaultLogger = class {
-  static [entityKind] = "DefaultLogger";
-  writer;
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/selection-proxy.js
+var SelectionProxyHandler = class _SelectionProxyHandler {
+  static [entityKind] = "SelectionProxyHandler";
+  config;
   constructor(config2) {
-    this.writer = config2?.writer ?? new ConsoleLogWriter();
+    this.config = { ...config2 };
   }
-  logQuery(query, params) {
-    const stringifiedParams = params.map((p) => {
-      try {
-        return JSON.stringify(p);
-      } catch {
-        return String(p);
+  get(subquery, prop) {
+    if (prop === "_") {
+      return {
+        ...subquery["_"],
+        selectedFields: new Proxy(
+          subquery._.selectedFields,
+          this
+        )
+      };
+    }
+    if (prop === ViewBaseConfig) {
+      return {
+        ...subquery[ViewBaseConfig],
+        selectedFields: new Proxy(
+          subquery[ViewBaseConfig].selectedFields,
+          this
+        )
+      };
+    }
+    if (typeof prop === "symbol") {
+      return subquery[prop];
+    }
+    const columns = is(subquery, Subquery) ? subquery._.selectedFields : is(subquery, View) ? subquery[ViewBaseConfig].selectedFields : subquery;
+    const value = columns[prop];
+    if (is(value, SQL.Aliased)) {
+      if (this.config.sqlAliasedBehavior === "sql" && !value.isSelectionField) {
+        return value.sql;
       }
-    });
-    const paramsStr = stringifiedParams.length ? ` -- params: [${stringifiedParams.join(", ")}]` : "";
-    this.writer.write(`Query: ${query}${paramsStr}`);
-  }
-};
-var NoopLogger = class {
-  static [entityKind] = "NoopLogger";
-  logQuery() {
-  }
-};
-
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/query-promise.js
-var QueryPromise = class {
-  static [entityKind] = "QueryPromise";
-  [Symbol.toStringTag] = "QueryPromise";
-  catch(onRejected) {
-    return this.then(void 0, onRejected);
-  }
-  finally(onFinally) {
-    return this.then(
-      (value) => {
-        onFinally?.();
+      const newValue = value.clone();
+      newValue.isSelectionField = true;
+      return newValue;
+    }
+    if (is(value, SQL)) {
+      if (this.config.sqlBehavior === "sql") {
         return value;
-      },
-      (reason) => {
-        onFinally?.();
-        throw reason;
       }
-    );
-  }
-  then(onFulfilled, onRejected) {
-    return this.execute().then(onFulfilled, onRejected);
+      throw new Error(
+        `You tried to reference "${prop}" field from a subquery, which is a raw SQL field, but it doesn't have an alias declared. Please add an alias to the field using ".as('alias')" method.`
+      );
+    }
+    if (is(value, Column)) {
+      if (this.config.alias) {
+        return new Proxy(
+          value,
+          new ColumnAliasProxyHandler(
+            new Proxy(
+              value.table,
+              new TableAliasProxyHandler(this.config.alias, this.config.replaceOriginalName ?? false)
+            )
+          )
+        );
+      }
+      return value;
+    }
+    if (typeof value !== "object" || value === null) {
+      return value;
+    }
+    return new Proxy(value, new _SelectionProxyHandler(this.config));
   }
 };
 
@@ -75636,7 +71273,7 @@ var QueryPromise = class {
 function mapResultRow(columns, row, joinsNotNullableMap) {
   const nullifyMap = {};
   const result = columns.reduce(
-    (result2, { path: path2, field }, columnIndex) => {
+    (result2, { path, field }, columnIndex) => {
       let decoder;
       if (is(field, Column)) {
         decoder = field;
@@ -75648,8 +71285,8 @@ function mapResultRow(columns, row, joinsNotNullableMap) {
         decoder = field.sql.decoder;
       }
       let node = result2;
-      for (const [pathChunkIndex, pathChunk] of path2.entries()) {
-        if (pathChunkIndex < path2.length - 1) {
+      for (const [pathChunkIndex, pathChunk] of path.entries()) {
+        if (pathChunkIndex < path.length - 1) {
           if (!(pathChunk in node)) {
             node[pathChunk] = {};
           }
@@ -75657,8 +71294,8 @@ function mapResultRow(columns, row, joinsNotNullableMap) {
         } else {
           const rawValue = row[columnIndex];
           const value = node[pathChunk] = rawValue === null ? null : decoder.mapFromDriverValue(rawValue);
-          if (joinsNotNullableMap && is(field, Column) && path2.length === 2) {
-            const objectName = path2[0];
+          if (joinsNotNullableMap && is(field, Column) && path.length === 2) {
+            const objectName = path[0];
             if (!(objectName in nullifyMap)) {
               nullifyMap[objectName] = value === null ? getTableName(field.table) : false;
             } else if (typeof nullifyMap[objectName] === "string" && nullifyMap[objectName] !== getTableName(field.table)) {
@@ -77228,6 +72865,85 @@ var PrimaryKey = class {
   }
 };
 
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/casing.js
+function toSnakeCase(input) {
+  const words = input.replace(/['\u2019]/g, "").match(/[\da-z]+|[A-Z]+(?![a-z])|[A-Z][\da-z]+/g) ?? [];
+  return words.map((word) => word.toLowerCase()).join("_");
+}
+function toCamelCase(input) {
+  const words = input.replace(/['\u2019]/g, "").match(/[\da-z]+|[A-Z]+(?![a-z])|[A-Z][\da-z]+/g) ?? [];
+  return words.reduce((acc, word, i) => {
+    const formattedWord = i === 0 ? word.toLowerCase() : `${word[0].toUpperCase()}${word.slice(1)}`;
+    return acc + formattedWord;
+  }, "");
+}
+function noopCase(input) {
+  return input;
+}
+var CasingCache = class {
+  static [entityKind] = "CasingCache";
+  /** @internal */
+  cache = {};
+  cachedTables = {};
+  convert;
+  constructor(casing) {
+    this.convert = casing === "snake_case" ? toSnakeCase : casing === "camelCase" ? toCamelCase : noopCase;
+  }
+  getColumnCasing(column) {
+    if (!column.keyAsName) return column.name;
+    const schema = column.table[Table.Symbol.Schema] ?? "public";
+    const tableName = column.table[Table.Symbol.OriginalName];
+    const key = `${schema}.${tableName}.${column.name}`;
+    if (!this.cache[key]) {
+      this.cacheTable(column.table);
+    }
+    return this.cache[key];
+  }
+  cacheTable(table) {
+    const schema = table[Table.Symbol.Schema] ?? "public";
+    const tableName = table[Table.Symbol.OriginalName];
+    const tableKey = `${schema}.${tableName}`;
+    if (!this.cachedTables[tableKey]) {
+      for (const column of Object.values(table[Table.Symbol.Columns])) {
+        const columnKey = `${tableKey}.${column.name}`;
+        this.cache[columnKey] = this.convert(column.name);
+      }
+      this.cachedTables[tableKey] = true;
+    }
+  }
+  clearCache() {
+    this.cache = {};
+    this.cachedTables = {};
+  }
+};
+
+// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/errors.js
+var DrizzleError = class extends Error {
+  static [entityKind] = "DrizzleError";
+  constructor({ message, cause }) {
+    super(message);
+    this.name = "DrizzleError";
+    this.cause = cause;
+  }
+};
+var DrizzleQueryError = class _DrizzleQueryError extends Error {
+  constructor(query, params, cause) {
+    super(`Failed query: ${query}
+params: ${params}`);
+    this.query = query;
+    this.params = params;
+    this.cause = cause;
+    Error.captureStackTrace(this, _DrizzleQueryError);
+    if (cause) this.cause = cause;
+  }
+};
+var TransactionRollbackError = class extends DrizzleError {
+  static [entityKind] = "TransactionRollbackError";
+  constructor() {
+    super({ message: "Rollback" });
+  }
+};
+
 // ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/sql/expressions/conditions.js
 function bindIfParam(value, column) {
   if (isDriverValueEncoder(column) && !isSQLWrapper(value) && !is(value, Param) && !is(value, Placeholder) && !is(value, Column) && !is(value, Table) && !is(value, View)) {
@@ -77612,141 +73328,6 @@ function mapRelationalRow(tablesConfig, tableConfig, row, buildQueryResultSelect
   return result;
 }
 
-// ../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/esm/index.mjs
-var import_lib = __toESM(require_lib5(), 1);
-var Client2 = import_lib.default.Client;
-var Pool = import_lib.default.Pool;
-var Connection = import_lib.default.Connection;
-var types = import_lib.default.types;
-var Query = import_lib.default.Query;
-var DatabaseError = import_lib.default.DatabaseError;
-var escapeIdentifier = import_lib.default.escapeIdentifier;
-var escapeLiteral = import_lib.default.escapeLiteral;
-var Result = import_lib.default.Result;
-var TypeOverrides = import_lib.default.TypeOverrides;
-var defaults = import_lib.default.defaults;
-var esm_default = import_lib.default;
-
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/selection-proxy.js
-var SelectionProxyHandler = class _SelectionProxyHandler {
-  static [entityKind] = "SelectionProxyHandler";
-  config;
-  constructor(config2) {
-    this.config = { ...config2 };
-  }
-  get(subquery, prop) {
-    if (prop === "_") {
-      return {
-        ...subquery["_"],
-        selectedFields: new Proxy(
-          subquery._.selectedFields,
-          this
-        )
-      };
-    }
-    if (prop === ViewBaseConfig) {
-      return {
-        ...subquery[ViewBaseConfig],
-        selectedFields: new Proxy(
-          subquery[ViewBaseConfig].selectedFields,
-          this
-        )
-      };
-    }
-    if (typeof prop === "symbol") {
-      return subquery[prop];
-    }
-    const columns = is(subquery, Subquery) ? subquery._.selectedFields : is(subquery, View) ? subquery[ViewBaseConfig].selectedFields : subquery;
-    const value = columns[prop];
-    if (is(value, SQL.Aliased)) {
-      if (this.config.sqlAliasedBehavior === "sql" && !value.isSelectionField) {
-        return value.sql;
-      }
-      const newValue = value.clone();
-      newValue.isSelectionField = true;
-      return newValue;
-    }
-    if (is(value, SQL)) {
-      if (this.config.sqlBehavior === "sql") {
-        return value;
-      }
-      throw new Error(
-        `You tried to reference "${prop}" field from a subquery, which is a raw SQL field, but it doesn't have an alias declared. Please add an alias to the field using ".as('alias')" method.`
-      );
-    }
-    if (is(value, Column)) {
-      if (this.config.alias) {
-        return new Proxy(
-          value,
-          new ColumnAliasProxyHandler(
-            new Proxy(
-              value.table,
-              new TableAliasProxyHandler(this.config.alias, this.config.replaceOriginalName ?? false)
-            )
-          )
-        );
-      }
-      return value;
-    }
-    if (typeof value !== "object" || value === null) {
-      return value;
-    }
-    return new Proxy(value, new _SelectionProxyHandler(this.config));
-  }
-};
-
-// ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/casing.js
-function toSnakeCase(input) {
-  const words = input.replace(/['\u2019]/g, "").match(/[\da-z]+|[A-Z]+(?![a-z])|[A-Z][\da-z]+/g) ?? [];
-  return words.map((word) => word.toLowerCase()).join("_");
-}
-function toCamelCase(input) {
-  const words = input.replace(/['\u2019]/g, "").match(/[\da-z]+|[A-Z]+(?![a-z])|[A-Z][\da-z]+/g) ?? [];
-  return words.reduce((acc, word, i) => {
-    const formattedWord = i === 0 ? word.toLowerCase() : `${word[0].toUpperCase()}${word.slice(1)}`;
-    return acc + formattedWord;
-  }, "");
-}
-function noopCase(input) {
-  return input;
-}
-var CasingCache = class {
-  static [entityKind] = "CasingCache";
-  /** @internal */
-  cache = {};
-  cachedTables = {};
-  convert;
-  constructor(casing) {
-    this.convert = casing === "snake_case" ? toSnakeCase : casing === "camelCase" ? toCamelCase : noopCase;
-  }
-  getColumnCasing(column) {
-    if (!column.keyAsName) return column.name;
-    const schema = column.table[Table.Symbol.Schema] ?? "public";
-    const tableName = column.table[Table.Symbol.OriginalName];
-    const key = `${schema}.${tableName}.${column.name}`;
-    if (!this.cache[key]) {
-      this.cacheTable(column.table);
-    }
-    return this.cache[key];
-  }
-  cacheTable(table) {
-    const schema = table[Table.Symbol.Schema] ?? "public";
-    const tableName = table[Table.Symbol.OriginalName];
-    const tableKey = `${schema}.${tableName}`;
-    if (!this.cachedTables[tableKey]) {
-      for (const column of Object.values(table[Table.Symbol.Columns])) {
-        const columnKey = `${tableKey}.${column.name}`;
-        this.cache[columnKey] = this.convert(column.name);
-      }
-      this.cachedTables[tableKey] = true;
-    }
-  }
-  clearCache() {
-    this.cache = {};
-    this.cachedTables = {};
-  }
-};
-
 // ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.21.0/node_modules/drizzle-orm/pg-core/view-base.js
 var PgViewBase = class extends View {
   static [entityKind] = "PgViewBase";
@@ -77795,8 +73376,8 @@ var PgDialect = class {
   escapeParam(num) {
     return `$${num + 1}`;
   }
-  escapeString(str2) {
-    return `'${str2.replace(/'/g, "''")}'`;
+  escapeString(str) {
+    return `'${str.replace(/'/g, "''")}'`;
   }
   buildWithCTE(queries) {
     if (!queries?.length) return void 0;
@@ -77966,7 +73547,7 @@ var PgDialect = class {
     joins,
     orderBy,
     groupBy,
-    limit: limit2,
+    limit,
     offset,
     lockingClause,
     distinct,
@@ -78002,7 +73583,7 @@ var PgDialect = class {
     if (groupBy && groupBy.length > 0) {
       groupBySql = sql` group by ${sql.join(groupBy, sql`, `)}`;
     }
-    const limitSql = typeof limit2 === "object" || typeof limit2 === "number" && limit2 >= 0 ? sql` limit ${limit2}` : void 0;
+    const limitSql = typeof limit === "object" || typeof limit === "number" && limit >= 0 ? sql` limit ${limit}` : void 0;
     const offsetSql = offset ? sql` offset ${offset}` : void 0;
     const lockingClauseSql = sql.empty();
     if (lockingClause) {
@@ -78043,7 +73624,7 @@ var PgDialect = class {
   }
   buildSetOperationQuery({
     leftSelect,
-    setOperator: { type, isAll, rightSelect, limit: limit2, orderBy, offset }
+    setOperator: { type, isAll, rightSelect, limit, orderBy, offset }
   }) {
     const leftChunk = sql`(${leftSelect.getSQL()}) `;
     const rightChunk = sql`(${rightSelect.getSQL()})`;
@@ -78067,7 +73648,7 @@ var PgDialect = class {
       }
       orderBySql = sql` order by ${sql.join(orderByValues, sql`, `)} `;
     }
-    const limitSql = typeof limit2 === "object" || typeof limit2 === "number" && limit2 >= 0 ? sql` limit ${limit2}` : void 0;
+    const limitSql = typeof limit === "object" || typeof limit === "number" && limit >= 0 ? sql` limit ${limit}` : void 0;
     const operatorChunk = sql.raw(`${type} ${isAll ? "all " : ""}`);
     const offsetSql = offset ? sql` offset ${offset}` : void 0;
     return sql`${leftChunk}${operatorChunk}${rightChunk}${orderBySql}${limitSql}${offsetSql}`;
@@ -78647,7 +74228,7 @@ var PgDialect = class {
     joinOn
   }) {
     let selection = [];
-    let limit2, offset, orderBy = [], where;
+    let limit, offset, orderBy = [], where;
     const joins = [];
     if (config2 === true) {
       const selectionEntries = Object.entries(tableConfig.columns);
@@ -78726,7 +74307,7 @@ var PgDialect = class {
         }
         return mapColumnsInSQLToAlias(orderByValue, tableAlias);
       });
-      limit2 = config2.limit;
+      limit = config2.limit;
       offset = config2.offset;
       for (const {
         tsKey: selectedRelationTsKey,
@@ -78797,7 +74378,7 @@ var PgDialect = class {
         relationTableTsKey: tableConfig.tsName,
         selection
       }];
-      const needsSubquery = limit2 !== void 0 || offset !== void 0 || orderBy.length > 0;
+      const needsSubquery = limit !== void 0 || offset !== void 0 || orderBy.length > 0;
       if (needsSubquery) {
         result = this.buildSelectQuery({
           table: aliasedTable(table, tableAlias),
@@ -78807,13 +74388,13 @@ var PgDialect = class {
             field: sql.raw("*")
           }],
           where,
-          limit: limit2,
+          limit,
           offset,
           orderBy,
           setOperators: []
         });
         where = void 0;
-        limit2 = void 0;
+        limit = void 0;
         offset = void 0;
         orderBy = [];
       } else {
@@ -78828,7 +74409,7 @@ var PgDialect = class {
         })),
         joins,
         where,
-        limit: limit2,
+        limit,
         offset,
         orderBy,
         setOperators: []
@@ -78843,7 +74424,7 @@ var PgDialect = class {
         })),
         joins,
         where,
-        limit: limit2,
+        limit,
         offset,
         orderBy,
         setOperators: []
@@ -79528,11 +75109,11 @@ var PgSelectQueryBuilderBase = class extends TypedQueryBuilder {
    * await db.select().from(people).limit(10);
    * ```
    */
-  limit(limit2) {
+  limit(limit) {
     if (this.config.setOperators.length > 0) {
-      this.config.setOperators.at(-1).limit = limit2;
+      this.config.setOperators.at(-1).limit = limit;
     } else {
-      this.config.limit = limit2;
+      this.config.limit = limit;
     }
     return this;
   }
@@ -81307,28 +76888,28 @@ __export(external_exports, {
   $output: () => $output,
   NEVER: () => NEVER,
   TimePrecision: () => TimePrecision,
-  ZodAny: () => ZodAny2,
-  ZodArray: () => ZodArray2,
+  ZodAny: () => ZodAny,
+  ZodArray: () => ZodArray,
   ZodBase64: () => ZodBase64,
   ZodBase64URL: () => ZodBase64URL,
-  ZodBigInt: () => ZodBigInt2,
+  ZodBigInt: () => ZodBigInt,
   ZodBigIntFormat: () => ZodBigIntFormat,
-  ZodBoolean: () => ZodBoolean2,
+  ZodBoolean: () => ZodBoolean,
   ZodCIDRv4: () => ZodCIDRv4,
   ZodCIDRv6: () => ZodCIDRv6,
   ZodCUID: () => ZodCUID,
   ZodCUID2: () => ZodCUID2,
-  ZodCatch: () => ZodCatch2,
+  ZodCatch: () => ZodCatch,
   ZodCustom: () => ZodCustom,
   ZodCustomStringFormat: () => ZodCustomStringFormat,
-  ZodDate: () => ZodDate2,
-  ZodDefault: () => ZodDefault2,
-  ZodDiscriminatedUnion: () => ZodDiscriminatedUnion2,
+  ZodDate: () => ZodDate,
+  ZodDefault: () => ZodDefault,
+  ZodDiscriminatedUnion: () => ZodDiscriminatedUnion,
   ZodE164: () => ZodE164,
   ZodEmail: () => ZodEmail,
   ZodEmoji: () => ZodEmoji,
-  ZodEnum: () => ZodEnum2,
-  ZodError: () => ZodError2,
+  ZodEnum: () => ZodEnum,
+  ZodError: () => ZodError,
   ZodFile: () => ZodFile,
   ZodGUID: () => ZodGUID,
   ZodIPv4: () => ZodIPv4,
@@ -81337,45 +76918,45 @@ __export(external_exports, {
   ZodISODateTime: () => ZodISODateTime,
   ZodISODuration: () => ZodISODuration,
   ZodISOTime: () => ZodISOTime,
-  ZodIntersection: () => ZodIntersection2,
-  ZodIssueCode: () => ZodIssueCode2,
+  ZodIntersection: () => ZodIntersection,
+  ZodIssueCode: () => ZodIssueCode,
   ZodJWT: () => ZodJWT,
   ZodKSUID: () => ZodKSUID,
-  ZodLazy: () => ZodLazy2,
-  ZodLiteral: () => ZodLiteral2,
-  ZodMap: () => ZodMap2,
-  ZodNaN: () => ZodNaN2,
+  ZodLazy: () => ZodLazy,
+  ZodLiteral: () => ZodLiteral,
+  ZodMap: () => ZodMap,
+  ZodNaN: () => ZodNaN,
   ZodNanoID: () => ZodNanoID,
-  ZodNever: () => ZodNever2,
+  ZodNever: () => ZodNever,
   ZodNonOptional: () => ZodNonOptional,
-  ZodNull: () => ZodNull2,
-  ZodNullable: () => ZodNullable2,
-  ZodNumber: () => ZodNumber2,
+  ZodNull: () => ZodNull,
+  ZodNullable: () => ZodNullable,
+  ZodNumber: () => ZodNumber,
   ZodNumberFormat: () => ZodNumberFormat,
-  ZodObject: () => ZodObject2,
-  ZodOptional: () => ZodOptional2,
+  ZodObject: () => ZodObject,
+  ZodOptional: () => ZodOptional,
   ZodPipe: () => ZodPipe,
   ZodPrefault: () => ZodPrefault,
-  ZodPromise: () => ZodPromise2,
-  ZodReadonly: () => ZodReadonly2,
+  ZodPromise: () => ZodPromise,
+  ZodReadonly: () => ZodReadonly,
   ZodRealError: () => ZodRealError,
-  ZodRecord: () => ZodRecord2,
-  ZodSet: () => ZodSet2,
-  ZodString: () => ZodString2,
+  ZodRecord: () => ZodRecord,
+  ZodSet: () => ZodSet,
+  ZodString: () => ZodString,
   ZodStringFormat: () => ZodStringFormat,
   ZodSuccess: () => ZodSuccess,
-  ZodSymbol: () => ZodSymbol2,
+  ZodSymbol: () => ZodSymbol,
   ZodTemplateLiteral: () => ZodTemplateLiteral,
   ZodTransform: () => ZodTransform,
-  ZodTuple: () => ZodTuple2,
-  ZodType: () => ZodType2,
+  ZodTuple: () => ZodTuple,
+  ZodType: () => ZodType,
   ZodULID: () => ZodULID,
   ZodURL: () => ZodURL,
   ZodUUID: () => ZodUUID,
-  ZodUndefined: () => ZodUndefined2,
-  ZodUnion: () => ZodUnion2,
-  ZodUnknown: () => ZodUnknown2,
-  ZodVoid: () => ZodVoid2,
+  ZodUndefined: () => ZodUndefined,
+  ZodUnion: () => ZodUnion,
+  ZodUnknown: () => ZodUnknown,
+  ZodVoid: () => ZodVoid,
   ZodXID: () => ZodXID,
   _ZodString: () => _ZodString,
   _default: () => _default2,
@@ -81409,7 +76990,7 @@ __export(external_exports, {
   float64: () => float64,
   formatError: () => formatError,
   function: () => _function,
-  getErrorMap: () => getErrorMap2,
+  getErrorMap: () => getErrorMap,
   globalRegistry: () => globalRegistry,
   gt: () => _gt,
   gte: () => _gte,
@@ -81739,7 +77320,7 @@ __export(core_exports2, {
   globalRegistry: () => globalRegistry,
   isValidBase64: () => isValidBase64,
   isValidBase64URL: () => isValidBase64URL,
-  isValidJWT: () => isValidJWT2,
+  isValidJWT: () => isValidJWT,
   locales: () => locales_exports,
   parse: () => parse2,
   parseAsync: () => parseAsync,
@@ -81762,12 +77343,12 @@ var NEVER = Object.freeze({
 // @__NO_SIDE_EFFECTS__
 function $constructor(name, initializer3, params) {
   function init(inst, def) {
-    var _a3;
+    var _a;
     Object.defineProperty(inst, "_zod", {
       value: inst._zod ?? {},
       enumerable: false
     });
-    (_a3 = inst._zod).traits ?? (_a3.traits = /* @__PURE__ */ new Set());
+    (_a = inst._zod).traits ?? (_a.traits = /* @__PURE__ */ new Set());
     inst._zod.traits.add(name);
     initializer3(inst, def);
     for (const k in _2.prototype) {
@@ -81782,10 +77363,10 @@ function $constructor(name, initializer3, params) {
   }
   Object.defineProperty(Definition, "name", { value: name });
   function _2(def) {
-    var _a3;
+    var _a;
     const inst = params?.Parent ? new Definition() : this;
     init(inst, def);
-    (_a3 = inst._zod).deferred ?? (_a3.deferred = []);
+    (_a = inst._zod).deferred ?? (_a.deferred = []);
     for (const fn of inst._zod.deferred) {
       fn();
     }
@@ -81840,11 +77421,11 @@ __export(util_exports, {
   escapeRegex: () => escapeRegex,
   extend: () => extend,
   finalizeIssue: () => finalizeIssue,
-  floatSafeRemainder: () => floatSafeRemainder2,
+  floatSafeRemainder: () => floatSafeRemainder,
   getElementAtPath: () => getElementAtPath,
   getEnumValues: () => getEnumValues,
   getLengthableOrigin: () => getLengthableOrigin,
-  getParsedType: () => getParsedType2,
+  getParsedType: () => getParsedType,
   getSizableOrigin: () => getSizableOrigin,
   isObject: () => isObject2,
   isPlainObject: () => isPlainObject2,
@@ -81915,7 +77496,7 @@ function cleanRegex(source) {
   const end = source.endsWith("$") ? source.length - 1 : source.length;
   return source.slice(start, end);
 }
-function floatSafeRemainder2(val, step) {
+function floatSafeRemainder(val, step) {
   const valDecCount = (val.toString().split(".")[1] || "").length;
   const stepDecCount = (step.toString().split(".")[1] || "").length;
   const decCount = valDecCount > stepDecCount ? valDecCount : stepDecCount;
@@ -81951,10 +77532,10 @@ function assignProp(target, prop, value) {
     configurable: true
   });
 }
-function getElementAtPath(obj, path2) {
-  if (!path2)
+function getElementAtPath(obj, path) {
+  if (!path)
     return obj;
-  return path2.reduce((acc, key) => acc?.[key], obj);
+  return path.reduce((acc, key) => acc?.[key], obj);
 }
 function promiseAllObject(promisesObj) {
   const keys = Object.keys(promisesObj);
@@ -81969,14 +77550,14 @@ function promiseAllObject(promisesObj) {
 }
 function randomString(length = 10) {
   const chars = "abcdefghijklmnopqrstuvwxyz";
-  let str2 = "";
+  let str = "";
   for (let i = 0; i < length; i++) {
-    str2 += chars[Math.floor(Math.random() * chars.length)];
+    str += chars[Math.floor(Math.random() * chars.length)];
   }
-  return str2;
+  return str;
 }
-function esc(str2) {
-  return JSON.stringify(str2);
+function esc(str) {
+  return JSON.stringify(str);
 }
 var captureStackTrace = Error.captureStackTrace ? Error.captureStackTrace : (..._args) => {
 };
@@ -82018,7 +77599,7 @@ function numKeys(data) {
   }
   return keyCount;
 }
-var getParsedType2 = (data) => {
+var getParsedType = (data) => {
   const t = typeof data;
   switch (t) {
     case "undefined":
@@ -82064,8 +77645,8 @@ var getParsedType2 = (data) => {
 };
 var propertyKeyTypes = /* @__PURE__ */ new Set(["string", "number", "symbol"]);
 var primitiveTypes = /* @__PURE__ */ new Set(["string", "number", "bigint", "boolean", "symbol", "undefined"]);
-function escapeRegex(str2) {
-  return str2.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+function escapeRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 function clone(inst, def, params) {
   const cl = new inst._zod.constr(def ?? inst._zod.def);
@@ -82274,11 +77855,11 @@ function aborted(x, startIndex = 0) {
   }
   return false;
 }
-function prefixIssues(path2, issues) {
+function prefixIssues(path, issues) {
   return issues.map((iss) => {
-    var _a3;
-    (_a3 = iss).path ?? (_a3.path = []);
-    iss.path.unshift(path2);
+    var _a;
+    (_a = iss).path ?? (_a.path = []);
+    iss.path.unshift(path);
     return iss;
   });
 }
@@ -82415,8 +77996,8 @@ function treeifyError(error40, _mapper) {
     return issue2.message;
   };
   const result = { errors: [] };
-  const processError = (error41, path2 = []) => {
-    var _a3, _b;
+  const processError = (error41, path = []) => {
+    var _a, _b;
     for (const issue2 of error41.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
         issue2.errors.map((issues) => processError({ issues }, issue2.path));
@@ -82425,7 +78006,7 @@ function treeifyError(error40, _mapper) {
       } else if (issue2.code === "invalid_element") {
         processError({ issues: issue2.issues }, issue2.path);
       } else {
-        const fullpath = [...path2, ...issue2.path];
+        const fullpath = [...path, ...issue2.path];
         if (fullpath.length === 0) {
           result.errors.push(mapper(issue2));
           continue;
@@ -82437,7 +78018,7 @@ function treeifyError(error40, _mapper) {
           const terminal = i === fullpath.length - 1;
           if (typeof el === "string") {
             curr.properties ?? (curr.properties = {});
-            (_a3 = curr.properties)[el] ?? (_a3[el] = { errors: [] });
+            (_a = curr.properties)[el] ?? (_a[el] = { errors: [] });
             curr = curr.properties[el];
           } else {
             curr.items ?? (curr.items = []);
@@ -82455,9 +78036,9 @@ function treeifyError(error40, _mapper) {
   processError(error40);
   return result;
 }
-function toDotPath(path2) {
+function toDotPath(path) {
   const segs = [];
-  for (const seg of path2) {
+  for (const seg of path) {
     if (typeof seg === "number")
       segs.push(`[${seg}]`);
     else if (typeof seg === "symbol")
@@ -82632,8 +78213,8 @@ function datetime(args) {
     opts.push("");
   if (args.offset)
     opts.push(`([+-]\\d{2}:\\d{2})`);
-  const timeRegex2 = `${time4}(?:${opts.join("|")})`;
-  return new RegExp(`^${dateSource}T(?:${timeRegex2})$`);
+  const timeRegex = `${time4}(?:${opts.join("|")})`;
+  return new RegExp(`^${dateSource}T(?:${timeRegex})$`);
 }
 var string = (params) => {
   const regex = params ? `[\\s\\S]{${params?.minimum ?? 0},${params?.maximum ?? ""}}` : `[\\s\\S]*`;
@@ -82650,10 +78231,10 @@ var uppercase = /^[^a-z]*$/;
 
 // ../../node_modules/.pnpm/zod@3.25.76/node_modules/zod/v4/core/checks.js
 var $ZodCheck = /* @__PURE__ */ $constructor("$ZodCheck", (inst, def) => {
-  var _a3;
+  var _a;
   inst._zod ?? (inst._zod = {});
   inst._zod.def = def;
-  (_a3 = inst._zod).onattach ?? (_a3.onattach = []);
+  (_a = inst._zod).onattach ?? (_a.onattach = []);
 });
 var numericOriginMap = {
   number: "number",
@@ -82719,13 +78300,13 @@ var $ZodCheckGreaterThan = /* @__PURE__ */ $constructor("$ZodCheckGreaterThan", 
 var $ZodCheckMultipleOf = /* @__PURE__ */ $constructor("$ZodCheckMultipleOf", (inst, def) => {
   $ZodCheck.init(inst, def);
   inst._zod.onattach.push((inst2) => {
-    var _a3;
-    (_a3 = inst2._zod.bag).multipleOf ?? (_a3.multipleOf = def.value);
+    var _a;
+    (_a = inst2._zod.bag).multipleOf ?? (_a.multipleOf = def.value);
   });
   inst._zod.check = (payload) => {
     if (typeof payload.value !== typeof def.value)
       throw new Error("Cannot mix number and bigint in multiple_of check.");
-    const isMultiple = typeof payload.value === "bigint" ? payload.value % def.value === BigInt(0) : floatSafeRemainder2(payload.value, def.value) === 0;
+    const isMultiple = typeof payload.value === "bigint" ? payload.value % def.value === BigInt(0) : floatSafeRemainder(payload.value, def.value) === 0;
     if (isMultiple)
       return;
     payload.issues.push({
@@ -82846,9 +78427,9 @@ var $ZodCheckBigIntFormat = /* @__PURE__ */ $constructor("$ZodCheckBigIntFormat"
   };
 });
 var $ZodCheckMaxSize = /* @__PURE__ */ $constructor("$ZodCheckMaxSize", (inst, def) => {
-  var _a3;
+  var _a;
   $ZodCheck.init(inst, def);
-  (_a3 = inst._zod.def).when ?? (_a3.when = (payload) => {
+  (_a = inst._zod.def).when ?? (_a.when = (payload) => {
     const val = payload.value;
     return !nullish(val) && val.size !== void 0;
   });
@@ -82873,9 +78454,9 @@ var $ZodCheckMaxSize = /* @__PURE__ */ $constructor("$ZodCheckMaxSize", (inst, d
   };
 });
 var $ZodCheckMinSize = /* @__PURE__ */ $constructor("$ZodCheckMinSize", (inst, def) => {
-  var _a3;
+  var _a;
   $ZodCheck.init(inst, def);
-  (_a3 = inst._zod.def).when ?? (_a3.when = (payload) => {
+  (_a = inst._zod.def).when ?? (_a.when = (payload) => {
     const val = payload.value;
     return !nullish(val) && val.size !== void 0;
   });
@@ -82900,9 +78481,9 @@ var $ZodCheckMinSize = /* @__PURE__ */ $constructor("$ZodCheckMinSize", (inst, d
   };
 });
 var $ZodCheckSizeEquals = /* @__PURE__ */ $constructor("$ZodCheckSizeEquals", (inst, def) => {
-  var _a3;
+  var _a;
   $ZodCheck.init(inst, def);
-  (_a3 = inst._zod.def).when ?? (_a3.when = (payload) => {
+  (_a = inst._zod.def).when ?? (_a.when = (payload) => {
     const val = payload.value;
     return !nullish(val) && val.size !== void 0;
   });
@@ -82930,9 +78511,9 @@ var $ZodCheckSizeEquals = /* @__PURE__ */ $constructor("$ZodCheckSizeEquals", (i
   };
 });
 var $ZodCheckMaxLength = /* @__PURE__ */ $constructor("$ZodCheckMaxLength", (inst, def) => {
-  var _a3;
+  var _a;
   $ZodCheck.init(inst, def);
-  (_a3 = inst._zod.def).when ?? (_a3.when = (payload) => {
+  (_a = inst._zod.def).when ?? (_a.when = (payload) => {
     const val = payload.value;
     return !nullish(val) && val.length !== void 0;
   });
@@ -82959,9 +78540,9 @@ var $ZodCheckMaxLength = /* @__PURE__ */ $constructor("$ZodCheckMaxLength", (ins
   };
 });
 var $ZodCheckMinLength = /* @__PURE__ */ $constructor("$ZodCheckMinLength", (inst, def) => {
-  var _a3;
+  var _a;
   $ZodCheck.init(inst, def);
-  (_a3 = inst._zod.def).when ?? (_a3.when = (payload) => {
+  (_a = inst._zod.def).when ?? (_a.when = (payload) => {
     const val = payload.value;
     return !nullish(val) && val.length !== void 0;
   });
@@ -82988,9 +78569,9 @@ var $ZodCheckMinLength = /* @__PURE__ */ $constructor("$ZodCheckMinLength", (ins
   };
 });
 var $ZodCheckLengthEquals = /* @__PURE__ */ $constructor("$ZodCheckLengthEquals", (inst, def) => {
-  var _a3;
+  var _a;
   $ZodCheck.init(inst, def);
-  (_a3 = inst._zod.def).when ?? (_a3.when = (payload) => {
+  (_a = inst._zod.def).when ?? (_a.when = (payload) => {
     const val = payload.value;
     return !nullish(val) && val.length !== void 0;
   });
@@ -83019,7 +78600,7 @@ var $ZodCheckLengthEquals = /* @__PURE__ */ $constructor("$ZodCheckLengthEquals"
   };
 });
 var $ZodCheckStringFormat = /* @__PURE__ */ $constructor("$ZodCheckStringFormat", (inst, def) => {
-  var _a3, _b;
+  var _a, _b;
   $ZodCheck.init(inst, def);
   inst._zod.onattach.push((inst2) => {
     const bag = inst2._zod.bag;
@@ -83030,7 +78611,7 @@ var $ZodCheckStringFormat = /* @__PURE__ */ $constructor("$ZodCheckStringFormat"
     }
   });
   if (def.pattern)
-    (_a3 = inst._zod).check ?? (_a3.check = (payload) => {
+    (_a = inst._zod).check ?? (_a.check = (payload) => {
       def.pattern.lastIndex = 0;
       if (def.pattern.test(payload.value))
         return;
@@ -83231,7 +78812,7 @@ var version4 = {
 
 // ../../node_modules/.pnpm/zod@3.25.76/node_modules/zod/v4/core/schemas.js
 var $ZodType = /* @__PURE__ */ $constructor("$ZodType", (inst, def) => {
-  var _a3;
+  var _a;
   inst ?? (inst = {});
   inst._zod.def = def;
   inst._zod.bag = inst._zod.bag || {};
@@ -83246,20 +78827,20 @@ var $ZodType = /* @__PURE__ */ $constructor("$ZodType", (inst, def) => {
     }
   }
   if (checks.length === 0) {
-    (_a3 = inst._zod).deferred ?? (_a3.deferred = []);
+    (_a = inst._zod).deferred ?? (_a.deferred = []);
     inst._zod.deferred?.push(() => {
       inst._zod.run = inst._zod.parse;
     });
   } else {
     const runChecks = (payload, checks2, ctx) => {
-      let isAborted2 = aborted(payload);
+      let isAborted = aborted(payload);
       let asyncResult;
       for (const ch of checks2) {
         if (ch._zod.def.when) {
           const shouldRun = ch._zod.def.when(payload);
           if (!shouldRun)
             continue;
-        } else if (isAborted2) {
+        } else if (isAborted) {
           continue;
         }
         const currLen = payload.issues.length;
@@ -83273,15 +78854,15 @@ var $ZodType = /* @__PURE__ */ $constructor("$ZodType", (inst, def) => {
             const nextLen = payload.issues.length;
             if (nextLen === currLen)
               return;
-            if (!isAborted2)
-              isAborted2 = aborted(payload, currLen);
+            if (!isAborted)
+              isAborted = aborted(payload, currLen);
           });
         } else {
           const nextLen = payload.issues.length;
           if (nextLen === currLen)
             continue;
-          if (!isAborted2)
-            isAborted2 = aborted(payload, currLen);
+          if (!isAborted)
+            isAborted = aborted(payload, currLen);
         }
       }
       if (asyncResult) {
@@ -83579,7 +79160,7 @@ var $ZodE164 = /* @__PURE__ */ $constructor("$ZodE164", (inst, def) => {
   def.pattern ?? (def.pattern = e164);
   $ZodStringFormat.init(inst, def);
 });
-function isValidJWT2(token, algorithm = null) {
+function isValidJWT(token, algorithm = null) {
   try {
     const tokensParts = token.split(".");
     if (tokensParts.length !== 3)
@@ -83602,7 +79183,7 @@ function isValidJWT2(token, algorithm = null) {
 var $ZodJWT = /* @__PURE__ */ $constructor("$ZodJWT", (inst, def) => {
   $ZodStringFormat.init(inst, def);
   inst._zod.check = (payload) => {
-    if (isValidJWT2(payload.value, def.alg))
+    if (isValidJWT(payload.value, def.alg))
       return;
     payload.issues.push({
       code: "invalid_format",
@@ -84170,7 +79751,7 @@ var $ZodIntersection = /* @__PURE__ */ $constructor("$ZodIntersection", (inst, d
     return handleIntersectionResults(payload, left, right);
   };
 });
-function mergeValues2(a, b) {
+function mergeValues(a, b) {
   if (a === b) {
     return { valid: true, data: a };
   }
@@ -84182,7 +79763,7 @@ function mergeValues2(a, b) {
     const sharedKeys = Object.keys(a).filter((key) => bKeys.indexOf(key) !== -1);
     const newObj = { ...a, ...b };
     for (const key of sharedKeys) {
-      const sharedValue = mergeValues2(a[key], b[key]);
+      const sharedValue = mergeValues(a[key], b[key]);
       if (!sharedValue.valid) {
         return {
           valid: false,
@@ -84201,7 +79782,7 @@ function mergeValues2(a, b) {
     for (let index = 0; index < a.length; index++) {
       const itemA = a[index];
       const itemB = b[index];
-      const sharedValue = mergeValues2(itemA, itemB);
+      const sharedValue = mergeValues(itemA, itemB);
       if (!sharedValue.valid) {
         return {
           valid: false,
@@ -84223,7 +79804,7 @@ function handleIntersectionResults(result, left, right) {
   }
   if (aborted(result))
     return result;
-  const merged = mergeValues2(left.value, right.value);
+  const merged = mergeValues(left.value, right.value);
   if (!merged.valid) {
     throw new Error(`Unmergable intersection. Error path: ${JSON.stringify(merged.mergeErrorPath)}`);
   }
@@ -84865,7 +80446,7 @@ __export(locales_exports, {
   ca: () => ca_default,
   cs: () => cs_default,
   de: () => de_default,
-  en: () => en_default2,
+  en: () => en_default,
   eo: () => eo_default,
   es: () => es_default,
   fa: () => fa_default,
@@ -85783,7 +81364,7 @@ var error7 = () => {
     }
   };
 };
-function en_default2() {
+function en_default() {
   return {
     localeError: error7()
   };
@@ -90612,7 +86193,7 @@ var JSONSchemaGenerator = class {
     this.seen = /* @__PURE__ */ new Map();
   }
   process(schema, _params = { path: [], schemaPath: [] }) {
-    var _a3;
+    var _a;
     const def = schema._zod.def;
     const formatMap = {
       guid: "uuid",
@@ -91074,7 +86655,7 @@ var JSONSchemaGenerator = class {
       delete result.schema.default;
     }
     if (this.io === "input" && result.schema._prefault)
-      (_a3 = result.schema).default ?? (_a3.default = result.schema._prefault);
+      (_a = result.schema).default ?? (_a.default = result.schema._prefault);
     delete result.schema._prefault;
     const _result = this.seen.get(schema);
     return _result.schema;
@@ -91439,7 +87020,7 @@ var initializer2 = (inst, issues) => {
     }
   });
 };
-var ZodError2 = $constructor("ZodError", initializer2);
+var ZodError = $constructor("ZodError", initializer2);
 var ZodRealError = $constructor("ZodError", initializer2, {
   Parent: Error
 });
@@ -91451,7 +87032,7 @@ var safeParse2 = /* @__PURE__ */ _safeParse(ZodRealError);
 var safeParseAsync2 = /* @__PURE__ */ _safeParseAsync(ZodRealError);
 
 // ../../node_modules/.pnpm/zod@3.25.76/node_modules/zod/v4/classic/schemas.js
-var ZodType2 = /* @__PURE__ */ $constructor("ZodType", (inst, def) => {
+var ZodType = /* @__PURE__ */ $constructor("ZodType", (inst, def) => {
   $ZodType.init(inst, def);
   inst.def = def;
   Object.defineProperty(inst, "_def", { value: def });
@@ -91519,7 +87100,7 @@ var ZodType2 = /* @__PURE__ */ $constructor("ZodType", (inst, def) => {
 });
 var _ZodString = /* @__PURE__ */ $constructor("_ZodString", (inst, def) => {
   $ZodString.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   const bag = inst._zod.bag;
   inst.format = bag.format ?? null;
   inst.minLength = bag.minimum ?? null;
@@ -91539,7 +87120,7 @@ var _ZodString = /* @__PURE__ */ $constructor("_ZodString", (inst, def) => {
   inst.toLowerCase = () => inst.check(_toLowerCase());
   inst.toUpperCase = () => inst.check(_toUpperCase());
 });
-var ZodString2 = /* @__PURE__ */ $constructor("ZodString", (inst, def) => {
+var ZodString = /* @__PURE__ */ $constructor("ZodString", (inst, def) => {
   $ZodString.init(inst, def);
   _ZodString.init(inst, def);
   inst.email = (params) => inst.check(_email(ZodEmail, params));
@@ -91571,7 +87152,7 @@ var ZodString2 = /* @__PURE__ */ $constructor("ZodString", (inst, def) => {
   inst.duration = (params) => inst.check(duration2(params));
 });
 function string2(params) {
-  return _string(ZodString2, params);
+  return _string(ZodString, params);
 }
 var ZodStringFormat = /* @__PURE__ */ $constructor("ZodStringFormat", (inst, def) => {
   $ZodStringFormat.init(inst, def);
@@ -91726,9 +87307,9 @@ var ZodCustomStringFormat = /* @__PURE__ */ $constructor("ZodCustomStringFormat"
 function stringFormat(format, fnOrRegex, _params = {}) {
   return _stringFormat(ZodCustomStringFormat, format, fnOrRegex, _params);
 }
-var ZodNumber2 = /* @__PURE__ */ $constructor("ZodNumber", (inst, def) => {
+var ZodNumber = /* @__PURE__ */ $constructor("ZodNumber", (inst, def) => {
   $ZodNumber.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.gt = (value, params) => inst.check(_gt(value, params));
   inst.gte = (value, params) => inst.check(_gte(value, params));
   inst.min = (value, params) => inst.check(_gte(value, params));
@@ -91752,11 +87333,11 @@ var ZodNumber2 = /* @__PURE__ */ $constructor("ZodNumber", (inst, def) => {
   inst.format = bag.format ?? null;
 });
 function number2(params) {
-  return _number(ZodNumber2, params);
+  return _number(ZodNumber, params);
 }
 var ZodNumberFormat = /* @__PURE__ */ $constructor("ZodNumberFormat", (inst, def) => {
   $ZodNumberFormat.init(inst, def);
-  ZodNumber2.init(inst, def);
+  ZodNumber.init(inst, def);
 });
 function int(params) {
   return _int(ZodNumberFormat, params);
@@ -91773,16 +87354,16 @@ function int32(params) {
 function uint32(params) {
   return _uint32(ZodNumberFormat, params);
 }
-var ZodBoolean2 = /* @__PURE__ */ $constructor("ZodBoolean", (inst, def) => {
+var ZodBoolean = /* @__PURE__ */ $constructor("ZodBoolean", (inst, def) => {
   $ZodBoolean.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
 });
 function boolean3(params) {
-  return _boolean(ZodBoolean2, params);
+  return _boolean(ZodBoolean, params);
 }
-var ZodBigInt2 = /* @__PURE__ */ $constructor("ZodBigInt", (inst, def) => {
+var ZodBigInt = /* @__PURE__ */ $constructor("ZodBigInt", (inst, def) => {
   $ZodBigInt.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.gte = (value, params) => inst.check(_gte(value, params));
   inst.min = (value, params) => inst.check(_gte(value, params));
   inst.gt = (value, params) => inst.check(_gt(value, params));
@@ -91802,11 +87383,11 @@ var ZodBigInt2 = /* @__PURE__ */ $constructor("ZodBigInt", (inst, def) => {
   inst.format = bag.format ?? null;
 });
 function bigint3(params) {
-  return _bigint(ZodBigInt2, params);
+  return _bigint(ZodBigInt, params);
 }
 var ZodBigIntFormat = /* @__PURE__ */ $constructor("ZodBigIntFormat", (inst, def) => {
   $ZodBigIntFormat.init(inst, def);
-  ZodBigInt2.init(inst, def);
+  ZodBigInt.init(inst, def);
 });
 function int64(params) {
   return _int64(ZodBigIntFormat, params);
@@ -91814,58 +87395,58 @@ function int64(params) {
 function uint64(params) {
   return _uint64(ZodBigIntFormat, params);
 }
-var ZodSymbol2 = /* @__PURE__ */ $constructor("ZodSymbol", (inst, def) => {
+var ZodSymbol = /* @__PURE__ */ $constructor("ZodSymbol", (inst, def) => {
   $ZodSymbol.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
 });
 function symbol(params) {
-  return _symbol(ZodSymbol2, params);
+  return _symbol(ZodSymbol, params);
 }
-var ZodUndefined2 = /* @__PURE__ */ $constructor("ZodUndefined", (inst, def) => {
+var ZodUndefined = /* @__PURE__ */ $constructor("ZodUndefined", (inst, def) => {
   $ZodUndefined.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
 });
 function _undefined3(params) {
-  return _undefined2(ZodUndefined2, params);
+  return _undefined2(ZodUndefined, params);
 }
-var ZodNull2 = /* @__PURE__ */ $constructor("ZodNull", (inst, def) => {
+var ZodNull = /* @__PURE__ */ $constructor("ZodNull", (inst, def) => {
   $ZodNull.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
 });
 function _null3(params) {
-  return _null2(ZodNull2, params);
+  return _null2(ZodNull, params);
 }
-var ZodAny2 = /* @__PURE__ */ $constructor("ZodAny", (inst, def) => {
+var ZodAny = /* @__PURE__ */ $constructor("ZodAny", (inst, def) => {
   $ZodAny.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
 });
 function any() {
-  return _any(ZodAny2);
+  return _any(ZodAny);
 }
-var ZodUnknown2 = /* @__PURE__ */ $constructor("ZodUnknown", (inst, def) => {
+var ZodUnknown = /* @__PURE__ */ $constructor("ZodUnknown", (inst, def) => {
   $ZodUnknown.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
 });
 function unknown() {
-  return _unknown(ZodUnknown2);
+  return _unknown(ZodUnknown);
 }
-var ZodNever2 = /* @__PURE__ */ $constructor("ZodNever", (inst, def) => {
+var ZodNever = /* @__PURE__ */ $constructor("ZodNever", (inst, def) => {
   $ZodNever.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
 });
 function never(params) {
-  return _never(ZodNever2, params);
+  return _never(ZodNever, params);
 }
-var ZodVoid2 = /* @__PURE__ */ $constructor("ZodVoid", (inst, def) => {
+var ZodVoid = /* @__PURE__ */ $constructor("ZodVoid", (inst, def) => {
   $ZodVoid.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
 });
 function _void2(params) {
-  return _void(ZodVoid2, params);
+  return _void(ZodVoid, params);
 }
-var ZodDate2 = /* @__PURE__ */ $constructor("ZodDate", (inst, def) => {
+var ZodDate = /* @__PURE__ */ $constructor("ZodDate", (inst, def) => {
   $ZodDate.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.min = (value, params) => inst.check(_gte(value, params));
   inst.max = (value, params) => inst.check(_lte(value, params));
   const c = inst._zod.bag;
@@ -91873,11 +87454,11 @@ var ZodDate2 = /* @__PURE__ */ $constructor("ZodDate", (inst, def) => {
   inst.maxDate = c.maximum ? new Date(c.maximum) : null;
 });
 function date4(params) {
-  return _date(ZodDate2, params);
+  return _date(ZodDate, params);
 }
-var ZodArray2 = /* @__PURE__ */ $constructor("ZodArray", (inst, def) => {
+var ZodArray = /* @__PURE__ */ $constructor("ZodArray", (inst, def) => {
   $ZodArray.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.element = def.element;
   inst.min = (minLength, params) => inst.check(_minLength(minLength, params));
   inst.nonempty = (params) => inst.check(_minLength(1, params));
@@ -91886,15 +87467,15 @@ var ZodArray2 = /* @__PURE__ */ $constructor("ZodArray", (inst, def) => {
   inst.unwrap = () => inst.element;
 });
 function array(element, params) {
-  return _array(ZodArray2, element, params);
+  return _array(ZodArray, element, params);
 }
 function keyof(schema) {
   const shape = schema._zod.def.shape;
   return literal(Object.keys(shape));
 }
-var ZodObject2 = /* @__PURE__ */ $constructor("ZodObject", (inst, def) => {
+var ZodObject = /* @__PURE__ */ $constructor("ZodObject", (inst, def) => {
   $ZodObject.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   util_exports.defineLazy(inst, "shape", () => def.shape);
   inst.keyof = () => _enum2(Object.keys(inst._zod.def.shape));
   inst.catchall = (catchall) => inst.clone({ ...inst._zod.def, catchall });
@@ -91908,7 +87489,7 @@ var ZodObject2 = /* @__PURE__ */ $constructor("ZodObject", (inst, def) => {
   inst.merge = (other) => util_exports.merge(inst, other);
   inst.pick = (mask) => util_exports.pick(inst, mask);
   inst.omit = (mask) => util_exports.omit(inst, mask);
-  inst.partial = (...args) => util_exports.partial(ZodOptional2, inst, args[0]);
+  inst.partial = (...args) => util_exports.partial(ZodOptional, inst, args[0]);
   inst.required = (...args) => util_exports.required(ZodNonOptional, inst, args[0]);
 });
 function object(shape, params) {
@@ -91920,10 +87501,10 @@ function object(shape, params) {
     },
     ...util_exports.normalizeParams(params)
   };
-  return new ZodObject2(def);
+  return new ZodObject(def);
 }
 function strictObject(shape, params) {
-  return new ZodObject2({
+  return new ZodObject({
     type: "object",
     get shape() {
       util_exports.assignProp(this, "shape", { ...shape });
@@ -91934,7 +87515,7 @@ function strictObject(shape, params) {
   });
 }
 function looseObject(shape, params) {
-  return new ZodObject2({
+  return new ZodObject({
     type: "object",
     get shape() {
       util_exports.assignProp(this, "shape", { ...shape });
@@ -91944,44 +87525,44 @@ function looseObject(shape, params) {
     ...util_exports.normalizeParams(params)
   });
 }
-var ZodUnion2 = /* @__PURE__ */ $constructor("ZodUnion", (inst, def) => {
+var ZodUnion = /* @__PURE__ */ $constructor("ZodUnion", (inst, def) => {
   $ZodUnion.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.options = def.options;
 });
 function union2(options, params) {
-  return new ZodUnion2({
+  return new ZodUnion({
     type: "union",
     options,
     ...util_exports.normalizeParams(params)
   });
 }
-var ZodDiscriminatedUnion2 = /* @__PURE__ */ $constructor("ZodDiscriminatedUnion", (inst, def) => {
-  ZodUnion2.init(inst, def);
+var ZodDiscriminatedUnion = /* @__PURE__ */ $constructor("ZodDiscriminatedUnion", (inst, def) => {
+  ZodUnion.init(inst, def);
   $ZodDiscriminatedUnion.init(inst, def);
 });
 function discriminatedUnion(discriminator, options, params) {
-  return new ZodDiscriminatedUnion2({
+  return new ZodDiscriminatedUnion({
     type: "union",
     options,
     discriminator,
     ...util_exports.normalizeParams(params)
   });
 }
-var ZodIntersection2 = /* @__PURE__ */ $constructor("ZodIntersection", (inst, def) => {
+var ZodIntersection = /* @__PURE__ */ $constructor("ZodIntersection", (inst, def) => {
   $ZodIntersection.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
 });
 function intersection(left, right) {
-  return new ZodIntersection2({
+  return new ZodIntersection({
     type: "intersection",
     left,
     right
   });
 }
-var ZodTuple2 = /* @__PURE__ */ $constructor("ZodTuple", (inst, def) => {
+var ZodTuple = /* @__PURE__ */ $constructor("ZodTuple", (inst, def) => {
   $ZodTuple.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.rest = (rest) => inst.clone({
     ...inst._zod.def,
     rest
@@ -91991,21 +87572,21 @@ function tuple(items, _paramsOrRest, _params) {
   const hasRest = _paramsOrRest instanceof $ZodType;
   const params = hasRest ? _params : _paramsOrRest;
   const rest = hasRest ? _paramsOrRest : null;
-  return new ZodTuple2({
+  return new ZodTuple({
     type: "tuple",
     items,
     rest,
     ...util_exports.normalizeParams(params)
   });
 }
-var ZodRecord2 = /* @__PURE__ */ $constructor("ZodRecord", (inst, def) => {
+var ZodRecord = /* @__PURE__ */ $constructor("ZodRecord", (inst, def) => {
   $ZodRecord.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.keyType = def.keyType;
   inst.valueType = def.valueType;
 });
 function record(keyType, valueType, params) {
-  return new ZodRecord2({
+  return new ZodRecord({
     type: "record",
     keyType,
     valueType,
@@ -92013,45 +87594,45 @@ function record(keyType, valueType, params) {
   });
 }
 function partialRecord(keyType, valueType, params) {
-  return new ZodRecord2({
+  return new ZodRecord({
     type: "record",
     keyType: union2([keyType, never()]),
     valueType,
     ...util_exports.normalizeParams(params)
   });
 }
-var ZodMap2 = /* @__PURE__ */ $constructor("ZodMap", (inst, def) => {
+var ZodMap = /* @__PURE__ */ $constructor("ZodMap", (inst, def) => {
   $ZodMap.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.keyType = def.keyType;
   inst.valueType = def.valueType;
 });
 function map(keyType, valueType, params) {
-  return new ZodMap2({
+  return new ZodMap({
     type: "map",
     keyType,
     valueType,
     ...util_exports.normalizeParams(params)
   });
 }
-var ZodSet2 = /* @__PURE__ */ $constructor("ZodSet", (inst, def) => {
+var ZodSet = /* @__PURE__ */ $constructor("ZodSet", (inst, def) => {
   $ZodSet.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.min = (...args) => inst.check(_minSize(...args));
   inst.nonempty = (params) => inst.check(_minSize(1, params));
   inst.max = (...args) => inst.check(_maxSize(...args));
   inst.size = (...args) => inst.check(_size(...args));
 });
 function set(valueType, params) {
-  return new ZodSet2({
+  return new ZodSet({
     type: "set",
     valueType,
     ...util_exports.normalizeParams(params)
   });
 }
-var ZodEnum2 = /* @__PURE__ */ $constructor("ZodEnum", (inst, def) => {
+var ZodEnum = /* @__PURE__ */ $constructor("ZodEnum", (inst, def) => {
   $ZodEnum.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.enum = def.entries;
   inst.options = Object.values(def.entries);
   const keys = new Set(Object.keys(def.entries));
@@ -92063,7 +87644,7 @@ var ZodEnum2 = /* @__PURE__ */ $constructor("ZodEnum", (inst, def) => {
       } else
         throw new Error(`Key ${value} not found in enum`);
     }
-    return new ZodEnum2({
+    return new ZodEnum({
       ...def,
       checks: [],
       ...util_exports.normalizeParams(params),
@@ -92078,7 +87659,7 @@ var ZodEnum2 = /* @__PURE__ */ $constructor("ZodEnum", (inst, def) => {
       } else
         throw new Error(`Key ${value} not found in enum`);
     }
-    return new ZodEnum2({
+    return new ZodEnum({
       ...def,
       checks: [],
       ...util_exports.normalizeParams(params),
@@ -92088,22 +87669,22 @@ var ZodEnum2 = /* @__PURE__ */ $constructor("ZodEnum", (inst, def) => {
 });
 function _enum2(values, params) {
   const entries = Array.isArray(values) ? Object.fromEntries(values.map((v) => [v, v])) : values;
-  return new ZodEnum2({
+  return new ZodEnum({
     type: "enum",
     entries,
     ...util_exports.normalizeParams(params)
   });
 }
 function nativeEnum(entries, params) {
-  return new ZodEnum2({
+  return new ZodEnum({
     type: "enum",
     entries,
     ...util_exports.normalizeParams(params)
   });
 }
-var ZodLiteral2 = /* @__PURE__ */ $constructor("ZodLiteral", (inst, def) => {
+var ZodLiteral = /* @__PURE__ */ $constructor("ZodLiteral", (inst, def) => {
   $ZodLiteral.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.values = new Set(def.values);
   Object.defineProperty(inst, "value", {
     get() {
@@ -92115,7 +87696,7 @@ var ZodLiteral2 = /* @__PURE__ */ $constructor("ZodLiteral", (inst, def) => {
   });
 });
 function literal(value, params) {
-  return new ZodLiteral2({
+  return new ZodLiteral({
     type: "literal",
     values: Array.isArray(value) ? value : [value],
     ...util_exports.normalizeParams(params)
@@ -92123,7 +87704,7 @@ function literal(value, params) {
 }
 var ZodFile = /* @__PURE__ */ $constructor("ZodFile", (inst, def) => {
   $ZodFile.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.min = (size, params) => inst.check(_minSize(size, params));
   inst.max = (size, params) => inst.check(_maxSize(size, params));
   inst.mime = (types3, params) => inst.check(_mime(Array.isArray(types3) ? types3 : [types3], params));
@@ -92133,7 +87714,7 @@ function file(params) {
 }
 var ZodTransform = /* @__PURE__ */ $constructor("ZodTransform", (inst, def) => {
   $ZodTransform.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst._zod.parse = (payload, _ctx) => {
     payload.addIssue = (issue2) => {
       if (typeof issue2 === "string") {
@@ -92166,24 +87747,24 @@ function transform(fn) {
     transform: fn
   });
 }
-var ZodOptional2 = /* @__PURE__ */ $constructor("ZodOptional", (inst, def) => {
+var ZodOptional = /* @__PURE__ */ $constructor("ZodOptional", (inst, def) => {
   $ZodOptional.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.unwrap = () => inst._zod.def.innerType;
 });
 function optional(innerType) {
-  return new ZodOptional2({
+  return new ZodOptional({
     type: "optional",
     innerType
   });
 }
-var ZodNullable2 = /* @__PURE__ */ $constructor("ZodNullable", (inst, def) => {
+var ZodNullable = /* @__PURE__ */ $constructor("ZodNullable", (inst, def) => {
   $ZodNullable.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.unwrap = () => inst._zod.def.innerType;
 });
 function nullable(innerType) {
-  return new ZodNullable2({
+  return new ZodNullable({
     type: "nullable",
     innerType
   });
@@ -92191,14 +87772,14 @@ function nullable(innerType) {
 function nullish2(innerType) {
   return optional(nullable(innerType));
 }
-var ZodDefault2 = /* @__PURE__ */ $constructor("ZodDefault", (inst, def) => {
+var ZodDefault = /* @__PURE__ */ $constructor("ZodDefault", (inst, def) => {
   $ZodDefault.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.unwrap = () => inst._zod.def.innerType;
   inst.removeDefault = inst.unwrap;
 });
 function _default2(innerType, defaultValue) {
-  return new ZodDefault2({
+  return new ZodDefault({
     type: "default",
     innerType,
     get defaultValue() {
@@ -92208,7 +87789,7 @@ function _default2(innerType, defaultValue) {
 }
 var ZodPrefault = /* @__PURE__ */ $constructor("ZodPrefault", (inst, def) => {
   $ZodPrefault.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.unwrap = () => inst._zod.def.innerType;
 });
 function prefault(innerType, defaultValue) {
@@ -92222,7 +87803,7 @@ function prefault(innerType, defaultValue) {
 }
 var ZodNonOptional = /* @__PURE__ */ $constructor("ZodNonOptional", (inst, def) => {
   $ZodNonOptional.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.unwrap = () => inst._zod.def.innerType;
 });
 function nonoptional(innerType, params) {
@@ -92234,7 +87815,7 @@ function nonoptional(innerType, params) {
 }
 var ZodSuccess = /* @__PURE__ */ $constructor("ZodSuccess", (inst, def) => {
   $ZodSuccess.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.unwrap = () => inst._zod.def.innerType;
 });
 function success(innerType) {
@@ -92243,29 +87824,29 @@ function success(innerType) {
     innerType
   });
 }
-var ZodCatch2 = /* @__PURE__ */ $constructor("ZodCatch", (inst, def) => {
+var ZodCatch = /* @__PURE__ */ $constructor("ZodCatch", (inst, def) => {
   $ZodCatch.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.unwrap = () => inst._zod.def.innerType;
   inst.removeCatch = inst.unwrap;
 });
 function _catch2(innerType, catchValue) {
-  return new ZodCatch2({
+  return new ZodCatch({
     type: "catch",
     innerType,
     catchValue: typeof catchValue === "function" ? catchValue : () => catchValue
   });
 }
-var ZodNaN2 = /* @__PURE__ */ $constructor("ZodNaN", (inst, def) => {
+var ZodNaN = /* @__PURE__ */ $constructor("ZodNaN", (inst, def) => {
   $ZodNaN.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
 });
 function nan(params) {
-  return _nan(ZodNaN2, params);
+  return _nan(ZodNaN, params);
 }
 var ZodPipe = /* @__PURE__ */ $constructor("ZodPipe", (inst, def) => {
   $ZodPipe.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.in = def.in;
   inst.out = def.out;
 });
@@ -92277,19 +87858,19 @@ function pipe(in_, out) {
     // ...util.normalizeParams(params),
   });
 }
-var ZodReadonly2 = /* @__PURE__ */ $constructor("ZodReadonly", (inst, def) => {
+var ZodReadonly = /* @__PURE__ */ $constructor("ZodReadonly", (inst, def) => {
   $ZodReadonly.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
 });
 function readonly(innerType) {
-  return new ZodReadonly2({
+  return new ZodReadonly({
     type: "readonly",
     innerType
   });
 }
 var ZodTemplateLiteral = /* @__PURE__ */ $constructor("ZodTemplateLiteral", (inst, def) => {
   $ZodTemplateLiteral.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
 });
 function templateLiteral(parts, params) {
   return new ZodTemplateLiteral({
@@ -92298,31 +87879,31 @@ function templateLiteral(parts, params) {
     ...util_exports.normalizeParams(params)
   });
 }
-var ZodLazy2 = /* @__PURE__ */ $constructor("ZodLazy", (inst, def) => {
+var ZodLazy = /* @__PURE__ */ $constructor("ZodLazy", (inst, def) => {
   $ZodLazy.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.unwrap = () => inst._zod.def.getter();
 });
 function lazy(getter) {
-  return new ZodLazy2({
+  return new ZodLazy({
     type: "lazy",
     getter
   });
 }
-var ZodPromise2 = /* @__PURE__ */ $constructor("ZodPromise", (inst, def) => {
+var ZodPromise = /* @__PURE__ */ $constructor("ZodPromise", (inst, def) => {
   $ZodPromise.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.unwrap = () => inst._zod.def.innerType;
 });
 function promise(innerType) {
-  return new ZodPromise2({
+  return new ZodPromise({
     type: "promise",
     innerType
   });
 }
 var ZodCustom = /* @__PURE__ */ $constructor("ZodCustom", (inst, def) => {
   $ZodCustom.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
 });
 function check(fn) {
   const ch = new $ZodCheck({
@@ -92373,8 +87954,8 @@ function _instanceof(cls, params = {
 }
 var stringbool = (...args) => _stringbool({
   Pipe: ZodPipe,
-  Boolean: ZodBoolean2,
-  String: ZodString2,
+  Boolean: ZodBoolean,
+  String: ZodString,
   Transform: ZodTransform
 }, ...args);
 function json2(params) {
@@ -92388,7 +87969,7 @@ function preprocess(fn, schema) {
 }
 
 // ../../node_modules/.pnpm/zod@3.25.76/node_modules/zod/v4/classic/compat.js
-var ZodIssueCode2 = {
+var ZodIssueCode = {
   invalid_type: "invalid_type",
   too_big: "too_big",
   too_small: "too_small",
@@ -92406,7 +87987,7 @@ function setErrorMap(map2) {
     customError: map2
   });
 }
-function getErrorMap2() {
+function getErrorMap() {
   return config().customError;
 }
 
@@ -92420,23 +88001,23 @@ __export(coerce_exports, {
   string: () => string3
 });
 function string3(params) {
-  return _coercedString(ZodString2, params);
+  return _coercedString(ZodString, params);
 }
 function number3(params) {
-  return _coercedNumber(ZodNumber2, params);
+  return _coercedNumber(ZodNumber, params);
 }
 function boolean4(params) {
-  return _coercedBoolean(ZodBoolean2, params);
+  return _coercedBoolean(ZodBoolean, params);
 }
 function bigint4(params) {
-  return _coercedBigint(ZodBigInt2, params);
+  return _coercedBigint(ZodBigInt, params);
 }
 function date5(params) {
-  return _coercedDate(ZodDate2, params);
+  return _coercedDate(ZodDate, params);
 }
 
 // ../../node_modules/.pnpm/zod@3.25.76/node_modules/zod/v4/classic/external.js
-config(en_default2());
+config(en_default());
 
 // ../../node_modules/.pnpm/drizzle-zod@0.8.3_drizzle-o_75717ee7f6436df081a15a148acf053c/node_modules/drizzle-zod/index.mjs
 var CONSTANTS = {
@@ -92474,7 +88055,7 @@ var jsonSchema = external_exports.union([
 var bufferSchema = external_exports.custom((v) => v instanceof Buffer);
 function columnToSchema(column, factory) {
   const z$1 = factory?.zodInstance ?? external_exports;
-  const coerce2 = factory?.coerce ?? {};
+  const coerce = factory?.coerce ?? {};
   let schema;
   if (isWithEnum(column)) {
     schema = column.enumValues.length ? z$1.enum(column.enumValues) : z$1.string();
@@ -92501,15 +88082,15 @@ function columnToSchema(column, factory) {
     } else if (column.dataType === "array") {
       schema = z$1.array(z$1.any());
     } else if (column.dataType === "number") {
-      schema = numberColumnToSchema(column, z$1, coerce2);
+      schema = numberColumnToSchema(column, z$1, coerce);
     } else if (column.dataType === "bigint") {
-      schema = bigintColumnToSchema(column, z$1, coerce2);
+      schema = bigintColumnToSchema(column, z$1, coerce);
     } else if (column.dataType === "boolean") {
-      schema = coerce2 === true || coerce2.boolean ? z$1.coerce.boolean() : z$1.boolean();
+      schema = coerce === true || coerce.boolean ? z$1.coerce.boolean() : z$1.boolean();
     } else if (column.dataType === "date") {
-      schema = coerce2 === true || coerce2.date ? z$1.coerce.date() : z$1.date();
+      schema = coerce === true || coerce.date ? z$1.coerce.date() : z$1.date();
     } else if (column.dataType === "string") {
-      schema = stringColumnToSchema(column, z$1, coerce2);
+      schema = stringColumnToSchema(column, z$1, coerce);
     } else if (column.dataType === "json") {
       schema = jsonSchema;
     } else if (column.dataType === "custom") {
@@ -92523,7 +88104,7 @@ function columnToSchema(column, factory) {
   }
   return schema;
 }
-function numberColumnToSchema(column, z, coerce2) {
+function numberColumnToSchema(column, z, coerce) {
   let unsigned = column.getSQLType().includes("unsigned");
   let min;
   let max;
@@ -92591,18 +88172,18 @@ function numberColumnToSchema(column, z, coerce2) {
     min = Number.MIN_SAFE_INTEGER;
     max = Number.MAX_SAFE_INTEGER;
   }
-  let schema = coerce2 === true || coerce2?.number ? integer3 ? z.coerce.number() : z.coerce.number().int() : integer3 ? z.int() : z.number();
+  let schema = coerce === true || coerce?.number ? integer3 ? z.coerce.number() : z.coerce.number().int() : integer3 ? z.int() : z.number();
   schema = schema.gte(min).lte(max);
   return schema;
 }
-function bigintColumnToSchema(column, z, coerce2) {
+function bigintColumnToSchema(column, z, coerce) {
   const unsigned = column.getSQLType().includes("unsigned");
   const min = unsigned ? 0n : CONSTANTS.INT64_MIN;
   const max = unsigned ? CONSTANTS.INT64_UNSIGNED_MAX : CONSTANTS.INT64_MAX;
-  const schema = coerce2 === true || coerce2?.bigint ? z.coerce.bigint() : z.bigint();
+  const schema = coerce === true || coerce?.bigint ? z.coerce.bigint() : z.bigint();
   return schema.gte(min).lte(max);
 }
-function stringColumnToSchema(column, z, coerce2) {
+function stringColumnToSchema(column, z, coerce) {
   if (isColumnType(column, ["PgUUID"])) {
     return z.uuid();
   }
@@ -92636,7 +88217,7 @@ function stringColumnToSchema(column, z, coerce2) {
     regex = /^[01]+$/;
     max = column.dimensions;
   }
-  let schema = coerce2 === true || coerce2?.string ? z.coerce.string() : z.string();
+  let schema = coerce === true || coerce?.string ? z.coerce.string() : z.string();
   schema = regex ? schema.regex(regex) : schema;
   return max && fixed ? schema.length(max) : max ? schema.max(max) : schema;
 }
@@ -92765,11288 +88346,6 @@ if (!process.env.DATABASE_URL) {
 }
 var pool = new Pool3({ connectionString: process.env.DATABASE_URL });
 var db = drizzle(pool, { schema: schema_exports });
-
-// src/routes/foods.ts
-var router2 = (0, import_express2.Router)();
-router2.get("/api/foods", async (req, res) => {
-  try {
-    const params = ListFoodsQueryParams.safeParse(req.query);
-    if (!params.success) {
-      res.status(400).json({ error: params.error.message });
-      return;
-    }
-    let query = db.select().from(foodsTable);
-    if (params.data.search) {
-      query = query.where(ilike(foodsTable.name, `%${params.data.search}%`));
-    }
-    const foods = await query.orderBy(foodsTable.name);
-    res.json(foods);
-  } catch (error40) {
-    console.error("Error in GET /api/foods:", error40);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
-router2.post("/api/foods", async (req, res) => {
-  try {
-    const parsed = CreateFoodBody.safeParse(req.body);
-    if (!parsed.success) {
-      res.status(400).json({ error: parsed.error.message });
-      return;
-    }
-    const [food] = await db.insert(foodsTable).values(parsed.data).returning();
-    res.status(201).json(food);
-  } catch (error40) {
-    console.error("Error in POST /api/foods:", error40);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
-router2.get("/api/foods/:id", async (req, res) => {
-  try {
-    const params = GetFoodParams.safeParse(req.params);
-    if (!params.success) {
-      res.status(400).json({ error: params.error.message });
-      return;
-    }
-    const [food] = await db.select().from(foodsTable).where(eq(foodsTable.id, params.data.id));
-    if (!food) {
-      res.status(404).json({ error: "Food not found" });
-      return;
-    }
-    res.json(food);
-  } catch (error40) {
-    console.error("Error in GET /api/foods/:id:", error40);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
-router2.patch("/api/foods/:id", async (req, res) => {
-  try {
-    const params = UpdateFoodParams.safeParse(req.params);
-    if (!params.success) {
-      res.status(400).json({ error: params.error.message });
-      return;
-    }
-    const parsed = UpdateFoodBody.safeParse(req.body);
-    if (!parsed.success) {
-      res.status(400).json({ error: parsed.error.message });
-      return;
-    }
-    const [food] = await db.update(foodsTable).set(parsed.data).where(eq(foodsTable.id, params.data.id)).returning();
-    if (!food) {
-      res.status(404).json({ error: "Food not found" });
-      return;
-    }
-    res.json(food);
-  } catch (error40) {
-    console.error("Error in PATCH /api/foods/:id:", error40);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
-router2.delete("/api/foods/:id", async (req, res) => {
-  try {
-    const params = DeleteFoodParams.safeParse(req.params);
-    if (!params.success) {
-      res.status(400).json({ error: params.error.message });
-      return;
-    }
-    const [food] = await db.delete(foodsTable).where(eq(foodsTable.id, params.data.id)).returning();
-    if (!food) {
-      res.status(404).json({ error: "Food not found" });
-      return;
-    }
-    res.sendStatus(204);
-  } catch (error40) {
-    console.error("Error in DELETE /api/foods/:id:", error40);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
-var foods_default = router2;
-
-// src/routes/meals.ts
-var import_express3 = __toESM(require_express2(), 1);
-
-// src/lib/google-sheets.ts
-var import_connectors_sdk = __toESM(require_connectors_sdk(), 1);
-function getConnectors() {
-  return new import_connectors_sdk.ReplitConnectors();
-}
-async function createSpreadsheet(title) {
-  const connectors = getConnectors();
-  const res = await connectors.proxy("google-sheet", "/v4/spreadsheets", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ properties: { title } })
-  });
-  if (!res.ok) throw new Error(`Failed to create spreadsheet: ${res.status}`);
-  const data = await res.json();
-  return data.spreadsheetId;
-}
-async function writeRows(spreadsheetId, range, rows) {
-  const connectors = getConnectors();
-  const res = await connectors.proxy(
-    "google-sheet",
-    `/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ values: rows })
-    }
-  );
-  if (!res.ok) throw new Error(`Failed to write rows: ${res.status}`);
-}
-async function updateValues(spreadsheetId, range, rows) {
-  const connectors = getConnectors();
-  const res = await connectors.proxy(
-    "google-sheet",
-    `/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}?valueInputOption=USER_ENTERED`,
-    {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ values: rows })
-    }
-  );
-  if (!res.ok) throw new Error(`Failed to update values: ${res.status}`);
-}
-async function clearRange(spreadsheetId, range) {
-  const connectors = getConnectors();
-  const res = await connectors.proxy(
-    "google-sheet",
-    `/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}:clear`,
-    { method: "POST", headers: { "Content-Type": "application/json" } }
-  );
-  if (!res.ok) throw new Error(`Failed to clear range: ${res.status}`);
-}
-async function getSheetTabs(spreadsheetId) {
-  const connectors = getConnectors();
-  const res = await connectors.proxy("google-sheet", `/v4/spreadsheets/${spreadsheetId}?fields=sheets.properties`, {
-    method: "GET"
-  });
-  if (!res.ok) throw new Error(`Failed to get sheet tabs: ${res.status}`);
-  const data = await res.json();
-  return data.sheets.map((s2) => s2.properties);
-}
-async function addSheetTab(spreadsheetId, tabTitle) {
-  const connectors = getConnectors();
-  const res = await connectors.proxy(
-    "google-sheet",
-    `/v4/spreadsheets/${spreadsheetId}:batchUpdate`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ requests: [{ addSheet: { properties: { title: tabTitle } } }] })
-    }
-  );
-  if (!res.ok) throw new Error(`Failed to add sheet tab: ${res.status}`);
-  const data = await res.json();
-  return data.replies[0].addSheet.properties.sheetId;
-}
-async function ensureSheetTab(spreadsheetId, tabTitle) {
-  const tabs = await getSheetTabs(spreadsheetId);
-  const existing = tabs.find((t) => t.title === tabTitle);
-  if (existing) return existing.sheetId;
-  return addSheetTab(spreadsheetId, tabTitle);
-}
-async function readRows(spreadsheetId, range) {
-  const connectors = getConnectors();
-  const res = await connectors.proxy(
-    "google-sheet",
-    `/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}`,
-    { method: "GET" }
-  );
-  if (!res.ok) throw new Error(`Failed to read rows: ${res.status}`);
-  const data = await res.json();
-  return data.values ?? [];
-}
-async function formatHeader(spreadsheetId, sheetId = 0) {
-  const connectors = getConnectors();
-  const res = await connectors.proxy(
-    "google-sheet",
-    `/v4/spreadsheets/${spreadsheetId}:batchUpdate`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        requests: [
-          {
-            repeatCell: {
-              range: { sheetId, startRowIndex: 0, endRowIndex: 1 },
-              cell: {
-                userEnteredFormat: {
-                  backgroundColor: { red: 0.22, green: 0.46, blue: 0.28 },
-                  textFormat: { bold: true, foregroundColor: { red: 1, green: 1, blue: 1 } }
-                }
-              },
-              fields: "userEnteredFormat(backgroundColor,textFormat)"
-            }
-          },
-          {
-            autoResizeDimensions: {
-              dimensions: { sheetId, dimension: "COLUMNS", startIndex: 0, endIndex: 8 }
-            }
-          }
-        ]
-      })
-    }
-  );
-  if (!res.ok) console.error("Format header error:", res.status);
-}
-function spreadsheetUrl(spreadsheetId) {
-  return `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit`;
-}
-function parseSpreadsheetId(urlOrId) {
-  const m = urlOrId.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
-  if (m) return m[1];
-  if (/^[a-zA-Z0-9_-]{20,}$/.test(urlOrId)) return urlOrId;
-  return null;
-}
-
-// src/lib/sync-log.ts
-var MEAL_TYPE_RU = {
-  breakfast: "\u0417\u0430\u0432\u0442\u0440\u0430\u043A",
-  lunch: "\u041E\u0431\u0435\u0434",
-  dinner: "\u0423\u0436\u0438\u043D",
-  snack: "\u041F\u0435\u0440\u0435\u043A\u0443\u0441"
-};
-function syncKey(userId) {
-  return `user:${userId}:sheets_auto_sync_spreadsheet_id`;
-}
-async function getAutoSyncSpreadsheetId(userId) {
-  const [row] = await db.select().from(settingsTable).where(eq(settingsTable.key, syncKey(userId)));
-  return row?.value ?? null;
-}
-async function setAutoSyncSpreadsheetId(userId, id) {
-  await db.insert(settingsTable).values({ key: syncKey(userId), value: id }).onConflictDoUpdate({ target: settingsTable.key, set: { value: id } });
-}
-async function clearAutoSyncSpreadsheetId(userId) {
-  await db.delete(settingsTable).where(eq(settingsTable.key, syncKey(userId)));
-}
-async function syncDayToSheets(spreadsheetId, date6, userId) {
-  const rows = await db.select({
-    foodName: foodsTable.name,
-    mealType: mealsTable.mealType,
-    servings: mealsTable.servings,
-    calories: foodsTable.calories,
-    protein: foodsTable.protein,
-    carbs: foodsTable.carbs,
-    fat: foodsTable.fat,
-    servingSize: foodsTable.servingSize
-  }).from(mealsTable).innerJoin(foodsTable, eq(mealsTable.foodId, foodsTable.id)).where(and(eq(mealsTable.date, date6), eq(mealsTable.userId, userId))).orderBy(mealsTable.createdAt);
-  const meals = rows.map((r) => ({
-    ...r,
-    calories: Math.round(r.calories * r.servings),
-    protein: Math.round(r.protein * r.servings * 10) / 10,
-    carbs: Math.round(r.carbs * r.servings * 10) / 10,
-    fat: Math.round(r.fat * r.servings * 10) / 10
-  }));
-  const totals = meals.reduce(
-    (acc, m) => ({
-      calories: acc.calories + m.calories,
-      protein: acc.protein + m.protein,
-      carbs: acc.carbs + m.carbs,
-      fat: acc.fat + m.fat
-    }),
-    { calories: 0, protein: 0, carbs: 0, fat: 0 }
-  );
-  const sheetId = await ensureSheetTab(spreadsheetId, date6);
-  const range = `${date6}!A1`;
-  await clearRange(spreadsheetId, `${date6}!A:H`);
-  const header = ["\u041F\u0440\u043E\u0434\u0443\u043A\u0442", "\u041F\u0440\u0438\u0451\u043C \u043F\u0438\u0449\u0438", "\u041F\u043E\u0440\u0446\u0438\u0439", "\u0420\u0430\u0437\u043C\u0435\u0440 \u043F\u043E\u0440\u0446\u0438\u0438", "\u041A\u0430\u043B\u043E\u0440\u0438\u0438", "\u0411\u0435\u043B\u043A\u0438 (\u0433)", "\u0423\u0433\u043B\u0435\u0432\u043E\u0434\u044B (\u0433)", "\u0416\u0438\u0440\u044B (\u0433)"];
-  const dataRows = meals.map((m) => [
-    m.foodName,
-    MEAL_TYPE_RU[m.mealType] ?? m.mealType,
-    m.servings,
-    m.servingSize,
-    m.calories,
-    m.protein,
-    m.carbs,
-    m.fat
-  ]);
-  const totalRow = [
-    "\u0418\u0422\u041E\u0413\u041E",
-    "",
-    "",
-    "",
-    Math.round(totals.calories),
-    Math.round(totals.protein * 10) / 10,
-    Math.round(totals.carbs * 10) / 10,
-    Math.round(totals.fat * 10) / 10
-  ];
-  await updateValues(spreadsheetId, range, [header, ...dataRows, [], totalRow]);
-  await formatHeader(spreadsheetId, sheetId);
-}
-function triggerSync(date6, userId) {
-  getAutoSyncSpreadsheetId(userId).then((spreadsheetId) => {
-    if (!spreadsheetId) return;
-    syncDayToSheets(spreadsheetId, date6, userId).catch((err) => {
-      console.error("[auto-sync] Failed to sync day:", date6, err?.message);
-    });
-  }).catch(() => {
-  });
-}
-var WELLNESS_SYNC_KEY = (userId) => `user:${userId}:wellness_auto_sync_spreadsheet_id`;
-var WELLNESS_TAB = "\u0421\u0430\u043C\u043E\u0447\u0443\u0432\u0441\u0442\u0432\u0438\u0435";
-var WELLNESS_HEADER = [
-  "\u0414\u0430\u0442\u0430",
-  "\u041F\u043E\u0442\u0440\u0430\u0447\u0435\u043D\u043E \u043A\u043A\u0430\u043B",
-  "\u041E\u0449\u0443\u0449\u0435\u043D\u0438\u044F",
-  "\u0423\u0440\u043E\u0432\u0435\u043D\u044C \u0441\u0442\u0440\u0435\u0441\u0441\u0430 (1-10)",
-  "\u0412\u0440\u0435\u043C\u044F \u043E\u0442\u0431\u043E\u044F",
-  "\u0412\u0440\u0435\u043C\u044F \u043F\u0440\u043E\u0431\u0443\u0436\u0434\u0435\u043D\u0438\u044F",
-  "\u0421\u043E\u043D (\u0447)",
-  "\u041F\u0440\u0438\u043D\u0438\u043C\u0430\u0435\u043C\u044B\u0435 \u0411\u0410\u0414",
-  "\u041F\u0440\u0438\u043D\u0438\u043C\u0430\u0435\u043C\u044B\u0435 \u043B\u0435\u043A\u0430\u0440\u0441\u0442\u0432\u0430",
-  "\u0417\u0430\u043F\u0438\u0441\u0430\u043D\u043E",
-  "\u041E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u043E"
-];
-function sleepHours(bedtime, wakeTime) {
-  if (!bedtime || !wakeTime) return "";
-  const [bh, bm] = bedtime.split(":").map(Number);
-  const [wh, wm] = wakeTime.split(":").map(Number);
-  const bedMinutes = bh * 60 + bm;
-  const wakeMinutes = wh * 60 + wm;
-  const diff = wakeMinutes >= bedMinutes ? wakeMinutes - bedMinutes : 1440 - bedMinutes + wakeMinutes;
-  return (Math.round(diff / 6) / 10).toFixed(1);
-}
-async function getWellnessSyncSpreadsheetId(userId) {
-  const [row] = await db.select().from(settingsTable).where(eq(settingsTable.key, WELLNESS_SYNC_KEY(userId)));
-  return row?.value ?? null;
-}
-async function setWellnessSyncSpreadsheetId(userId, id) {
-  await db.insert(settingsTable).values({ key: WELLNESS_SYNC_KEY(userId), value: id }).onConflictDoUpdate({ target: settingsTable.key, set: { value: id } });
-}
-async function clearWellnessSyncSpreadsheetId(userId) {
-  await db.delete(settingsTable).where(eq(settingsTable.key, WELLNESS_SYNC_KEY(userId)));
-}
-async function syncWellnessToSheets(spreadsheetId, userId) {
-  const entries = await db.select().from(wellnessLogTable).where(eq(wellnessLogTable.userId, userId)).orderBy(asc(wellnessLogTable.date));
-  const sheetId = await ensureSheetTab(spreadsheetId, WELLNESS_TAB);
-  await clearRange(spreadsheetId, `${WELLNESS_TAB}!A:K`);
-  const dataRows = entries.map((e) => [
-    e.date,
-    e.caloriesBurned ?? "",
-    e.mood ?? "",
-    e.stressLevel ?? "",
-    e.bedtime ?? "",
-    e.wakeTime ?? "",
-    sleepHours(e.bedtime, e.wakeTime),
-    e.supplements ?? "",
-    e.medications ?? "",
-    e.recordedAt.toISOString().replace("T", " ").slice(0, 16),
-    e.updatedAt.toISOString().replace("T", " ").slice(0, 16)
-  ]);
-  await updateValues(spreadsheetId, `${WELLNESS_TAB}!A1`, [WELLNESS_HEADER, ...dataRows]);
-  await formatHeader(spreadsheetId, sheetId);
-}
-function triggerWellnessSync(userId) {
-  getWellnessSyncSpreadsheetId(userId).then((spreadsheetId) => {
-    if (!spreadsheetId) return;
-    syncWellnessToSheets(spreadsheetId, userId).catch((err) => {
-      console.error("[wellness-sync] Failed:", err?.message);
-    });
-  }).catch(() => {
-  });
-}
-var POSTURE_SHEET_KEY = (userId) => `user:${userId}:posture_sheet_id`;
-var POSTURE_SHEET_CREATED_KEY = (userId) => `user:${userId}:posture_sheet_created_at`;
-var POSTURE_CYCLE_DAYS = 30;
-var POSTURE_HEADER = [
-  "\u0414\u0430\u0442\u0430",
-  "\u0412\u0440\u0435\u043C\u044F",
-  "\u0420\u0430\u043A\u0443\u0440\u0441\u044B",
-  "\u041E\u0446\u0435\u043D\u043A\u0430 (1-10)",
-  "\u0418\u0442\u043E\u0433",
-  "\u0412\u0438\u0434\u0438\u043C\u044B\u0435 \u0434\u0435\u0444\u0435\u043A\u0442\u044B",
-  "\u0413\u043E\u043B\u043E\u0432\u0430 \u0438 \u0448\u0435\u044F (\u0431\u0430\u043B\u043B)",
-  "\u0413\u043E\u043B\u043E\u0432\u0430 \u0438 \u0448\u0435\u044F (\u043D\u0430\u0431\u043B\u044E\u0434\u0435\u043D\u0438\u0435)",
-  "\u041F\u043B\u0435\u0447\u0438 (\u0431\u0430\u043B\u043B)",
-  "\u041F\u043B\u0435\u0447\u0438 (\u043D\u0430\u0431\u043B\u044E\u0434\u0435\u043D\u0438\u0435)",
-  "\u041F\u043E\u0437\u0432\u043E\u043D\u043E\u0447\u043D\u0438\u043A (\u0431\u0430\u043B\u043B)",
-  "\u041F\u043E\u0437\u0432\u043E\u043D\u043E\u0447\u043D\u0438\u043A (\u043D\u0430\u0431\u043B\u044E\u0434\u0435\u043D\u0438\u0435)",
-  "\u0422\u0430\u0437 \u0438 \u0431\u0451\u0434\u0440\u0430 (\u0431\u0430\u043B\u043B)",
-  "\u0422\u0430\u0437 \u0438 \u0431\u0451\u0434\u0440\u0430 (\u043D\u0430\u0431\u043B\u044E\u0434\u0435\u043D\u0438\u0435)",
-  "\u0420\u0435\u043A\u043E\u043C\u0435\u043D\u0434\u0430\u0446\u0438\u0438",
-  "\u041A\u043E\u043C\u043C\u0435\u043D\u0442\u0430\u0440\u0438\u0439 \u0418\u0418"
-];
-async function getPostureSheetId(userId) {
-  const [row] = await db.select().from(settingsTable).where(eq(settingsTable.key, POSTURE_SHEET_KEY(userId)));
-  return row?.value ?? null;
-}
-async function setPostureSheetId(userId, id) {
-  await db.insert(settingsTable).values({ key: POSTURE_SHEET_KEY(userId), value: id }).onConflictDoUpdate({ target: settingsTable.key, set: { value: id } });
-}
-async function setPostureSheetCreatedAt(userId) {
-  const now = (/* @__PURE__ */ new Date()).toISOString();
-  await db.insert(settingsTable).values({ key: POSTURE_SHEET_CREATED_KEY(userId), value: now }).onConflictDoUpdate({ target: settingsTable.key, set: { value: now } });
-}
-async function getPostureSheetCreatedAt(userId) {
-  const [row] = await db.select().from(settingsTable).where(eq(settingsTable.key, POSTURE_SHEET_CREATED_KEY(userId)));
-  if (!row?.value) return null;
-  return new Date(row.value);
-}
-async function resetPostureSheet(userId) {
-  await db.delete(settingsTable).where(eq(settingsTable.key, POSTURE_SHEET_KEY(userId)));
-  await db.delete(settingsTable).where(eq(settingsTable.key, POSTURE_SHEET_CREATED_KEY(userId)));
-}
-async function getPostureCycleStatus(userId) {
-  const sheetId = await getPostureSheetId(userId);
-  const createdAt = await getPostureSheetCreatedAt(userId);
-  if (!sheetId || !createdAt) {
-    return { phase: "normal", dayCount: 0, daysLeft: POSTURE_CYCLE_DAYS, hasSheet: false, sheetUrl: null };
-  }
-  const diffMs = Date.now() - createdAt.getTime();
-  const dayCount = Math.max(1, Math.floor(diffMs / 864e5) + 1);
-  const daysLeft = Math.max(0, POSTURE_CYCLE_DAYS - dayCount);
-  let phase;
-  if (dayCount > POSTURE_CYCLE_DAYS + 1) phase = "expired";
-  else if (dayCount === POSTURE_CYCLE_DAYS + 1) phase = "day31";
-  else if (dayCount >= POSTURE_CYCLE_DAYS - 2) phase = "warning";
-  else phase = "normal";
-  return { phase, dayCount, daysLeft, hasSheet: true, sheetUrl: spreadsheetUrl(sheetId) };
-}
-var GRADE_RU = {
-  Excellent: "\u041E\u0442\u043B\u0438\u0447\u043D\u043E",
-  Good: "\u0425\u043E\u0440\u043E\u0448\u043E",
-  Fair: "\u0423\u0434\u043E\u0432\u043B\u0435\u0442\u0432\u043E\u0440\u0438\u0442\u0435\u043B\u044C\u043D\u043E",
-  Poor: "\u0422\u0440\u0435\u0431\u0443\u0435\u0442 \u0432\u043D\u0438\u043C\u0430\u043D\u0438\u044F"
-};
-async function appendPostureToSheets(userId, result, angles) {
-  const status = await getPostureCycleStatus(userId);
-  let cycleReset = false;
-  if (status.phase === "expired") {
-    await resetPostureSheet(userId);
-    cycleReset = true;
-  }
-  let spreadsheetId = await getPostureSheetId(userId);
-  const isNew = !spreadsheetId;
-  if (isNew) {
-    spreadsheetId = await createSpreadsheet(`\u{1F4CB} \u0410\u043D\u0430\u043B\u0438\u0437 \u043E\u0441\u0430\u043D\u043A\u0438 \u2014 \u0422\u0440\u0435\u043A\u0435\u0440 \u0437\u0434\u043E\u0440\u043E\u0432\u044C\u044F 360 (${userId})`);
-    await setPostureSheetId(userId, spreadsheetId);
-    await setPostureSheetCreatedAt(userId);
-    await writeRows(spreadsheetId, "A1", [POSTURE_HEADER]);
-    await formatHeader(spreadsheetId, 0);
-  }
-  const now = /* @__PURE__ */ new Date();
-  const dateStr = now.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" });
-  const timeStr = now.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
-  const areaByName = (name) => result.areas.find((a) => a.name === name);
-  const head2 = areaByName("\u0413\u043E\u043B\u043E\u0432\u0430 \u0438 \u0448\u0435\u044F");
-  const shoulders = areaByName("\u041F\u043B\u0435\u0447\u0438");
-  const spine = areaByName("\u041F\u043E\u0437\u0432\u043E\u043D\u043E\u0447\u043D\u0438\u043A");
-  const hips = areaByName("\u0422\u0430\u0437 \u0438 \u0431\u0451\u0434\u0440\u0430");
-  const dataRow = [
-    dateStr,
-    timeStr,
-    (angles ?? []).join(", "),
-    result.overallScore,
-    GRADE_RU[result.grade] ?? result.grade,
-    result.defects ?? "",
-    head2?.score ?? "",
-    head2?.note ?? "",
-    shoulders?.score ?? "",
-    shoulders?.note ?? "",
-    spine?.score ?? "",
-    spine?.note ?? "",
-    hips?.score ?? "",
-    hips?.note ?? "",
-    result.recommendations.join(" | "),
-    result.notes ?? ""
-  ];
-  await writeRows(spreadsheetId, "A1", [dataRow]);
-  return { url: spreadsheetUrl(spreadsheetId), cycleReset };
-}
-
-// src/routes/meals.ts
-var router3 = (0, import_express3.Router)();
-async function getMealWithFood(mealId, userId) {
-  const rows = await db.select({
-    id: mealsTable.id,
-    foodId: mealsTable.foodId,
-    foodName: foodsTable.name,
-    mealType: mealsTable.mealType,
-    servings: mealsTable.servings,
-    calories: foodsTable.calories,
-    protein: foodsTable.protein,
-    carbs: foodsTable.carbs,
-    fat: foodsTable.fat,
-    date: mealsTable.date,
-    createdAt: mealsTable.createdAt
-  }).from(mealsTable).innerJoin(foodsTable, eq(mealsTable.foodId, foodsTable.id)).where(and(eq(mealsTable.id, mealId), eq(mealsTable.userId, userId)));
-  if (!rows[0]) return null;
-  const row = rows[0];
-  return {
-    ...row,
-    calories: row.calories * row.servings,
-    protein: row.protein * row.servings,
-    carbs: row.carbs * row.servings,
-    fat: row.fat * row.servings
-  };
-}
-router3.get("/meals", async (req, res) => {
-  const params = ListMealsQueryParams.safeParse(req.query);
-  if (!params.success) {
-    res.status(400).json({ error: params.error.message });
-    return;
-  }
-  const rows = await db.select({
-    id: mealsTable.id,
-    foodId: mealsTable.foodId,
-    foodName: foodsTable.name,
-    mealType: mealsTable.mealType,
-    servings: mealsTable.servings,
-    calories: foodsTable.calories,
-    protein: foodsTable.protein,
-    carbs: foodsTable.carbs,
-    fat: foodsTable.fat,
-    date: mealsTable.date,
-    createdAt: mealsTable.createdAt
-  }).from(mealsTable).innerJoin(foodsTable, eq(mealsTable.foodId, foodsTable.id)).where(and(eq(mealsTable.date, params.data.date), eq(mealsTable.userId, req.userId))).orderBy(mealsTable.createdAt);
-  const meals = rows.map((row) => ({
-    ...row,
-    calories: row.calories * row.servings,
-    protein: row.protein * row.servings,
-    carbs: row.carbs * row.servings,
-    fat: row.fat * row.servings
-  }));
-  res.json(ListMealsResponse.parse(meals));
-});
-router3.post("/meals", async (req, res) => {
-  const parsed = CreateMealBody.safeParse(req.body);
-  if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
-    return;
-  }
-  const [food] = await db.select().from(foodsTable).where(eq(foodsTable.id, parsed.data.foodId));
-  if (!food) {
-    res.status(400).json({ error: "Food not found" });
-    return;
-  }
-  const [meal] = await db.insert(mealsTable).values({
-    userId: req.userId,
-    foodId: parsed.data.foodId,
-    mealType: parsed.data.mealType,
-    servings: parsed.data.servings,
-    date: parsed.data.date
-  }).returning();
-  const result = await getMealWithFood(meal.id, req.userId);
-  triggerSync(parsed.data.date, req.userId);
-  res.status(201).json(GetMealResponse.parse(result));
-});
-router3.get("/meals/:id", async (req, res) => {
-  const params = GetMealParams.safeParse(req.params);
-  if (!params.success) {
-    res.status(400).json({ error: params.error.message });
-    return;
-  }
-  const result = await getMealWithFood(params.data.id, req.userId);
-  if (!result) {
-    res.status(404).json({ error: "Meal not found" });
-    return;
-  }
-  res.json(GetMealResponse.parse(result));
-});
-router3.patch("/meals/:id", async (req, res) => {
-  const params = UpdateMealParams.safeParse(req.params);
-  if (!params.success) {
-    res.status(400).json({ error: params.error.message });
-    return;
-  }
-  const parsed = UpdateMealBody.safeParse(req.body);
-  if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
-    return;
-  }
-  const [meal] = await db.update(mealsTable).set(parsed.data).where(and(eq(mealsTable.id, params.data.id), eq(mealsTable.userId, req.userId))).returning();
-  if (!meal) {
-    res.status(404).json({ error: "Meal not found" });
-    return;
-  }
-  const result = await getMealWithFood(meal.id, req.userId);
-  res.json(UpdateMealResponse.parse(result));
-});
-router3.delete("/meals/:id", async (req, res) => {
-  const params = DeleteMealParams.safeParse(req.params);
-  if (!params.success) {
-    res.status(400).json({ error: params.error.message });
-    return;
-  }
-  const [meal] = await db.delete(mealsTable).where(and(eq(mealsTable.id, params.data.id), eq(mealsTable.userId, req.userId))).returning();
-  if (!meal) {
-    res.status(404).json({ error: "Meal not found" });
-    return;
-  }
-  triggerSync(meal.date, req.userId);
-  res.sendStatus(204);
-});
-var meals_default = router3;
-
-// src/routes/goals.ts
-var import_express4 = __toESM(require_express2(), 1);
-var router4 = (0, import_express4.Router)();
-async function getOrCreateGoal(userId) {
-  const rows = await db.select().from(goalsTable).where(eq(goalsTable.userId, userId));
-  if (rows.length > 0) return rows[0];
-  const [goal] = await db.insert(goalsTable).values({
-    userId,
-    dailyCalories: 2e3,
-    dailyProtein: 150,
-    dailyCarbs: 250,
-    dailyFat: 65
-  }).returning();
-  return goal;
-}
-router4.get("/goals", async (req, res) => {
-  const goal = await getOrCreateGoal(req.userId);
-  res.json(GetGoalResponse.parse(goal));
-});
-router4.put("/goals", async (req, res) => {
-  const parsed = SetGoalBody.safeParse(req.body);
-  if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
-    return;
-  }
-  const existing = await getOrCreateGoal(req.userId);
-  const [goal] = await db.update(goalsTable).set(parsed.data).where(and(eq(goalsTable.id, existing.id), eq(goalsTable.userId, req.userId))).returning();
-  res.json(SetGoalResponse.parse(goal));
-});
-var goals_default = router4;
-
-// src/routes/dashboard.ts
-var import_express5 = __toESM(require_express2(), 1);
-var router5 = (0, import_express5.Router)();
-async function getGoalValues(userId) {
-  const rows = await db.select().from(goalsTable).where(eq(goalsTable.userId, userId));
-  if (rows.length > 0) return rows[0];
-  return { dailyCalories: 2e3, dailyProtein: 150, dailyCarbs: 250, dailyFat: 65 };
-}
-router5.get("/dashboard/daily-summary", async (req, res) => {
-  const params = GetDailySummaryQueryParams.safeParse(req.query);
-  if (!params.success) {
-    res.status(400).json({ error: params.error.message });
-    return;
-  }
-  const rows = await db.select({
-    totalCalories: sql`coalesce(sum(${foodsTable.calories} * ${mealsTable.servings}), 0)`,
-    totalProtein: sql`coalesce(sum(${foodsTable.protein} * ${mealsTable.servings}), 0)`,
-    totalCarbs: sql`coalesce(sum(${foodsTable.carbs} * ${mealsTable.servings}), 0)`,
-    totalFat: sql`coalesce(sum(${foodsTable.fat} * ${mealsTable.servings}), 0)`,
-    mealCount: sql`count(${mealsTable.id})::int`
-  }).from(mealsTable).innerJoin(foodsTable, eq(mealsTable.foodId, foodsTable.id)).where(and(eq(mealsTable.date, params.data.date), eq(mealsTable.userId, req.userId)));
-  const totals = rows[0] ?? { totalCalories: 0, totalProtein: 0, totalCarbs: 0, totalFat: 0, mealCount: 0 };
-  const goal = await getGoalValues(req.userId);
-  const summary = {
-    date: params.data.date,
-    totalCalories: Number(totals.totalCalories),
-    totalProtein: Number(totals.totalProtein),
-    totalCarbs: Number(totals.totalCarbs),
-    totalFat: Number(totals.totalFat),
-    goalCalories: goal.dailyCalories,
-    goalProtein: goal.dailyProtein,
-    goalCarbs: goal.dailyCarbs,
-    goalFat: goal.dailyFat,
-    mealCount: Number(totals.mealCount)
-  };
-  res.json(GetDailySummaryResponse.parse(summary));
-});
-router5.get("/dashboard/weekly-stats", async (req, res) => {
-  const params = GetWeeklyStatsQueryParams.safeParse(req.query);
-  if (!params.success) {
-    res.status(400).json({ error: params.error.message });
-    return;
-  }
-  const goal = await getGoalValues(req.userId);
-  const baseDate = new Date(params.data.date);
-  const dayOfWeek = baseDate.getDay();
-  const monday = new Date(baseDate);
-  monday.setDate(baseDate.getDate() - (dayOfWeek + 6) % 7);
-  const days = [];
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    const dateStr = d.toISOString().split("T")[0];
-    const rows = await db.select({
-      totalCalories: sql`coalesce(sum(${foodsTable.calories} * ${mealsTable.servings}), 0)`
-    }).from(mealsTable).innerJoin(foodsTable, eq(mealsTable.foodId, foodsTable.id)).where(and(eq(mealsTable.date, dateStr), eq(mealsTable.userId, req.userId)));
-    days.push({
-      date: dateStr,
-      totalCalories: Number(rows[0]?.totalCalories ?? 0),
-      goalCalories: goal.dailyCalories
-    });
-  }
-  res.json(GetWeeklyStatsResponse.parse(days));
-});
-router5.get("/dashboard/recent-meals", async (req, res) => {
-  const params = GetRecentMealsQueryParams.safeParse(req.query);
-  if (!params.success) {
-    res.status(400).json({ error: params.error.message });
-    return;
-  }
-  const limit2 = params.data.limit ?? 5;
-  const rows = await db.select({
-    id: mealsTable.id,
-    foodId: mealsTable.foodId,
-    foodName: foodsTable.name,
-    mealType: mealsTable.mealType,
-    servings: mealsTable.servings,
-    calories: foodsTable.calories,
-    protein: foodsTable.protein,
-    carbs: foodsTable.carbs,
-    fat: foodsTable.fat,
-    date: mealsTable.date,
-    createdAt: mealsTable.createdAt
-  }).from(mealsTable).innerJoin(foodsTable, eq(mealsTable.foodId, foodsTable.id)).where(eq(mealsTable.userId, req.userId)).orderBy(desc(mealsTable.createdAt)).limit(limit2);
-  const meals = rows.map((row) => ({
-    ...row,
-    calories: row.calories * row.servings,
-    protein: row.protein * row.servings,
-    carbs: row.carbs * row.servings,
-    fat: row.fat * row.servings
-  }));
-  res.json(GetRecentMealsResponse.parse(meals));
-});
-router5.get("/dashboard/meal-type-breakdown", async (req, res) => {
-  const params = GetMealTypeBreakdownQueryParams.safeParse(req.query);
-  if (!params.success) {
-    res.status(400).json({ error: params.error.message });
-    return;
-  }
-  const rows = await db.select({
-    mealType: mealsTable.mealType,
-    totalCalories: sql`coalesce(sum(${foodsTable.calories} * ${mealsTable.servings}), 0)`,
-    count: sql`count(${mealsTable.id})::int`
-  }).from(mealsTable).innerJoin(foodsTable, eq(mealsTable.foodId, foodsTable.id)).where(and(eq(mealsTable.date, params.data.date), eq(mealsTable.userId, req.userId))).groupBy(mealsTable.mealType);
-  const breakdown = rows.map((row) => ({
-    mealType: row.mealType,
-    totalCalories: Number(row.totalCalories),
-    count: Number(row.count)
-  }));
-  res.json(GetMealTypeBreakdownResponse.parse(breakdown));
-});
-var dashboard_default = router5;
-
-// src/routes/analyze-food.ts
-var import_express6 = __toESM(require_express2(), 1);
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/tslib.mjs
-function __classPrivateFieldSet2(receiver, state, value, kind, f) {
-  if (kind === "m")
-    throw new TypeError("Private method is not writable");
-  if (kind === "a" && !f)
-    throw new TypeError("Private accessor was defined without a setter");
-  if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver))
-    throw new TypeError("Cannot write private member to an object whose class did not declare it");
-  return kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value), value;
-}
-function __classPrivateFieldGet2(receiver, state, kind, f) {
-  if (kind === "a" && !f)
-    throw new TypeError("Private accessor was defined without a getter");
-  if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver))
-    throw new TypeError("Cannot read private member from an object whose class did not declare it");
-  return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
-}
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/utils/uuid.mjs
-var uuid42 = function() {
-  const { crypto: crypto2 } = globalThis;
-  if (crypto2?.randomUUID) {
-    uuid42 = crypto2.randomUUID.bind(crypto2);
-    return crypto2.randomUUID();
-  }
-  const u8 = new Uint8Array(1);
-  const randomByte = crypto2 ? () => crypto2.getRandomValues(u8)[0] : () => Math.random() * 255 & 255;
-  return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, (c) => (+c ^ randomByte() & 15 >> +c / 4).toString(16));
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/errors.mjs
-function isAbortError(err) {
-  return typeof err === "object" && err !== null && // Spec-compliant fetch implementations
-  ("name" in err && err.name === "AbortError" || // Expo fetch
-  "message" in err && String(err.message).includes("FetchRequestCanceledException"));
-}
-var castToError = (err) => {
-  if (err instanceof Error)
-    return err;
-  if (typeof err === "object" && err !== null) {
-    try {
-      if (Object.prototype.toString.call(err) === "[object Error]") {
-        const error40 = new Error(err.message, err.cause ? { cause: err.cause } : {});
-        if (err.stack)
-          error40.stack = err.stack;
-        if (err.cause && !error40.cause)
-          error40.cause = err.cause;
-        if (err.name)
-          error40.name = err.name;
-        return error40;
-      }
-    } catch {
-    }
-    try {
-      return new Error(JSON.stringify(err));
-    } catch {
-    }
-  }
-  return new Error(err);
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/core/error.mjs
-var OpenAIError = class extends Error {
-};
-var APIError = class _APIError extends OpenAIError {
-  constructor(status, error40, message, headers) {
-    super(`${_APIError.makeMessage(status, error40, message)}`);
-    this.status = status;
-    this.headers = headers;
-    this.requestID = headers?.get("x-request-id");
-    this.error = error40;
-    const data = error40;
-    this.code = data?.["code"];
-    this.param = data?.["param"];
-    this.type = data?.["type"];
-  }
-  static makeMessage(status, error40, message) {
-    const msg = error40?.message ? typeof error40.message === "string" ? error40.message : JSON.stringify(error40.message) : error40 ? JSON.stringify(error40) : message;
-    if (status && msg) {
-      return `${status} ${msg}`;
-    }
-    if (status) {
-      return `${status} status code (no body)`;
-    }
-    if (msg) {
-      return msg;
-    }
-    return "(no status code or body)";
-  }
-  static generate(status, errorResponse, message, headers) {
-    if (!status || !headers) {
-      return new APIConnectionError({ message, cause: castToError(errorResponse) });
-    }
-    const error40 = errorResponse?.["error"];
-    if (status === 400) {
-      return new BadRequestError(status, error40, message, headers);
-    }
-    if (status === 401) {
-      return new AuthenticationError(status, error40, message, headers);
-    }
-    if (status === 403) {
-      return new PermissionDeniedError(status, error40, message, headers);
-    }
-    if (status === 404) {
-      return new NotFoundError(status, error40, message, headers);
-    }
-    if (status === 409) {
-      return new ConflictError(status, error40, message, headers);
-    }
-    if (status === 422) {
-      return new UnprocessableEntityError(status, error40, message, headers);
-    }
-    if (status === 429) {
-      return new RateLimitError(status, error40, message, headers);
-    }
-    if (status >= 500) {
-      return new InternalServerError(status, error40, message, headers);
-    }
-    return new _APIError(status, error40, message, headers);
-  }
-};
-var APIUserAbortError = class extends APIError {
-  constructor({ message } = {}) {
-    super(void 0, void 0, message || "Request was aborted.", void 0);
-  }
-};
-var APIConnectionError = class extends APIError {
-  constructor({ message, cause }) {
-    super(void 0, void 0, message || "Connection error.", void 0);
-    if (cause)
-      this.cause = cause;
-  }
-};
-var APIConnectionTimeoutError = class extends APIConnectionError {
-  constructor({ message } = {}) {
-    super({ message: message ?? "Request timed out." });
-  }
-};
-var BadRequestError = class extends APIError {
-};
-var AuthenticationError = class extends APIError {
-};
-var PermissionDeniedError = class extends APIError {
-};
-var NotFoundError = class extends APIError {
-};
-var ConflictError = class extends APIError {
-};
-var UnprocessableEntityError = class extends APIError {
-};
-var RateLimitError = class extends APIError {
-};
-var InternalServerError = class extends APIError {
-};
-var LengthFinishReasonError = class extends OpenAIError {
-  constructor() {
-    super(`Could not parse response content as the length limit was reached`);
-  }
-};
-var ContentFilterFinishReasonError = class extends OpenAIError {
-  constructor() {
-    super(`Could not parse response content as the request was rejected by the content filter`);
-  }
-};
-var InvalidWebhookSignatureError = class extends Error {
-  constructor(message) {
-    super(message);
-  }
-};
-var OAuthError = class extends APIError {
-  constructor(status, error40, headers) {
-    let finalMessage = "OAuth2 authentication error";
-    let error_code = void 0;
-    if (error40 && typeof error40 === "object") {
-      const errorData = error40;
-      error_code = errorData["error"];
-      const description = errorData["error_description"];
-      if (description && typeof description === "string") {
-        finalMessage = description;
-      } else if (error_code) {
-        finalMessage = error_code;
-      }
-    }
-    super(status, error40, finalMessage, headers);
-    this.error_code = error_code;
-  }
-};
-var SubjectTokenProviderError = class extends OpenAIError {
-  constructor(message, provider, cause) {
-    super(message);
-    this.provider = provider;
-    this.cause = cause;
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/utils/values.mjs
-var startsWithSchemeRegexp = /^[a-z][a-z0-9+.-]*:/i;
-var isAbsoluteURL = (url2) => {
-  return startsWithSchemeRegexp.test(url2);
-};
-var isArray = (val) => (isArray = Array.isArray, isArray(val));
-var isReadonlyArray = isArray;
-function maybeObj(x) {
-  if (typeof x !== "object") {
-    return {};
-  }
-  return x ?? {};
-}
-function isEmptyObj(obj) {
-  if (!obj)
-    return true;
-  for (const _k in obj)
-    return false;
-  return true;
-}
-function hasOwn(obj, key) {
-  return Object.prototype.hasOwnProperty.call(obj, key);
-}
-function isObj(obj) {
-  return obj != null && typeof obj === "object" && !Array.isArray(obj);
-}
-var validatePositiveInteger = (name, n) => {
-  if (typeof n !== "number" || !Number.isInteger(n)) {
-    throw new OpenAIError(`${name} must be an integer`);
-  }
-  if (n < 0) {
-    throw new OpenAIError(`${name} must be a positive integer`);
-  }
-  return n;
-};
-var safeJSON = (text2) => {
-  try {
-    return JSON.parse(text2);
-  } catch (err) {
-    return void 0;
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/utils/sleep.mjs
-var sleep3 = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/version.mjs
-var VERSION = "6.42.0";
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/detect-platform.mjs
-var isRunningInBrowser = () => {
-  return (
-    // @ts-ignore
-    typeof window !== "undefined" && // @ts-ignore
-    typeof window.document !== "undefined" && // @ts-ignore
-    typeof navigator !== "undefined"
-  );
-};
-function getDetectedPlatform() {
-  if (typeof Deno !== "undefined" && Deno.build != null) {
-    return "deno";
-  }
-  if (typeof EdgeRuntime !== "undefined") {
-    return "edge";
-  }
-  if (Object.prototype.toString.call(typeof globalThis.process !== "undefined" ? globalThis.process : 0) === "[object process]") {
-    return "node";
-  }
-  return "unknown";
-}
-var getPlatformProperties = () => {
-  const detectedPlatform = getDetectedPlatform();
-  if (detectedPlatform === "deno") {
-    return {
-      "X-Stainless-Lang": "js",
-      "X-Stainless-Package-Version": VERSION,
-      "X-Stainless-OS": normalizePlatform(Deno.build.os),
-      "X-Stainless-Arch": normalizeArch(Deno.build.arch),
-      "X-Stainless-Runtime": "deno",
-      "X-Stainless-Runtime-Version": typeof Deno.version === "string" ? Deno.version : Deno.version?.deno ?? "unknown"
-    };
-  }
-  if (typeof EdgeRuntime !== "undefined") {
-    return {
-      "X-Stainless-Lang": "js",
-      "X-Stainless-Package-Version": VERSION,
-      "X-Stainless-OS": "Unknown",
-      "X-Stainless-Arch": `other:${EdgeRuntime}`,
-      "X-Stainless-Runtime": "edge",
-      "X-Stainless-Runtime-Version": globalThis.process.version
-    };
-  }
-  if (detectedPlatform === "node") {
-    return {
-      "X-Stainless-Lang": "js",
-      "X-Stainless-Package-Version": VERSION,
-      "X-Stainless-OS": normalizePlatform(globalThis.process.platform ?? "unknown"),
-      "X-Stainless-Arch": normalizeArch(globalThis.process.arch ?? "unknown"),
-      "X-Stainless-Runtime": "node",
-      "X-Stainless-Runtime-Version": globalThis.process.version ?? "unknown"
-    };
-  }
-  const browserInfo = getBrowserInfo();
-  if (browserInfo) {
-    return {
-      "X-Stainless-Lang": "js",
-      "X-Stainless-Package-Version": VERSION,
-      "X-Stainless-OS": "Unknown",
-      "X-Stainless-Arch": "unknown",
-      "X-Stainless-Runtime": `browser:${browserInfo.browser}`,
-      "X-Stainless-Runtime-Version": browserInfo.version
-    };
-  }
-  return {
-    "X-Stainless-Lang": "js",
-    "X-Stainless-Package-Version": VERSION,
-    "X-Stainless-OS": "Unknown",
-    "X-Stainless-Arch": "unknown",
-    "X-Stainless-Runtime": "unknown",
-    "X-Stainless-Runtime-Version": "unknown"
-  };
-};
-function getBrowserInfo() {
-  if (typeof navigator === "undefined" || !navigator) {
-    return null;
-  }
-  const browserPatterns = [
-    { key: "edge", pattern: /Edge(?:\W+(\d+)\.(\d+)(?:\.(\d+))?)?/ },
-    { key: "ie", pattern: /MSIE(?:\W+(\d+)\.(\d+)(?:\.(\d+))?)?/ },
-    { key: "ie", pattern: /Trident(?:.*rv\:(\d+)\.(\d+)(?:\.(\d+))?)?/ },
-    { key: "chrome", pattern: /Chrome(?:\W+(\d+)\.(\d+)(?:\.(\d+))?)?/ },
-    { key: "firefox", pattern: /Firefox(?:\W+(\d+)\.(\d+)(?:\.(\d+))?)?/ },
-    { key: "safari", pattern: /(?:Version\W+(\d+)\.(\d+)(?:\.(\d+))?)?(?:\W+Mobile\S*)?\W+Safari/ }
-  ];
-  for (const { key, pattern } of browserPatterns) {
-    const match2 = pattern.exec(navigator.userAgent);
-    if (match2) {
-      const major = match2[1] || 0;
-      const minor = match2[2] || 0;
-      const patch = match2[3] || 0;
-      return { browser: key, version: `${major}.${minor}.${patch}` };
-    }
-  }
-  return null;
-}
-var normalizeArch = (arch) => {
-  if (arch === "x32")
-    return "x32";
-  if (arch === "x86_64" || arch === "x64")
-    return "x64";
-  if (arch === "arm")
-    return "arm";
-  if (arch === "aarch64" || arch === "arm64")
-    return "arm64";
-  if (arch)
-    return `other:${arch}`;
-  return "unknown";
-};
-var normalizePlatform = (platform) => {
-  platform = platform.toLowerCase();
-  if (platform.includes("ios"))
-    return "iOS";
-  if (platform === "android")
-    return "Android";
-  if (platform === "darwin")
-    return "MacOS";
-  if (platform === "win32")
-    return "Windows";
-  if (platform === "freebsd")
-    return "FreeBSD";
-  if (platform === "openbsd")
-    return "OpenBSD";
-  if (platform === "linux")
-    return "Linux";
-  if (platform)
-    return `Other:${platform}`;
-  return "Unknown";
-};
-var _platformHeaders;
-var getPlatformHeaders = () => {
-  return _platformHeaders ?? (_platformHeaders = getPlatformProperties());
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/shims.mjs
-function getDefaultFetch() {
-  if (typeof fetch !== "undefined") {
-    return fetch;
-  }
-  throw new Error("`fetch` is not defined as a global; Either pass `fetch` to the client, `new OpenAI({ fetch })` or polyfill the global, `globalThis.fetch = fetch`");
-}
-function makeReadableStream(...args) {
-  const ReadableStream2 = globalThis.ReadableStream;
-  if (typeof ReadableStream2 === "undefined") {
-    throw new Error("`ReadableStream` is not defined as a global; You will need to polyfill it, `globalThis.ReadableStream = ReadableStream`");
-  }
-  return new ReadableStream2(...args);
-}
-function ReadableStreamFrom(iterable) {
-  let iter = Symbol.asyncIterator in iterable ? iterable[Symbol.asyncIterator]() : iterable[Symbol.iterator]();
-  return makeReadableStream({
-    start() {
-    },
-    async pull(controller) {
-      const { done, value } = await iter.next();
-      if (done) {
-        controller.close();
-      } else {
-        controller.enqueue(value);
-      }
-    },
-    async cancel() {
-      await iter.return?.();
-    }
-  });
-}
-function ReadableStreamToAsyncIterable(stream) {
-  if (stream[Symbol.asyncIterator])
-    return stream;
-  const reader = stream.getReader();
-  return {
-    async next() {
-      try {
-        const result = await reader.read();
-        if (result?.done)
-          reader.releaseLock();
-        return result;
-      } catch (e) {
-        reader.releaseLock();
-        throw e;
-      }
-    },
-    async return() {
-      const cancelPromise = reader.cancel();
-      reader.releaseLock();
-      await cancelPromise;
-      return { done: true, value: void 0 };
-    },
-    [Symbol.asyncIterator]() {
-      return this;
-    }
-  };
-}
-async function CancelReadableStream(stream) {
-  if (stream === null || typeof stream !== "object")
-    return;
-  if (stream[Symbol.asyncIterator]) {
-    await stream[Symbol.asyncIterator]().return?.();
-    return;
-  }
-  const reader = stream.getReader();
-  const cancelPromise = reader.cancel();
-  reader.releaseLock();
-  await cancelPromise;
-}
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/request-options.mjs
-var FallbackEncoder = ({ headers, body }) => {
-  return {
-    bodyHeaders: {
-      "content-type": "application/json"
-    },
-    body: JSON.stringify(body)
-  };
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/qs/formats.mjs
-var default_format = "RFC3986";
-var default_formatter = (v) => String(v);
-var formatters = {
-  RFC1738: (v) => String(v).replace(/%20/g, "+"),
-  RFC3986: default_formatter
-};
-var RFC1738 = "RFC1738";
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/qs/utils.mjs
-var has = (obj, key) => (has = Object.hasOwn ?? Function.prototype.call.bind(Object.prototype.hasOwnProperty), has(obj, key));
-var hex_table = /* @__PURE__ */ (() => {
-  const array2 = [];
-  for (let i = 0; i < 256; ++i) {
-    array2.push("%" + ((i < 16 ? "0" : "") + i.toString(16)).toUpperCase());
-  }
-  return array2;
-})();
-var limit = 1024;
-var encode = (str2, _defaultEncoder, charset, _kind, format) => {
-  if (str2.length === 0) {
-    return str2;
-  }
-  let string4 = str2;
-  if (typeof str2 === "symbol") {
-    string4 = Symbol.prototype.toString.call(str2);
-  } else if (typeof str2 !== "string") {
-    string4 = String(str2);
-  }
-  if (charset === "iso-8859-1") {
-    return escape(string4).replace(/%u[0-9a-f]{4}/gi, function($0) {
-      return "%26%23" + parseInt($0.slice(2), 16) + "%3B";
-    });
-  }
-  let out = "";
-  for (let j = 0; j < string4.length; j += limit) {
-    const segment = string4.length >= limit ? string4.slice(j, j + limit) : string4;
-    const arr = [];
-    for (let i = 0; i < segment.length; ++i) {
-      let c = segment.charCodeAt(i);
-      if (c === 45 || // -
-      c === 46 || // .
-      c === 95 || // _
-      c === 126 || // ~
-      c >= 48 && c <= 57 || // 0-9
-      c >= 65 && c <= 90 || // a-z
-      c >= 97 && c <= 122 || // A-Z
-      format === RFC1738 && (c === 40 || c === 41)) {
-        arr[arr.length] = segment.charAt(i);
-        continue;
-      }
-      if (c < 128) {
-        arr[arr.length] = hex_table[c];
-        continue;
-      }
-      if (c < 2048) {
-        arr[arr.length] = hex_table[192 | c >> 6] + hex_table[128 | c & 63];
-        continue;
-      }
-      if (c < 55296 || c >= 57344) {
-        arr[arr.length] = hex_table[224 | c >> 12] + hex_table[128 | c >> 6 & 63] + hex_table[128 | c & 63];
-        continue;
-      }
-      i += 1;
-      c = 65536 + ((c & 1023) << 10 | segment.charCodeAt(i) & 1023);
-      arr[arr.length] = hex_table[240 | c >> 18] + hex_table[128 | c >> 12 & 63] + hex_table[128 | c >> 6 & 63] + hex_table[128 | c & 63];
-    }
-    out += arr.join("");
-  }
-  return out;
-};
-function is_buffer(obj) {
-  if (!obj || typeof obj !== "object") {
-    return false;
-  }
-  return !!(obj.constructor && obj.constructor.isBuffer && obj.constructor.isBuffer(obj));
-}
-function maybe_map(val, fn) {
-  if (isArray(val)) {
-    const mapped = [];
-    for (let i = 0; i < val.length; i += 1) {
-      mapped.push(fn(val[i]));
-    }
-    return mapped;
-  }
-  return fn(val);
-}
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/qs/stringify.mjs
-var array_prefix_generators = {
-  brackets(prefix) {
-    return String(prefix) + "[]";
-  },
-  comma: "comma",
-  indices(prefix, key) {
-    return String(prefix) + "[" + key + "]";
-  },
-  repeat(prefix) {
-    return String(prefix);
-  }
-};
-var push_to_array = function(arr, value_or_array) {
-  Array.prototype.push.apply(arr, isArray(value_or_array) ? value_or_array : [value_or_array]);
-};
-var toISOString;
-var defaults2 = {
-  addQueryPrefix: false,
-  allowDots: false,
-  allowEmptyArrays: false,
-  arrayFormat: "indices",
-  charset: "utf-8",
-  charsetSentinel: false,
-  delimiter: "&",
-  encode: true,
-  encodeDotInKeys: false,
-  encoder: encode,
-  encodeValuesOnly: false,
-  format: default_format,
-  formatter: default_formatter,
-  /** @deprecated */
-  indices: false,
-  serializeDate(date6) {
-    return (toISOString ?? (toISOString = Function.prototype.call.bind(Date.prototype.toISOString)))(date6);
-  },
-  skipNulls: false,
-  strictNullHandling: false
-};
-function is_non_nullish_primitive(v) {
-  return typeof v === "string" || typeof v === "number" || typeof v === "boolean" || typeof v === "symbol" || typeof v === "bigint";
-}
-var sentinel = {};
-function inner_stringify(object2, prefix, generateArrayPrefix, commaRoundTrip, allowEmptyArrays, strictNullHandling, skipNulls, encodeDotInKeys, encoder, filter, sort, allowDots, serializeDate, format, formatter, encodeValuesOnly, charset, sideChannel) {
-  let obj = object2;
-  let tmp_sc = sideChannel;
-  let step = 0;
-  let find_flag = false;
-  while ((tmp_sc = tmp_sc.get(sentinel)) !== void 0 && !find_flag) {
-    const pos = tmp_sc.get(object2);
-    step += 1;
-    if (typeof pos !== "undefined") {
-      if (pos === step) {
-        throw new RangeError("Cyclic object value");
-      } else {
-        find_flag = true;
-      }
-    }
-    if (typeof tmp_sc.get(sentinel) === "undefined") {
-      step = 0;
-    }
-  }
-  if (typeof filter === "function") {
-    obj = filter(prefix, obj);
-  } else if (obj instanceof Date) {
-    obj = serializeDate?.(obj);
-  } else if (generateArrayPrefix === "comma" && isArray(obj)) {
-    obj = maybe_map(obj, function(value) {
-      if (value instanceof Date) {
-        return serializeDate?.(value);
-      }
-      return value;
-    });
-  }
-  if (obj === null) {
-    if (strictNullHandling) {
-      return encoder && !encodeValuesOnly ? (
-        // @ts-expect-error
-        encoder(prefix, defaults2.encoder, charset, "key", format)
-      ) : prefix;
-    }
-    obj = "";
-  }
-  if (is_non_nullish_primitive(obj) || is_buffer(obj)) {
-    if (encoder) {
-      const key_value = encodeValuesOnly ? prefix : encoder(prefix, defaults2.encoder, charset, "key", format);
-      return [
-        formatter?.(key_value) + "=" + // @ts-expect-error
-        formatter?.(encoder(obj, defaults2.encoder, charset, "value", format))
-      ];
-    }
-    return [formatter?.(prefix) + "=" + formatter?.(String(obj))];
-  }
-  const values = [];
-  if (typeof obj === "undefined") {
-    return values;
-  }
-  let obj_keys;
-  if (generateArrayPrefix === "comma" && isArray(obj)) {
-    if (encodeValuesOnly && encoder) {
-      obj = maybe_map(obj, encoder);
-    }
-    obj_keys = [{ value: obj.length > 0 ? obj.join(",") || null : void 0 }];
-  } else if (isArray(filter)) {
-    obj_keys = filter;
-  } else {
-    const keys = Object.keys(obj);
-    obj_keys = sort ? keys.sort(sort) : keys;
-  }
-  const encoded_prefix = encodeDotInKeys ? String(prefix).replace(/\./g, "%2E") : String(prefix);
-  const adjusted_prefix = commaRoundTrip && isArray(obj) && obj.length === 1 ? encoded_prefix + "[]" : encoded_prefix;
-  if (allowEmptyArrays && isArray(obj) && obj.length === 0) {
-    return adjusted_prefix + "[]";
-  }
-  for (let j = 0; j < obj_keys.length; ++j) {
-    const key = obj_keys[j];
-    const value = (
-      // @ts-ignore
-      typeof key === "object" && typeof key.value !== "undefined" ? key.value : obj[key]
-    );
-    if (skipNulls && value === null) {
-      continue;
-    }
-    const encoded_key = allowDots && encodeDotInKeys ? key.replace(/\./g, "%2E") : key;
-    const key_prefix = isArray(obj) ? typeof generateArrayPrefix === "function" ? generateArrayPrefix(adjusted_prefix, encoded_key) : adjusted_prefix : adjusted_prefix + (allowDots ? "." + encoded_key : "[" + encoded_key + "]");
-    sideChannel.set(object2, step);
-    const valueSideChannel = /* @__PURE__ */ new WeakMap();
-    valueSideChannel.set(sentinel, sideChannel);
-    push_to_array(values, inner_stringify(
-      value,
-      key_prefix,
-      generateArrayPrefix,
-      commaRoundTrip,
-      allowEmptyArrays,
-      strictNullHandling,
-      skipNulls,
-      encodeDotInKeys,
-      // @ts-ignore
-      generateArrayPrefix === "comma" && encodeValuesOnly && isArray(obj) ? null : encoder,
-      filter,
-      sort,
-      allowDots,
-      serializeDate,
-      format,
-      formatter,
-      encodeValuesOnly,
-      charset,
-      valueSideChannel
-    ));
-  }
-  return values;
-}
-function normalize_stringify_options(opts = defaults2) {
-  if (typeof opts.allowEmptyArrays !== "undefined" && typeof opts.allowEmptyArrays !== "boolean") {
-    throw new TypeError("`allowEmptyArrays` option can only be `true` or `false`, when provided");
-  }
-  if (typeof opts.encodeDotInKeys !== "undefined" && typeof opts.encodeDotInKeys !== "boolean") {
-    throw new TypeError("`encodeDotInKeys` option can only be `true` or `false`, when provided");
-  }
-  if (opts.encoder !== null && typeof opts.encoder !== "undefined" && typeof opts.encoder !== "function") {
-    throw new TypeError("Encoder has to be a function.");
-  }
-  const charset = opts.charset || defaults2.charset;
-  if (typeof opts.charset !== "undefined" && opts.charset !== "utf-8" && opts.charset !== "iso-8859-1") {
-    throw new TypeError("The charset option must be either utf-8, iso-8859-1, or undefined");
-  }
-  let format = default_format;
-  if (typeof opts.format !== "undefined") {
-    if (!has(formatters, opts.format)) {
-      throw new TypeError("Unknown format option provided.");
-    }
-    format = opts.format;
-  }
-  const formatter = formatters[format];
-  let filter = defaults2.filter;
-  if (typeof opts.filter === "function" || isArray(opts.filter)) {
-    filter = opts.filter;
-  }
-  let arrayFormat;
-  if (opts.arrayFormat && opts.arrayFormat in array_prefix_generators) {
-    arrayFormat = opts.arrayFormat;
-  } else if ("indices" in opts) {
-    arrayFormat = opts.indices ? "indices" : "repeat";
-  } else {
-    arrayFormat = defaults2.arrayFormat;
-  }
-  if ("commaRoundTrip" in opts && typeof opts.commaRoundTrip !== "boolean") {
-    throw new TypeError("`commaRoundTrip` must be a boolean, or absent");
-  }
-  const allowDots = typeof opts.allowDots === "undefined" ? !!opts.encodeDotInKeys === true ? true : defaults2.allowDots : !!opts.allowDots;
-  return {
-    addQueryPrefix: typeof opts.addQueryPrefix === "boolean" ? opts.addQueryPrefix : defaults2.addQueryPrefix,
-    // @ts-ignore
-    allowDots,
-    allowEmptyArrays: typeof opts.allowEmptyArrays === "boolean" ? !!opts.allowEmptyArrays : defaults2.allowEmptyArrays,
-    arrayFormat,
-    charset,
-    charsetSentinel: typeof opts.charsetSentinel === "boolean" ? opts.charsetSentinel : defaults2.charsetSentinel,
-    commaRoundTrip: !!opts.commaRoundTrip,
-    delimiter: typeof opts.delimiter === "undefined" ? defaults2.delimiter : opts.delimiter,
-    encode: typeof opts.encode === "boolean" ? opts.encode : defaults2.encode,
-    encodeDotInKeys: typeof opts.encodeDotInKeys === "boolean" ? opts.encodeDotInKeys : defaults2.encodeDotInKeys,
-    encoder: typeof opts.encoder === "function" ? opts.encoder : defaults2.encoder,
-    encodeValuesOnly: typeof opts.encodeValuesOnly === "boolean" ? opts.encodeValuesOnly : defaults2.encodeValuesOnly,
-    filter,
-    format,
-    formatter,
-    serializeDate: typeof opts.serializeDate === "function" ? opts.serializeDate : defaults2.serializeDate,
-    skipNulls: typeof opts.skipNulls === "boolean" ? opts.skipNulls : defaults2.skipNulls,
-    // @ts-ignore
-    sort: typeof opts.sort === "function" ? opts.sort : null,
-    strictNullHandling: typeof opts.strictNullHandling === "boolean" ? opts.strictNullHandling : defaults2.strictNullHandling
-  };
-}
-function stringify2(object2, opts = {}) {
-  let obj = object2;
-  const options = normalize_stringify_options(opts);
-  let obj_keys;
-  let filter;
-  if (typeof options.filter === "function") {
-    filter = options.filter;
-    obj = filter("", obj);
-  } else if (isArray(options.filter)) {
-    filter = options.filter;
-    obj_keys = filter;
-  }
-  const keys = [];
-  if (typeof obj !== "object" || obj === null) {
-    return "";
-  }
-  const generateArrayPrefix = array_prefix_generators[options.arrayFormat];
-  const commaRoundTrip = generateArrayPrefix === "comma" && options.commaRoundTrip;
-  if (!obj_keys) {
-    obj_keys = Object.keys(obj);
-  }
-  if (options.sort) {
-    obj_keys.sort(options.sort);
-  }
-  const sideChannel = /* @__PURE__ */ new WeakMap();
-  for (let i = 0; i < obj_keys.length; ++i) {
-    const key = obj_keys[i];
-    if (options.skipNulls && obj[key] === null) {
-      continue;
-    }
-    push_to_array(keys, inner_stringify(
-      obj[key],
-      key,
-      // @ts-expect-error
-      generateArrayPrefix,
-      commaRoundTrip,
-      options.allowEmptyArrays,
-      options.strictNullHandling,
-      options.skipNulls,
-      options.encodeDotInKeys,
-      options.encode ? options.encoder : null,
-      options.filter,
-      options.sort,
-      options.allowDots,
-      options.serializeDate,
-      options.format,
-      options.formatter,
-      options.encodeValuesOnly,
-      options.charset,
-      sideChannel
-    ));
-  }
-  const joined = keys.join(options.delimiter);
-  let prefix = options.addQueryPrefix === true ? "?" : "";
-  if (options.charsetSentinel) {
-    if (options.charset === "iso-8859-1") {
-      prefix += "utf8=%26%2310003%3B&";
-    } else {
-      prefix += "utf8=%E2%9C%93&";
-    }
-  }
-  return joined.length > 0 ? prefix + joined : "";
-}
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/utils/query.mjs
-function stringifyQuery(query) {
-  return stringify2(query, { arrayFormat: "brackets" });
-}
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/utils/bytes.mjs
-function concatBytes(buffers) {
-  let length = 0;
-  for (const buffer of buffers) {
-    length += buffer.length;
-  }
-  const output = new Uint8Array(length);
-  let index = 0;
-  for (const buffer of buffers) {
-    output.set(buffer, index);
-    index += buffer.length;
-  }
-  return output;
-}
-var encodeUTF8_;
-function encodeUTF8(str2) {
-  let encoder;
-  return (encodeUTF8_ ?? (encoder = new globalThis.TextEncoder(), encodeUTF8_ = encoder.encode.bind(encoder)))(str2);
-}
-var decodeUTF8_;
-function decodeUTF8(bytes) {
-  let decoder;
-  return (decodeUTF8_ ?? (decoder = new globalThis.TextDecoder(), decodeUTF8_ = decoder.decode.bind(decoder)))(bytes);
-}
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/decoders/line.mjs
-var _LineDecoder_buffer;
-var _LineDecoder_carriageReturnIndex;
-var LineDecoder = class {
-  constructor() {
-    _LineDecoder_buffer.set(this, void 0);
-    _LineDecoder_carriageReturnIndex.set(this, void 0);
-    __classPrivateFieldSet2(this, _LineDecoder_buffer, new Uint8Array(), "f");
-    __classPrivateFieldSet2(this, _LineDecoder_carriageReturnIndex, null, "f");
-  }
-  decode(chunk) {
-    if (chunk == null) {
-      return [];
-    }
-    const binaryChunk = chunk instanceof ArrayBuffer ? new Uint8Array(chunk) : typeof chunk === "string" ? encodeUTF8(chunk) : chunk;
-    __classPrivateFieldSet2(this, _LineDecoder_buffer, concatBytes([__classPrivateFieldGet2(this, _LineDecoder_buffer, "f"), binaryChunk]), "f");
-    const lines = [];
-    let patternIndex;
-    while ((patternIndex = findNewlineIndex(__classPrivateFieldGet2(this, _LineDecoder_buffer, "f"), __classPrivateFieldGet2(this, _LineDecoder_carriageReturnIndex, "f"))) != null) {
-      if (patternIndex.carriage && __classPrivateFieldGet2(this, _LineDecoder_carriageReturnIndex, "f") == null) {
-        __classPrivateFieldSet2(this, _LineDecoder_carriageReturnIndex, patternIndex.index, "f");
-        continue;
-      }
-      if (__classPrivateFieldGet2(this, _LineDecoder_carriageReturnIndex, "f") != null && (patternIndex.index !== __classPrivateFieldGet2(this, _LineDecoder_carriageReturnIndex, "f") + 1 || patternIndex.carriage)) {
-        lines.push(decodeUTF8(__classPrivateFieldGet2(this, _LineDecoder_buffer, "f").subarray(0, __classPrivateFieldGet2(this, _LineDecoder_carriageReturnIndex, "f") - 1)));
-        __classPrivateFieldSet2(this, _LineDecoder_buffer, __classPrivateFieldGet2(this, _LineDecoder_buffer, "f").subarray(__classPrivateFieldGet2(this, _LineDecoder_carriageReturnIndex, "f")), "f");
-        __classPrivateFieldSet2(this, _LineDecoder_carriageReturnIndex, null, "f");
-        continue;
-      }
-      const endIndex = __classPrivateFieldGet2(this, _LineDecoder_carriageReturnIndex, "f") !== null ? patternIndex.preceding - 1 : patternIndex.preceding;
-      const line2 = decodeUTF8(__classPrivateFieldGet2(this, _LineDecoder_buffer, "f").subarray(0, endIndex));
-      lines.push(line2);
-      __classPrivateFieldSet2(this, _LineDecoder_buffer, __classPrivateFieldGet2(this, _LineDecoder_buffer, "f").subarray(patternIndex.index), "f");
-      __classPrivateFieldSet2(this, _LineDecoder_carriageReturnIndex, null, "f");
-    }
-    return lines;
-  }
-  flush() {
-    if (!__classPrivateFieldGet2(this, _LineDecoder_buffer, "f").length) {
-      return [];
-    }
-    return this.decode("\n");
-  }
-};
-_LineDecoder_buffer = /* @__PURE__ */ new WeakMap(), _LineDecoder_carriageReturnIndex = /* @__PURE__ */ new WeakMap();
-LineDecoder.NEWLINE_CHARS = /* @__PURE__ */ new Set(["\n", "\r"]);
-LineDecoder.NEWLINE_REGEXP = /\r\n|[\n\r]/g;
-function findNewlineIndex(buffer, startIndex) {
-  const newline = 10;
-  const carriage = 13;
-  for (let i = startIndex ?? 0; i < buffer.length; i++) {
-    if (buffer[i] === newline) {
-      return { preceding: i, index: i + 1, carriage: false };
-    }
-    if (buffer[i] === carriage) {
-      return { preceding: i, index: i + 1, carriage: true };
-    }
-  }
-  return null;
-}
-function findDoubleNewlineIndex(buffer) {
-  const newline = 10;
-  const carriage = 13;
-  for (let i = 0; i < buffer.length - 1; i++) {
-    if (buffer[i] === newline && buffer[i + 1] === newline) {
-      return i + 2;
-    }
-    if (buffer[i] === carriage && buffer[i + 1] === carriage) {
-      return i + 2;
-    }
-    if (buffer[i] === carriage && buffer[i + 1] === newline && i + 3 < buffer.length && buffer[i + 2] === carriage && buffer[i + 3] === newline) {
-      return i + 4;
-    }
-  }
-  return -1;
-}
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/utils/log.mjs
-var levelNumbers = {
-  off: 0,
-  error: 200,
-  warn: 300,
-  info: 400,
-  debug: 500
-};
-var parseLogLevel = (maybeLevel, sourceName, client) => {
-  if (!maybeLevel) {
-    return void 0;
-  }
-  if (hasOwn(levelNumbers, maybeLevel)) {
-    return maybeLevel;
-  }
-  loggerFor(client).warn(`${sourceName} was set to ${JSON.stringify(maybeLevel)}, expected one of ${JSON.stringify(Object.keys(levelNumbers))}`);
-  return void 0;
-};
-function noop2() {
-}
-function makeLogFn(fnLevel, logger3, logLevel) {
-  if (!logger3 || levelNumbers[fnLevel] > levelNumbers[logLevel]) {
-    return noop2;
-  } else {
-    return logger3[fnLevel].bind(logger3);
-  }
-}
-var noopLogger = {
-  error: noop2,
-  warn: noop2,
-  info: noop2,
-  debug: noop2
-};
-var cachedLoggers = /* @__PURE__ */ new WeakMap();
-function loggerFor(client) {
-  const logger3 = client.logger;
-  const logLevel = client.logLevel ?? "off";
-  if (!logger3) {
-    return noopLogger;
-  }
-  const cachedLogger = cachedLoggers.get(logger3);
-  if (cachedLogger && cachedLogger[0] === logLevel) {
-    return cachedLogger[1];
-  }
-  const levelLogger = {
-    error: makeLogFn("error", logger3, logLevel),
-    warn: makeLogFn("warn", logger3, logLevel),
-    info: makeLogFn("info", logger3, logLevel),
-    debug: makeLogFn("debug", logger3, logLevel)
-  };
-  cachedLoggers.set(logger3, [logLevel, levelLogger]);
-  return levelLogger;
-}
-var formatRequestDetails = (details) => {
-  if (details.options) {
-    details.options = { ...details.options };
-    delete details.options["headers"];
-  }
-  if (details.headers) {
-    details.headers = Object.fromEntries((details.headers instanceof Headers ? [...details.headers] : Object.entries(details.headers)).map(([name, value]) => [
-      name,
-      name.toLowerCase() === "authorization" || name.toLowerCase() === "api-key" || name.toLowerCase() === "x-api-key" || name.toLowerCase() === "cookie" || name.toLowerCase() === "set-cookie" ? "***" : value
-    ]));
-  }
-  if ("retryOfRequestLogID" in details) {
-    if (details.retryOfRequestLogID) {
-      details.retryOf = details.retryOfRequestLogID;
-    }
-    delete details.retryOfRequestLogID;
-  }
-  return details;
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/core/streaming.mjs
-var _Stream_client;
-var Stream = class _Stream {
-  constructor(iterator, controller, client) {
-    this.iterator = iterator;
-    _Stream_client.set(this, void 0);
-    this.controller = controller;
-    __classPrivateFieldSet2(this, _Stream_client, client, "f");
-  }
-  static fromSSEResponse(response, controller, client, synthesizeEventData) {
-    let consumed = false;
-    const logger3 = client ? loggerFor(client) : console;
-    async function* iterator() {
-      if (consumed) {
-        throw new OpenAIError("Cannot iterate over a consumed stream, use `.tee()` to split the stream.");
-      }
-      consumed = true;
-      let done = false;
-      try {
-        for await (const sse of _iterSSEMessages(response, controller)) {
-          if (done)
-            continue;
-          if (sse.data.startsWith("[DONE]")) {
-            done = true;
-            continue;
-          }
-          if (sse.event === null || !sse.event.startsWith("thread.")) {
-            let data;
-            try {
-              data = JSON.parse(sse.data);
-            } catch (e) {
-              logger3.error(`Could not parse message into JSON:`, sse.data);
-              logger3.error(`From chunk:`, sse.raw);
-              throw e;
-            }
-            if (data && data.error) {
-              throw new APIError(void 0, data.error, void 0, response.headers);
-            }
-            yield synthesizeEventData ? { event: sse.event, data } : data;
-          } else {
-            let data;
-            try {
-              data = JSON.parse(sse.data);
-            } catch (e) {
-              console.error(`Could not parse message into JSON:`, sse.data);
-              console.error(`From chunk:`, sse.raw);
-              throw e;
-            }
-            if (sse.event == "error") {
-              throw new APIError(void 0, data.error, data.message, void 0);
-            }
-            yield { event: sse.event, data };
-          }
-        }
-        done = true;
-      } catch (e) {
-        if (isAbortError(e))
-          return;
-        throw e;
-      } finally {
-        if (!done)
-          controller.abort();
-      }
-    }
-    return new _Stream(iterator, controller, client);
-  }
-  /**
-   * Generates a Stream from a newline-separated ReadableStream
-   * where each item is a JSON value.
-   */
-  static fromReadableStream(readableStream, controller, client) {
-    let consumed = false;
-    async function* iterLines() {
-      const lineDecoder = new LineDecoder();
-      const iter = ReadableStreamToAsyncIterable(readableStream);
-      for await (const chunk of iter) {
-        for (const line2 of lineDecoder.decode(chunk)) {
-          yield line2;
-        }
-      }
-      for (const line2 of lineDecoder.flush()) {
-        yield line2;
-      }
-    }
-    async function* iterator() {
-      if (consumed) {
-        throw new OpenAIError("Cannot iterate over a consumed stream, use `.tee()` to split the stream.");
-      }
-      consumed = true;
-      let done = false;
-      try {
-        for await (const line2 of iterLines()) {
-          if (done)
-            continue;
-          if (line2)
-            yield JSON.parse(line2);
-        }
-        done = true;
-      } catch (e) {
-        if (isAbortError(e))
-          return;
-        throw e;
-      } finally {
-        if (!done)
-          controller.abort();
-      }
-    }
-    return new _Stream(iterator, controller, client);
-  }
-  [(_Stream_client = /* @__PURE__ */ new WeakMap(), Symbol.asyncIterator)]() {
-    return this.iterator();
-  }
-  /**
-   * Splits the stream into two streams which can be
-   * independently read from at different speeds.
-   */
-  tee() {
-    const left = [];
-    const right = [];
-    const iterator = this.iterator();
-    const teeIterator = (queue) => {
-      return {
-        next: () => {
-          if (queue.length === 0) {
-            const result = iterator.next();
-            left.push(result);
-            right.push(result);
-          }
-          return queue.shift();
-        }
-      };
-    };
-    return [
-      new _Stream(() => teeIterator(left), this.controller, __classPrivateFieldGet2(this, _Stream_client, "f")),
-      new _Stream(() => teeIterator(right), this.controller, __classPrivateFieldGet2(this, _Stream_client, "f"))
-    ];
-  }
-  /**
-   * Converts this stream to a newline-separated ReadableStream of
-   * JSON stringified values in the stream
-   * which can be turned back into a Stream with `Stream.fromReadableStream()`.
-   */
-  toReadableStream() {
-    const self2 = this;
-    let iter;
-    return makeReadableStream({
-      async start() {
-        iter = self2[Symbol.asyncIterator]();
-      },
-      async pull(ctrl) {
-        try {
-          const { value, done } = await iter.next();
-          if (done)
-            return ctrl.close();
-          const bytes = encodeUTF8(JSON.stringify(value) + "\n");
-          ctrl.enqueue(bytes);
-        } catch (err) {
-          ctrl.error(err);
-        }
-      },
-      async cancel() {
-        await iter.return?.();
-      }
-    });
-  }
-};
-async function* _iterSSEMessages(response, controller) {
-  if (!response.body) {
-    controller.abort();
-    if (typeof globalThis.navigator !== "undefined" && globalThis.navigator.product === "ReactNative") {
-      throw new OpenAIError(`The default react-native fetch implementation does not support streaming. Please use expo/fetch: https://docs.expo.dev/versions/latest/sdk/expo/#expofetch-api`);
-    }
-    throw new OpenAIError(`Attempted to iterate over a response with no body`);
-  }
-  const sseDecoder = new SSEDecoder();
-  const lineDecoder = new LineDecoder();
-  const iter = ReadableStreamToAsyncIterable(response.body);
-  for await (const sseChunk of iterSSEChunks(iter)) {
-    for (const line2 of lineDecoder.decode(sseChunk)) {
-      const sse = sseDecoder.decode(line2);
-      if (sse)
-        yield sse;
-    }
-  }
-  for (const line2 of lineDecoder.flush()) {
-    const sse = sseDecoder.decode(line2);
-    if (sse)
-      yield sse;
-  }
-}
-async function* iterSSEChunks(iterator) {
-  let data = new Uint8Array();
-  for await (const chunk of iterator) {
-    if (chunk == null) {
-      continue;
-    }
-    const binaryChunk = chunk instanceof ArrayBuffer ? new Uint8Array(chunk) : typeof chunk === "string" ? encodeUTF8(chunk) : chunk;
-    let newData = new Uint8Array(data.length + binaryChunk.length);
-    newData.set(data);
-    newData.set(binaryChunk, data.length);
-    data = newData;
-    let patternIndex;
-    while ((patternIndex = findDoubleNewlineIndex(data)) !== -1) {
-      yield data.slice(0, patternIndex);
-      data = data.slice(patternIndex);
-    }
-  }
-  if (data.length > 0) {
-    yield data;
-  }
-}
-var SSEDecoder = class {
-  constructor() {
-    this.event = null;
-    this.data = [];
-    this.chunks = [];
-  }
-  decode(line2) {
-    if (line2.endsWith("\r")) {
-      line2 = line2.substring(0, line2.length - 1);
-    }
-    if (!line2) {
-      if (!this.event && !this.data.length)
-        return null;
-      const sse = {
-        event: this.event,
-        data: this.data.join("\n"),
-        raw: this.chunks
-      };
-      this.event = null;
-      this.data = [];
-      this.chunks = [];
-      return sse;
-    }
-    this.chunks.push(line2);
-    if (line2.startsWith(":")) {
-      return null;
-    }
-    let [fieldname, _2, value] = partition(line2, ":");
-    if (value.startsWith(" ")) {
-      value = value.substring(1);
-    }
-    if (fieldname === "event") {
-      this.event = value;
-    } else if (fieldname === "data") {
-      this.data.push(value);
-    }
-    return null;
-  }
-};
-function partition(str2, delimiter) {
-  const index = str2.indexOf(delimiter);
-  if (index !== -1) {
-    return [str2.substring(0, index), delimiter, str2.substring(index + delimiter.length)];
-  }
-  return [str2, "", ""];
-}
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/parse.mjs
-async function defaultParseResponse(client, props) {
-  const { response, requestLogID, retryOfRequestLogID, startTime } = props;
-  const body = await (async () => {
-    if (props.options.stream) {
-      loggerFor(client).debug("response", response.status, response.url, response.headers, response.body);
-      if (props.options.__streamClass) {
-        return props.options.__streamClass.fromSSEResponse(response, props.controller, client, props.options.__synthesizeEventData);
-      }
-      return Stream.fromSSEResponse(response, props.controller, client, props.options.__synthesizeEventData);
-    }
-    if (response.status === 204) {
-      return null;
-    }
-    if (props.options.__binaryResponse) {
-      return response;
-    }
-    const contentType = response.headers.get("content-type");
-    const mediaType = contentType?.split(";")[0]?.trim();
-    const isJSON = mediaType?.includes("application/json") || mediaType?.endsWith("+json");
-    if (isJSON) {
-      const contentLength = response.headers.get("content-length");
-      if (contentLength === "0") {
-        return void 0;
-      }
-      const json4 = await response.json();
-      return addRequestID(json4, response);
-    }
-    const text2 = await response.text();
-    return text2;
-  })();
-  loggerFor(client).debug(`[${requestLogID}] response parsed`, formatRequestDetails({
-    retryOfRequestLogID,
-    url: response.url,
-    status: response.status,
-    body,
-    durationMs: Date.now() - startTime
-  }));
-  return body;
-}
-function addRequestID(value, response) {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
-    return value;
-  }
-  return Object.defineProperty(value, "_request_id", {
-    value: response.headers.get("x-request-id"),
-    enumerable: false
-  });
-}
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/core/api-promise.mjs
-var _APIPromise_client;
-var APIPromise = class _APIPromise extends Promise {
-  constructor(client, responsePromise, parseResponse2 = defaultParseResponse) {
-    super((resolve) => {
-      resolve(null);
-    });
-    this.responsePromise = responsePromise;
-    this.parseResponse = parseResponse2;
-    _APIPromise_client.set(this, void 0);
-    __classPrivateFieldSet2(this, _APIPromise_client, client, "f");
-  }
-  _thenUnwrap(transform2) {
-    return new _APIPromise(__classPrivateFieldGet2(this, _APIPromise_client, "f"), this.responsePromise, async (client, props) => addRequestID(transform2(await this.parseResponse(client, props), props), props.response));
-  }
-  /**
-   * Gets the raw `Response` instance instead of parsing the response
-   * data.
-   *
-   * If you want to parse the response body but still get the `Response`
-   * instance, you can use {@link withResponse()}.
-   *
-   * 👋 Getting the wrong TypeScript type for `Response`?
-   * Try setting `"moduleResolution": "NodeNext"` or add `"lib": ["DOM"]`
-   * to your `tsconfig.json`.
-   */
-  asResponse() {
-    return this.responsePromise.then((p) => p.response);
-  }
-  /**
-   * Gets the parsed response data, the raw `Response` instance and the ID of the request,
-   * returned via the X-Request-ID header which is useful for debugging requests and reporting
-   * issues to OpenAI.
-   *
-   * If you just want to get the raw `Response` instance without parsing it,
-   * you can use {@link asResponse()}.
-   *
-   * 👋 Getting the wrong TypeScript type for `Response`?
-   * Try setting `"moduleResolution": "NodeNext"` or add `"lib": ["DOM"]`
-   * to your `tsconfig.json`.
-   */
-  async withResponse() {
-    const [data, response] = await Promise.all([this.parse(), this.asResponse()]);
-    return { data, response, request_id: response.headers.get("x-request-id") };
-  }
-  parse() {
-    if (!this.parsedPromise) {
-      this.parsedPromise = this.responsePromise.then((data) => this.parseResponse(__classPrivateFieldGet2(this, _APIPromise_client, "f"), data));
-    }
-    return this.parsedPromise;
-  }
-  then(onfulfilled, onrejected) {
-    return this.parse().then(onfulfilled, onrejected);
-  }
-  catch(onrejected) {
-    return this.parse().catch(onrejected);
-  }
-  finally(onfinally) {
-    return this.parse().finally(onfinally);
-  }
-};
-_APIPromise_client = /* @__PURE__ */ new WeakMap();
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/core/pagination.mjs
-var _AbstractPage_client;
-var AbstractPage = class {
-  constructor(client, response, body, options) {
-    _AbstractPage_client.set(this, void 0);
-    __classPrivateFieldSet2(this, _AbstractPage_client, client, "f");
-    this.options = options;
-    this.response = response;
-    this.body = body;
-  }
-  hasNextPage() {
-    const items = this.getPaginatedItems();
-    if (!items.length)
-      return false;
-    return this.nextPageRequestOptions() != null;
-  }
-  async getNextPage() {
-    const nextOptions = this.nextPageRequestOptions();
-    if (!nextOptions) {
-      throw new OpenAIError("No next page expected; please check `.hasNextPage()` before calling `.getNextPage()`.");
-    }
-    return await __classPrivateFieldGet2(this, _AbstractPage_client, "f").requestAPIList(this.constructor, nextOptions);
-  }
-  async *iterPages() {
-    let page = this;
-    yield page;
-    while (page.hasNextPage()) {
-      page = await page.getNextPage();
-      yield page;
-    }
-  }
-  async *[(_AbstractPage_client = /* @__PURE__ */ new WeakMap(), Symbol.asyncIterator)]() {
-    for await (const page of this.iterPages()) {
-      for (const item of page.getPaginatedItems()) {
-        yield item;
-      }
-    }
-  }
-};
-var PagePromise = class extends APIPromise {
-  constructor(client, request, Page2) {
-    super(client, request, async (client2, props) => new Page2(client2, props.response, await defaultParseResponse(client2, props), props.options));
-  }
-  /**
-   * Allow auto-paginating iteration on an unawaited list call, eg:
-   *
-   *    for await (const item of client.items.list()) {
-   *      console.log(item)
-   *    }
-   */
-  async *[Symbol.asyncIterator]() {
-    const page = await this;
-    for await (const item of page) {
-      yield item;
-    }
-  }
-};
-var Page = class extends AbstractPage {
-  constructor(client, response, body, options) {
-    super(client, response, body, options);
-    this.data = body.data || [];
-    this.object = body.object;
-  }
-  getPaginatedItems() {
-    return this.data ?? [];
-  }
-  nextPageRequestOptions() {
-    return null;
-  }
-};
-var CursorPage = class extends AbstractPage {
-  constructor(client, response, body, options) {
-    super(client, response, body, options);
-    this.data = body.data || [];
-    this.has_more = body.has_more || false;
-  }
-  getPaginatedItems() {
-    return this.data ?? [];
-  }
-  hasNextPage() {
-    if (this.has_more === false) {
-      return false;
-    }
-    return super.hasNextPage();
-  }
-  nextPageRequestOptions() {
-    const data = this.getPaginatedItems();
-    const id = data[data.length - 1]?.id;
-    if (!id) {
-      return null;
-    }
-    return {
-      ...this.options,
-      query: {
-        ...maybeObj(this.options.query),
-        after: id
-      }
-    };
-  }
-};
-var ConversationCursorPage = class extends AbstractPage {
-  constructor(client, response, body, options) {
-    super(client, response, body, options);
-    this.data = body.data || [];
-    this.has_more = body.has_more || false;
-    this.last_id = body.last_id || "";
-  }
-  getPaginatedItems() {
-    return this.data ?? [];
-  }
-  hasNextPage() {
-    if (this.has_more === false) {
-      return false;
-    }
-    return super.hasNextPage();
-  }
-  nextPageRequestOptions() {
-    const cursor = this.last_id;
-    if (!cursor) {
-      return null;
-    }
-    return {
-      ...this.options,
-      query: {
-        ...maybeObj(this.options.query),
-        after: cursor
-      }
-    };
-  }
-};
-var NextCursorPage = class extends AbstractPage {
-  constructor(client, response, body, options) {
-    super(client, response, body, options);
-    this.data = body.data || [];
-    this.has_more = body.has_more || false;
-    this.next = body.next || null;
-  }
-  getPaginatedItems() {
-    return this.data ?? [];
-  }
-  hasNextPage() {
-    if (this.has_more === false) {
-      return false;
-    }
-    return super.hasNextPage();
-  }
-  nextPageRequestOptions() {
-    const cursor = this.next;
-    if (!cursor) {
-      return null;
-    }
-    return {
-      ...this.options,
-      query: {
-        ...maybeObj(this.options.query),
-        after: cursor
-      }
-    };
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/auth/workload-identity-auth.mjs
-var SUBJECT_TOKEN_TYPES = {
-  jwt: "urn:ietf:params:oauth:token-type:jwt",
-  id: "urn:ietf:params:oauth:token-type:id_token"
-};
-var TOKEN_EXCHANGE_GRANT_TYPE = "urn:ietf:params:oauth:grant-type:token-exchange";
-var WorkloadIdentityAuth = class {
-  constructor(config2, fetch2) {
-    this.cachedToken = null;
-    this.refreshPromise = null;
-    this.tokenExchangeUrl = "https://auth.openai.com/oauth/token";
-    this.config = config2;
-    this.fetch = fetch2 ?? getDefaultFetch();
-  }
-  async getToken() {
-    if (!this.cachedToken || this.isTokenExpired(this.cachedToken)) {
-      if (this.refreshPromise) {
-        return await this.refreshPromise;
-      }
-      this.refreshPromise = this.refreshToken();
-      try {
-        const token = await this.refreshPromise;
-        return token;
-      } finally {
-        this.refreshPromise = null;
-      }
-    }
-    if (this.needsRefresh(this.cachedToken) && !this.refreshPromise) {
-      this.refreshPromise = this.refreshToken().finally(() => {
-        this.refreshPromise = null;
-      });
-    }
-    return this.cachedToken.token;
-  }
-  async refreshToken() {
-    const subjectToken = await this.config.provider.getToken();
-    const body = {
-      grant_type: TOKEN_EXCHANGE_GRANT_TYPE,
-      subject_token: subjectToken,
-      subject_token_type: SUBJECT_TOKEN_TYPES[this.config.provider.tokenType],
-      identity_provider_id: this.config.identityProviderId,
-      service_account_id: this.config.serviceAccountId
-    };
-    if (this.config.clientId) {
-      body["client_id"] = this.config.clientId;
-    }
-    const response = await this.fetch(this.tokenExchangeUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(body)
-    });
-    if (!response.ok) {
-      const errorText = await response.text();
-      let body2 = void 0;
-      try {
-        body2 = JSON.parse(errorText);
-      } catch {
-      }
-      if (response.status === 400 || response.status === 401 || response.status === 403) {
-        throw new OAuthError(response.status, body2, response.headers);
-      }
-      throw APIError.generate(response.status, body2, `Token exchange failed with status ${response.status}`, response.headers);
-    }
-    const tokenResponse = await response.json();
-    const expiresIn = tokenResponse.expires_in || 3600;
-    const expiresAt = Date.now() + expiresIn * 1e3;
-    this.cachedToken = {
-      token: tokenResponse.access_token,
-      expiresAt
-    };
-    return tokenResponse.access_token;
-  }
-  isTokenExpired(cachedToken) {
-    return Date.now() >= cachedToken.expiresAt;
-  }
-  needsRefresh(cachedToken) {
-    const bufferSeconds = this.config.refreshBufferSeconds ?? 1200;
-    const bufferMs = bufferSeconds * 1e3;
-    return Date.now() >= cachedToken.expiresAt - bufferMs;
-  }
-  invalidateToken() {
-    this.cachedToken = null;
-    this.refreshPromise = null;
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/uploads.mjs
-var checkFileSupport = () => {
-  if (typeof File === "undefined") {
-    const { process: process2 } = globalThis;
-    const isOldNode = typeof process2?.versions?.node === "string" && parseInt(process2.versions.node.split(".")) < 20;
-    throw new Error("`File` is not defined as a global, which is required for file uploads." + (isOldNode ? " Update to Node 20 LTS or newer, or set `globalThis.File` to `import('node:buffer').File`." : ""));
-  }
-};
-function makeFile(fileBits, fileName, options) {
-  checkFileSupport();
-  return new File(fileBits, fileName ?? "unknown_file", options);
-}
-function getName(value) {
-  return (typeof value === "object" && value !== null && ("name" in value && value.name && String(value.name) || "url" in value && value.url && String(value.url) || "filename" in value && value.filename && String(value.filename) || "path" in value && value.path && String(value.path)) || "").split(/[\\/]/).pop() || void 0;
-}
-var isAsyncIterable = (value) => value != null && typeof value === "object" && typeof value[Symbol.asyncIterator] === "function";
-var maybeMultipartFormRequestOptions = async (opts, fetch2) => {
-  if (!hasUploadableValue(opts.body))
-    return opts;
-  return { ...opts, body: await createForm(opts.body, fetch2) };
-};
-var multipartFormRequestOptions = async (opts, fetch2) => {
-  return { ...opts, body: await createForm(opts.body, fetch2) };
-};
-var supportsFormDataMap = /* @__PURE__ */ new WeakMap();
-function supportsFormData(fetchObject) {
-  const fetch2 = typeof fetchObject === "function" ? fetchObject : fetchObject.fetch;
-  const cached2 = supportsFormDataMap.get(fetch2);
-  if (cached2)
-    return cached2;
-  const promise2 = (async () => {
-    try {
-      const FetchResponse = "Response" in fetch2 ? fetch2.Response : (await fetch2("data:,")).constructor;
-      const data = new FormData();
-      if (data.toString() === await new FetchResponse(data).text()) {
-        return false;
-      }
-      return true;
-    } catch {
-      return true;
-    }
-  })();
-  supportsFormDataMap.set(fetch2, promise2);
-  return promise2;
-}
-var createForm = async (body, fetch2) => {
-  if (!await supportsFormData(fetch2)) {
-    throw new TypeError("The provided fetch function does not support file uploads with the current global FormData class.");
-  }
-  const form = new FormData();
-  await Promise.all(Object.entries(body || {}).map(([key, value]) => addFormValue(form, key, value)));
-  return form;
-};
-var isNamedBlob = (value) => value instanceof Blob && "name" in value;
-var isUploadable = (value) => typeof value === "object" && value !== null && (value instanceof Response || isAsyncIterable(value) || isNamedBlob(value));
-var hasUploadableValue = (value) => {
-  if (isUploadable(value))
-    return true;
-  if (Array.isArray(value))
-    return value.some(hasUploadableValue);
-  if (value && typeof value === "object") {
-    for (const k in value) {
-      if (hasUploadableValue(value[k]))
-        return true;
-    }
-  }
-  return false;
-};
-var addFormValue = async (form, key, value) => {
-  if (value === void 0)
-    return;
-  if (value == null) {
-    throw new TypeError(`Received null for "${key}"; to pass null in FormData, you must use the string 'null'`);
-  }
-  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
-    form.append(key, String(value));
-  } else if (value instanceof Response) {
-    form.append(key, makeFile([await value.blob()], getName(value)));
-  } else if (isAsyncIterable(value)) {
-    form.append(key, makeFile([await new Response(ReadableStreamFrom(value)).blob()], getName(value)));
-  } else if (isNamedBlob(value)) {
-    form.append(key, value, getName(value));
-  } else if (Array.isArray(value)) {
-    await Promise.all(value.map((entry) => addFormValue(form, key + "[]", entry)));
-  } else if (typeof value === "object") {
-    await Promise.all(Object.entries(value).map(([name, prop]) => addFormValue(form, `${key}[${name}]`, prop)));
-  } else {
-    throw new TypeError(`Invalid value given to form, expected a string, number, boolean, object, Array, File or Blob but got ${value} instead`);
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/to-file.mjs
-var isBlobLike = (value) => value != null && typeof value === "object" && typeof value.size === "number" && typeof value.type === "string" && typeof value.text === "function" && typeof value.slice === "function" && typeof value.arrayBuffer === "function";
-var isFileLike = (value) => value != null && typeof value === "object" && typeof value.name === "string" && typeof value.lastModified === "number" && isBlobLike(value);
-var isResponseLike = (value) => value != null && typeof value === "object" && typeof value.url === "string" && typeof value.blob === "function";
-async function toFile(value, name, options) {
-  checkFileSupport();
-  value = await value;
-  if (isFileLike(value)) {
-    if (value instanceof File) {
-      return value;
-    }
-    return makeFile([await value.arrayBuffer()], value.name);
-  }
-  if (isResponseLike(value)) {
-    const blob = await value.blob();
-    name || (name = new URL(value.url).pathname.split(/[\\/]/).pop());
-    return makeFile(await getBytes(blob), name, options);
-  }
-  const parts = await getBytes(value);
-  name || (name = getName(value));
-  if (!options?.type) {
-    const type = parts.find((part) => typeof part === "object" && "type" in part && part.type);
-    if (typeof type === "string") {
-      options = { ...options, type };
-    }
-  }
-  return makeFile(parts, name, options);
-}
-async function getBytes(value) {
-  let parts = [];
-  if (typeof value === "string" || ArrayBuffer.isView(value) || // includes Uint8Array, Buffer, etc.
-  value instanceof ArrayBuffer) {
-    parts.push(value);
-  } else if (isBlobLike(value)) {
-    parts.push(value instanceof Blob ? value : await value.arrayBuffer());
-  } else if (isAsyncIterable(value)) {
-    for await (const chunk of value) {
-      parts.push(...await getBytes(chunk));
-    }
-  } else {
-    const constructor = value?.constructor?.name;
-    throw new Error(`Unexpected data type: ${typeof value}${constructor ? `; constructor: ${constructor}` : ""}${propsForError(value)}`);
-  }
-  return parts;
-}
-function propsForError(value) {
-  if (typeof value !== "object" || value === null)
-    return "";
-  const props = Object.getOwnPropertyNames(value);
-  return `; props: [${props.map((p) => `"${p}"`).join(", ")}]`;
-}
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/core/resource.mjs
-var APIResource = class {
-  constructor(client) {
-    this._client = client;
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/utils/path.mjs
-function encodeURIPath(str2) {
-  return str2.replace(/[^A-Za-z0-9\-._~!$&'()*+,;=:@]+/g, encodeURIComponent);
-}
-var EMPTY = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.create(null));
-var createPathTagFunction = (pathEncoder = encodeURIPath) => function path2(statics, ...params) {
-  if (statics.length === 1)
-    return statics[0];
-  let postPath = false;
-  const invalidSegments = [];
-  const path3 = statics.reduce((previousValue, currentValue, index) => {
-    if (/[?#]/.test(currentValue)) {
-      postPath = true;
-    }
-    const value = params[index];
-    let encoded = (postPath ? encodeURIComponent : pathEncoder)("" + value);
-    if (index !== params.length && (value == null || typeof value === "object" && // handle values from other realms
-    value.toString === Object.getPrototypeOf(Object.getPrototypeOf(value.hasOwnProperty ?? EMPTY) ?? EMPTY)?.toString)) {
-      encoded = value + "";
-      invalidSegments.push({
-        start: previousValue.length + currentValue.length,
-        length: encoded.length,
-        error: `Value of type ${Object.prototype.toString.call(value).slice(8, -1)} is not a valid path parameter`
-      });
-    }
-    return previousValue + currentValue + (index === params.length ? "" : encoded);
-  }, "");
-  const pathOnly = path3.split(/[?#]/, 1)[0];
-  const invalidSegmentPattern = /(?<=^|\/)(?:\.|%2e){1,2}(?=\/|$)/gi;
-  let match2;
-  while ((match2 = invalidSegmentPattern.exec(pathOnly)) !== null) {
-    invalidSegments.push({
-      start: match2.index,
-      length: match2[0].length,
-      error: `Value "${match2[0]}" can't be safely passed as a path parameter`
-    });
-  }
-  invalidSegments.sort((a, b) => a.start - b.start);
-  if (invalidSegments.length > 0) {
-    let lastEnd = 0;
-    const underline = invalidSegments.reduce((acc, segment) => {
-      const spaces = " ".repeat(segment.start - lastEnd);
-      const arrows = "^".repeat(segment.length);
-      lastEnd = segment.start + segment.length;
-      return acc + spaces + arrows;
-    }, "");
-    throw new OpenAIError(`Path parameters result in path with invalid segments:
-${invalidSegments.map((e) => e.error).join("\n")}
-${path3}
-${underline}`);
-  }
-  return path3;
-};
-var path = /* @__PURE__ */ createPathTagFunction(encodeURIPath);
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/chat/completions/messages.mjs
-var Messages = class extends APIResource {
-  /**
-   * Get the messages in a stored chat completion. Only Chat Completions that have
-   * been created with the `store` parameter set to `true` will be returned.
-   *
-   * @example
-   * ```ts
-   * // Automatically fetches more pages as needed.
-   * for await (const chatCompletionStoreMessage of client.chat.completions.messages.list(
-   *   'completion_id',
-   * )) {
-   *   // ...
-   * }
-   * ```
-   */
-  list(completionID, query = {}, options) {
-    return this._client.getAPIList(path`/chat/completions/${completionID}/messages`, CursorPage, { query, ...options, __security: { bearerAuth: true } });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/lib/parser.mjs
-function isChatCompletionFunctionTool(tool) {
-  return tool !== void 0 && "function" in tool && tool.function !== void 0;
-}
-function isAutoParsableResponseFormat(response_format) {
-  return response_format?.["$brand"] === "auto-parseable-response-format";
-}
-function isAutoParsableTool(tool) {
-  return tool?.["$brand"] === "auto-parseable-tool";
-}
-function maybeParseChatCompletion(completion, params) {
-  if (!params || !hasAutoParseableInput(params)) {
-    return {
-      ...completion,
-      choices: completion.choices.map((choice) => {
-        assertToolCallsAreChatCompletionFunctionToolCalls(choice.message.tool_calls);
-        return {
-          ...choice,
-          message: {
-            ...choice.message,
-            parsed: null,
-            ...choice.message.tool_calls ? {
-              tool_calls: choice.message.tool_calls
-            } : void 0
-          }
-        };
-      })
-    };
-  }
-  return parseChatCompletion(completion, params);
-}
-function parseChatCompletion(completion, params) {
-  const choices = completion.choices.map((choice) => {
-    if (choice.finish_reason === "length") {
-      throw new LengthFinishReasonError();
-    }
-    if (choice.finish_reason === "content_filter") {
-      throw new ContentFilterFinishReasonError();
-    }
-    assertToolCallsAreChatCompletionFunctionToolCalls(choice.message.tool_calls);
-    return {
-      ...choice,
-      message: {
-        ...choice.message,
-        ...choice.message.tool_calls ? {
-          tool_calls: choice.message.tool_calls?.map((toolCall) => parseToolCall(params, toolCall)) ?? void 0
-        } : void 0,
-        parsed: choice.message.content && !choice.message.refusal ? parseResponseFormat(params, choice.message.content) : null
-      }
-    };
-  });
-  return { ...completion, choices };
-}
-function parseResponseFormat(params, content) {
-  if (params.response_format?.type !== "json_schema") {
-    return null;
-  }
-  if (params.response_format?.type === "json_schema") {
-    if ("$parseRaw" in params.response_format) {
-      const response_format = params.response_format;
-      return response_format.$parseRaw(content);
-    }
-    return JSON.parse(content);
-  }
-  return null;
-}
-function parseToolCall(params, toolCall) {
-  const inputTool = params.tools?.find((inputTool2) => isChatCompletionFunctionTool(inputTool2) && inputTool2.function?.name === toolCall.function.name);
-  return {
-    ...toolCall,
-    function: {
-      ...toolCall.function,
-      parsed_arguments: isAutoParsableTool(inputTool) ? inputTool.$parseRaw(toolCall.function.arguments) : inputTool?.function.strict ? JSON.parse(toolCall.function.arguments) : null
-    }
-  };
-}
-function shouldParseToolCall(params, toolCall) {
-  if (!params || !("tools" in params) || !params.tools) {
-    return false;
-  }
-  const inputTool = params.tools?.find((inputTool2) => isChatCompletionFunctionTool(inputTool2) && inputTool2.function?.name === toolCall.function.name);
-  return isChatCompletionFunctionTool(inputTool) && (isAutoParsableTool(inputTool) || inputTool?.function.strict || false);
-}
-function hasAutoParseableInput(params) {
-  if (isAutoParsableResponseFormat(params.response_format)) {
-    return true;
-  }
-  return params.tools?.some((t) => isAutoParsableTool(t) || t.type === "function" && t.function.strict === true) ?? false;
-}
-function assertToolCallsAreChatCompletionFunctionToolCalls(toolCalls) {
-  for (const toolCall of toolCalls || []) {
-    if (toolCall.type !== "function") {
-      throw new OpenAIError(`Currently only \`function\` tool calls are supported; Received \`${toolCall.type}\``);
-    }
-  }
-}
-function validateInputTools(tools) {
-  for (const tool of tools ?? []) {
-    if (tool.type !== "function") {
-      throw new OpenAIError(`Currently only \`function\` tool types support auto-parsing; Received \`${tool.type}\``);
-    }
-    if (tool.function.strict !== true) {
-      throw new OpenAIError(`The \`${tool.function.name}\` tool is not marked with \`strict: true\`. Only strict function tools can be auto-parsed`);
-    }
-  }
-}
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/lib/chatCompletionUtils.mjs
-var isAssistantMessage = (message) => {
-  return message?.role === "assistant";
-};
-var isToolMessage = (message) => {
-  return message?.role === "tool";
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/lib/EventStream.mjs
-var _EventStream_instances;
-var _EventStream_connectedPromise;
-var _EventStream_resolveConnectedPromise;
-var _EventStream_rejectConnectedPromise;
-var _EventStream_endPromise;
-var _EventStream_resolveEndPromise;
-var _EventStream_rejectEndPromise;
-var _EventStream_listeners;
-var _EventStream_ended;
-var _EventStream_errored;
-var _EventStream_aborted;
-var _EventStream_catchingPromiseCreated;
-var _EventStream_handleError;
-var EventStream = class {
-  constructor() {
-    _EventStream_instances.add(this);
-    this.controller = new AbortController();
-    _EventStream_connectedPromise.set(this, void 0);
-    _EventStream_resolveConnectedPromise.set(this, () => {
-    });
-    _EventStream_rejectConnectedPromise.set(this, () => {
-    });
-    _EventStream_endPromise.set(this, void 0);
-    _EventStream_resolveEndPromise.set(this, () => {
-    });
-    _EventStream_rejectEndPromise.set(this, () => {
-    });
-    _EventStream_listeners.set(this, {});
-    _EventStream_ended.set(this, false);
-    _EventStream_errored.set(this, false);
-    _EventStream_aborted.set(this, false);
-    _EventStream_catchingPromiseCreated.set(this, false);
-    __classPrivateFieldSet2(this, _EventStream_connectedPromise, new Promise((resolve, reject) => {
-      __classPrivateFieldSet2(this, _EventStream_resolveConnectedPromise, resolve, "f");
-      __classPrivateFieldSet2(this, _EventStream_rejectConnectedPromise, reject, "f");
-    }), "f");
-    __classPrivateFieldSet2(this, _EventStream_endPromise, new Promise((resolve, reject) => {
-      __classPrivateFieldSet2(this, _EventStream_resolveEndPromise, resolve, "f");
-      __classPrivateFieldSet2(this, _EventStream_rejectEndPromise, reject, "f");
-    }), "f");
-    __classPrivateFieldGet2(this, _EventStream_connectedPromise, "f").catch(() => {
-    });
-    __classPrivateFieldGet2(this, _EventStream_endPromise, "f").catch(() => {
-    });
-  }
-  _run(executor) {
-    setTimeout(() => {
-      executor().then(() => {
-        this._emitFinal();
-        this._emit("end");
-      }, __classPrivateFieldGet2(this, _EventStream_instances, "m", _EventStream_handleError).bind(this));
-    }, 0);
-  }
-  _connected() {
-    if (this.ended)
-      return;
-    __classPrivateFieldGet2(this, _EventStream_resolveConnectedPromise, "f").call(this);
-    this._emit("connect");
-  }
-  get ended() {
-    return __classPrivateFieldGet2(this, _EventStream_ended, "f");
-  }
-  get errored() {
-    return __classPrivateFieldGet2(this, _EventStream_errored, "f");
-  }
-  get aborted() {
-    return __classPrivateFieldGet2(this, _EventStream_aborted, "f");
-  }
-  abort() {
-    this.controller.abort();
-  }
-  /**
-   * Adds the listener function to the end of the listeners array for the event.
-   * No checks are made to see if the listener has already been added. Multiple calls passing
-   * the same combination of event and listener will result in the listener being added, and
-   * called, multiple times.
-   * @returns this ChatCompletionStream, so that calls can be chained
-   */
-  on(event, listener) {
-    const listeners = __classPrivateFieldGet2(this, _EventStream_listeners, "f")[event] || (__classPrivateFieldGet2(this, _EventStream_listeners, "f")[event] = []);
-    listeners.push({ listener });
-    return this;
-  }
-  /**
-   * Removes the specified listener from the listener array for the event.
-   * off() will remove, at most, one instance of a listener from the listener array. If any single
-   * listener has been added multiple times to the listener array for the specified event, then
-   * off() must be called multiple times to remove each instance.
-   * @returns this ChatCompletionStream, so that calls can be chained
-   */
-  off(event, listener) {
-    const listeners = __classPrivateFieldGet2(this, _EventStream_listeners, "f")[event];
-    if (!listeners)
-      return this;
-    const index = listeners.findIndex((l) => l.listener === listener);
-    if (index >= 0)
-      listeners.splice(index, 1);
-    return this;
-  }
-  /**
-   * Adds a one-time listener function for the event. The next time the event is triggered,
-   * this listener is removed and then invoked.
-   * @returns this ChatCompletionStream, so that calls can be chained
-   */
-  once(event, listener) {
-    const listeners = __classPrivateFieldGet2(this, _EventStream_listeners, "f")[event] || (__classPrivateFieldGet2(this, _EventStream_listeners, "f")[event] = []);
-    listeners.push({ listener, once: true });
-    return this;
-  }
-  /**
-   * This is similar to `.once()`, but returns a Promise that resolves the next time
-   * the event is triggered, instead of calling a listener callback.
-   * @returns a Promise that resolves the next time given event is triggered,
-   * or rejects if an error is emitted.  (If you request the 'error' event,
-   * returns a promise that resolves with the error).
-   *
-   * Example:
-   *
-   *   const message = await stream.emitted('message') // rejects if the stream errors
-   */
-  emitted(event) {
-    return new Promise((resolve, reject) => {
-      __classPrivateFieldSet2(this, _EventStream_catchingPromiseCreated, true, "f");
-      if (event !== "error")
-        this.once("error", reject);
-      this.once(event, resolve);
-    });
-  }
-  async done() {
-    __classPrivateFieldSet2(this, _EventStream_catchingPromiseCreated, true, "f");
-    await __classPrivateFieldGet2(this, _EventStream_endPromise, "f");
-  }
-  _emit(event, ...args) {
-    if (__classPrivateFieldGet2(this, _EventStream_ended, "f")) {
-      return;
-    }
-    if (event === "end") {
-      __classPrivateFieldSet2(this, _EventStream_ended, true, "f");
-      __classPrivateFieldGet2(this, _EventStream_resolveEndPromise, "f").call(this);
-    }
-    const listeners = __classPrivateFieldGet2(this, _EventStream_listeners, "f")[event];
-    if (listeners) {
-      __classPrivateFieldGet2(this, _EventStream_listeners, "f")[event] = listeners.filter((l) => !l.once);
-      listeners.forEach(({ listener }) => listener(...args));
-    }
-    if (event === "abort") {
-      const error40 = args[0];
-      if (!__classPrivateFieldGet2(this, _EventStream_catchingPromiseCreated, "f") && !listeners?.length) {
-        Promise.reject(error40);
-      }
-      __classPrivateFieldGet2(this, _EventStream_rejectConnectedPromise, "f").call(this, error40);
-      __classPrivateFieldGet2(this, _EventStream_rejectEndPromise, "f").call(this, error40);
-      this._emit("end");
-      return;
-    }
-    if (event === "error") {
-      const error40 = args[0];
-      if (!__classPrivateFieldGet2(this, _EventStream_catchingPromiseCreated, "f") && !listeners?.length) {
-        Promise.reject(error40);
-      }
-      __classPrivateFieldGet2(this, _EventStream_rejectConnectedPromise, "f").call(this, error40);
-      __classPrivateFieldGet2(this, _EventStream_rejectEndPromise, "f").call(this, error40);
-      this._emit("end");
-    }
-  }
-  _emitFinal() {
-  }
-};
-_EventStream_connectedPromise = /* @__PURE__ */ new WeakMap(), _EventStream_resolveConnectedPromise = /* @__PURE__ */ new WeakMap(), _EventStream_rejectConnectedPromise = /* @__PURE__ */ new WeakMap(), _EventStream_endPromise = /* @__PURE__ */ new WeakMap(), _EventStream_resolveEndPromise = /* @__PURE__ */ new WeakMap(), _EventStream_rejectEndPromise = /* @__PURE__ */ new WeakMap(), _EventStream_listeners = /* @__PURE__ */ new WeakMap(), _EventStream_ended = /* @__PURE__ */ new WeakMap(), _EventStream_errored = /* @__PURE__ */ new WeakMap(), _EventStream_aborted = /* @__PURE__ */ new WeakMap(), _EventStream_catchingPromiseCreated = /* @__PURE__ */ new WeakMap(), _EventStream_instances = /* @__PURE__ */ new WeakSet(), _EventStream_handleError = function _EventStream_handleError2(error40) {
-  __classPrivateFieldSet2(this, _EventStream_errored, true, "f");
-  if (error40 instanceof Error && error40.name === "AbortError") {
-    error40 = new APIUserAbortError();
-  }
-  if (error40 instanceof APIUserAbortError) {
-    __classPrivateFieldSet2(this, _EventStream_aborted, true, "f");
-    return this._emit("abort", error40);
-  }
-  if (error40 instanceof OpenAIError) {
-    return this._emit("error", error40);
-  }
-  if (error40 instanceof Error) {
-    const openAIError = new OpenAIError(error40.message);
-    openAIError.cause = error40;
-    return this._emit("error", openAIError);
-  }
-  return this._emit("error", new OpenAIError(String(error40)));
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/lib/RunnableFunction.mjs
-function isRunnableFunctionWithParse(fn) {
-  return typeof fn.parse === "function";
-}
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/lib/AbstractChatCompletionRunner.mjs
-var _AbstractChatCompletionRunner_instances;
-var _AbstractChatCompletionRunner_getFinalContent;
-var _AbstractChatCompletionRunner_getFinalMessage;
-var _AbstractChatCompletionRunner_getFinalFunctionToolCall;
-var _AbstractChatCompletionRunner_getFinalFunctionToolCallResult;
-var _AbstractChatCompletionRunner_calculateTotalUsage;
-var _AbstractChatCompletionRunner_validateParams;
-var _AbstractChatCompletionRunner_stringifyFunctionCallResult;
-var DEFAULT_MAX_CHAT_COMPLETIONS = 10;
-var AbstractChatCompletionRunner = class extends EventStream {
-  constructor() {
-    super(...arguments);
-    _AbstractChatCompletionRunner_instances.add(this);
-    this._chatCompletions = [];
-    this.messages = [];
-  }
-  _addChatCompletion(chatCompletion) {
-    this._chatCompletions.push(chatCompletion);
-    this._emit("chatCompletion", chatCompletion);
-    const message = chatCompletion.choices[0]?.message;
-    if (message)
-      this._addMessage(message);
-    return chatCompletion;
-  }
-  _addMessage(message, emit = true) {
-    if (!("content" in message))
-      message.content = null;
-    this.messages.push(message);
-    if (emit) {
-      this._emit("message", message);
-      if (isToolMessage(message) && message.content) {
-        this._emit("functionToolCallResult", message.content);
-      } else if (isAssistantMessage(message) && message.tool_calls) {
-        for (const tool_call of message.tool_calls) {
-          if (tool_call.type === "function") {
-            this._emit("functionToolCall", tool_call.function);
-          }
-        }
-      }
-    }
-  }
-  /**
-   * @returns a promise that resolves with the final ChatCompletion, or rejects
-   * if an error occurred or the stream ended prematurely without producing a ChatCompletion.
-   */
-  async finalChatCompletion() {
-    await this.done();
-    const completion = this._chatCompletions[this._chatCompletions.length - 1];
-    if (!completion)
-      throw new OpenAIError("stream ended without producing a ChatCompletion");
-    return completion;
-  }
-  /**
-   * @returns a promise that resolves with the content of the final ChatCompletionMessage, or rejects
-   * if an error occurred or the stream ended prematurely without producing a ChatCompletionMessage.
-   */
-  async finalContent() {
-    await this.done();
-    return __classPrivateFieldGet2(this, _AbstractChatCompletionRunner_instances, "m", _AbstractChatCompletionRunner_getFinalContent).call(this);
-  }
-  /**
-   * @returns a promise that resolves with the the final assistant ChatCompletionMessage response,
-   * or rejects if an error occurred or the stream ended prematurely without producing a ChatCompletionMessage.
-   */
-  async finalMessage() {
-    await this.done();
-    return __classPrivateFieldGet2(this, _AbstractChatCompletionRunner_instances, "m", _AbstractChatCompletionRunner_getFinalMessage).call(this);
-  }
-  /**
-   * @returns a promise that resolves with the content of the final FunctionCall, or rejects
-   * if an error occurred or the stream ended prematurely without producing a ChatCompletionMessage.
-   */
-  async finalFunctionToolCall() {
-    await this.done();
-    return __classPrivateFieldGet2(this, _AbstractChatCompletionRunner_instances, "m", _AbstractChatCompletionRunner_getFinalFunctionToolCall).call(this);
-  }
-  async finalFunctionToolCallResult() {
-    await this.done();
-    return __classPrivateFieldGet2(this, _AbstractChatCompletionRunner_instances, "m", _AbstractChatCompletionRunner_getFinalFunctionToolCallResult).call(this);
-  }
-  async totalUsage() {
-    await this.done();
-    return __classPrivateFieldGet2(this, _AbstractChatCompletionRunner_instances, "m", _AbstractChatCompletionRunner_calculateTotalUsage).call(this);
-  }
-  allChatCompletions() {
-    return [...this._chatCompletions];
-  }
-  _emitFinal() {
-    const completion = this._chatCompletions[this._chatCompletions.length - 1];
-    if (completion)
-      this._emit("finalChatCompletion", completion);
-    const finalMessage = __classPrivateFieldGet2(this, _AbstractChatCompletionRunner_instances, "m", _AbstractChatCompletionRunner_getFinalMessage).call(this);
-    if (finalMessage)
-      this._emit("finalMessage", finalMessage);
-    const finalContent = __classPrivateFieldGet2(this, _AbstractChatCompletionRunner_instances, "m", _AbstractChatCompletionRunner_getFinalContent).call(this);
-    if (finalContent)
-      this._emit("finalContent", finalContent);
-    const finalFunctionCall = __classPrivateFieldGet2(this, _AbstractChatCompletionRunner_instances, "m", _AbstractChatCompletionRunner_getFinalFunctionToolCall).call(this);
-    if (finalFunctionCall)
-      this._emit("finalFunctionToolCall", finalFunctionCall);
-    const finalFunctionCallResult = __classPrivateFieldGet2(this, _AbstractChatCompletionRunner_instances, "m", _AbstractChatCompletionRunner_getFinalFunctionToolCallResult).call(this);
-    if (finalFunctionCallResult != null)
-      this._emit("finalFunctionToolCallResult", finalFunctionCallResult);
-    if (this._chatCompletions.some((c) => c.usage)) {
-      this._emit("totalUsage", __classPrivateFieldGet2(this, _AbstractChatCompletionRunner_instances, "m", _AbstractChatCompletionRunner_calculateTotalUsage).call(this));
-    }
-  }
-  async _createChatCompletion(client, params, options) {
-    const signal = options?.signal;
-    if (signal) {
-      if (signal.aborted)
-        this.controller.abort();
-      signal.addEventListener("abort", () => this.controller.abort());
-    }
-    __classPrivateFieldGet2(this, _AbstractChatCompletionRunner_instances, "m", _AbstractChatCompletionRunner_validateParams).call(this, params);
-    const chatCompletion = await client.chat.completions.create({ ...params, stream: false }, { ...options, signal: this.controller.signal });
-    this._connected();
-    return this._addChatCompletion(parseChatCompletion(chatCompletion, params));
-  }
-  async _runChatCompletion(client, params, options) {
-    for (const message of params.messages) {
-      this._addMessage(message, false);
-    }
-    return await this._createChatCompletion(client, params, options);
-  }
-  async _runTools(client, params, options) {
-    const role = "tool";
-    const { tool_choice = "auto", stream, ...restParams } = params;
-    const singleFunctionToCall = typeof tool_choice !== "string" && tool_choice.type === "function" && tool_choice?.function?.name;
-    const { maxChatCompletions = DEFAULT_MAX_CHAT_COMPLETIONS } = options || {};
-    const inputTools = params.tools.map((tool) => {
-      if (isAutoParsableTool(tool)) {
-        if (!tool.$callback) {
-          throw new OpenAIError("Tool given to `.runTools()` that does not have an associated function");
-        }
-        return {
-          type: "function",
-          function: {
-            function: tool.$callback,
-            name: tool.function.name,
-            description: tool.function.description || "",
-            parameters: tool.function.parameters,
-            parse: tool.$parseRaw,
-            strict: true
-          }
-        };
-      }
-      return tool;
-    });
-    const functionsByName = {};
-    for (const f of inputTools) {
-      if (f.type === "function") {
-        functionsByName[f.function.name || f.function.function.name] = f.function;
-      }
-    }
-    const tools = "tools" in params ? inputTools.map((t) => t.type === "function" ? {
-      type: "function",
-      function: {
-        name: t.function.name || t.function.function.name,
-        parameters: t.function.parameters,
-        description: t.function.description,
-        strict: t.function.strict
-      }
-    } : t) : void 0;
-    for (const message of params.messages) {
-      this._addMessage(message, false);
-    }
-    for (let i = 0; i < maxChatCompletions; ++i) {
-      const chatCompletion = await this._createChatCompletion(client, {
-        ...restParams,
-        tool_choice,
-        tools,
-        messages: [...this.messages]
-      }, options);
-      const message = chatCompletion.choices[0]?.message;
-      if (!message) {
-        throw new OpenAIError(`missing message in ChatCompletion response`);
-      }
-      if (!message.tool_calls?.length) {
-        return;
-      }
-      for (const tool_call of message.tool_calls) {
-        if (tool_call.type !== "function")
-          continue;
-        const tool_call_id = tool_call.id;
-        const { name, arguments: args } = tool_call.function;
-        const fn = functionsByName[name];
-        if (!fn) {
-          const content2 = `Invalid tool_call: ${JSON.stringify(name)}. Available options are: ${Object.keys(functionsByName).map((name2) => JSON.stringify(name2)).join(", ")}. Please try again`;
-          this._addMessage({ role, tool_call_id, content: content2 });
-          continue;
-        } else if (singleFunctionToCall && singleFunctionToCall !== name) {
-          const content2 = `Invalid tool_call: ${JSON.stringify(name)}. ${JSON.stringify(singleFunctionToCall)} requested. Please try again`;
-          this._addMessage({ role, tool_call_id, content: content2 });
-          continue;
-        }
-        let parsed;
-        try {
-          parsed = isRunnableFunctionWithParse(fn) ? await fn.parse(args) : args;
-        } catch (error40) {
-          const content2 = error40 instanceof Error ? error40.message : String(error40);
-          this._addMessage({ role, tool_call_id, content: content2 });
-          continue;
-        }
-        const rawContent = await fn.function(parsed, this);
-        const content = __classPrivateFieldGet2(this, _AbstractChatCompletionRunner_instances, "m", _AbstractChatCompletionRunner_stringifyFunctionCallResult).call(this, rawContent);
-        this._addMessage({ role, tool_call_id, content });
-        if (singleFunctionToCall) {
-          return;
-        }
-      }
-    }
-    return;
-  }
-};
-_AbstractChatCompletionRunner_instances = /* @__PURE__ */ new WeakSet(), _AbstractChatCompletionRunner_getFinalContent = function _AbstractChatCompletionRunner_getFinalContent2() {
-  return __classPrivateFieldGet2(this, _AbstractChatCompletionRunner_instances, "m", _AbstractChatCompletionRunner_getFinalMessage).call(this).content ?? null;
-}, _AbstractChatCompletionRunner_getFinalMessage = function _AbstractChatCompletionRunner_getFinalMessage2() {
-  let i = this.messages.length;
-  while (i-- > 0) {
-    const message = this.messages[i];
-    if (isAssistantMessage(message)) {
-      const ret = {
-        ...message,
-        content: message.content ?? null,
-        refusal: message.refusal ?? null
-      };
-      return ret;
-    }
-  }
-  throw new OpenAIError("stream ended without producing a ChatCompletionMessage with role=assistant");
-}, _AbstractChatCompletionRunner_getFinalFunctionToolCall = function _AbstractChatCompletionRunner_getFinalFunctionToolCall2() {
-  for (let i = this.messages.length - 1; i >= 0; i--) {
-    const message = this.messages[i];
-    if (isAssistantMessage(message) && message?.tool_calls?.length) {
-      return message.tool_calls.filter((x) => x.type === "function").at(-1)?.function;
-    }
-  }
-  return;
-}, _AbstractChatCompletionRunner_getFinalFunctionToolCallResult = function _AbstractChatCompletionRunner_getFinalFunctionToolCallResult2() {
-  for (let i = this.messages.length - 1; i >= 0; i--) {
-    const message = this.messages[i];
-    if (isToolMessage(message) && message.content != null && typeof message.content === "string" && this.messages.some((x) => x.role === "assistant" && x.tool_calls?.some((y) => y.type === "function" && y.id === message.tool_call_id))) {
-      return message.content;
-    }
-  }
-  return;
-}, _AbstractChatCompletionRunner_calculateTotalUsage = function _AbstractChatCompletionRunner_calculateTotalUsage2() {
-  const total = {
-    completion_tokens: 0,
-    prompt_tokens: 0,
-    total_tokens: 0
-  };
-  for (const { usage } of this._chatCompletions) {
-    if (usage) {
-      total.completion_tokens += usage.completion_tokens;
-      total.prompt_tokens += usage.prompt_tokens;
-      total.total_tokens += usage.total_tokens;
-    }
-  }
-  return total;
-}, _AbstractChatCompletionRunner_validateParams = function _AbstractChatCompletionRunner_validateParams2(params) {
-  if (params.n != null && params.n > 1) {
-    throw new OpenAIError("ChatCompletion convenience helpers only support n=1 at this time. To use n>1, please use chat.completions.create() directly.");
-  }
-}, _AbstractChatCompletionRunner_stringifyFunctionCallResult = function _AbstractChatCompletionRunner_stringifyFunctionCallResult2(rawContent) {
-  return typeof rawContent === "string" ? rawContent : rawContent === void 0 ? "undefined" : JSON.stringify(rawContent);
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/lib/ChatCompletionRunner.mjs
-var ChatCompletionRunner = class _ChatCompletionRunner extends AbstractChatCompletionRunner {
-  static runTools(client, params, options) {
-    const runner = new _ChatCompletionRunner();
-    const opts = {
-      ...options,
-      headers: { ...options?.headers, "X-Stainless-Helper-Method": "runTools" }
-    };
-    runner._run(() => runner._runTools(client, params, opts));
-    return runner;
-  }
-  _addMessage(message, emit = true) {
-    super._addMessage(message, emit);
-    if (isAssistantMessage(message) && message.content) {
-      this._emit("content", message.content);
-    }
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/_vendor/partial-json-parser/parser.mjs
-var STR = 1;
-var NUM = 2;
-var ARR = 4;
-var OBJ = 8;
-var NULL = 16;
-var BOOL = 32;
-var NAN = 64;
-var INFINITY = 128;
-var MINUS_INFINITY = 256;
-var INF = INFINITY | MINUS_INFINITY;
-var SPECIAL = NULL | BOOL | INF | NAN;
-var ATOM = STR | NUM | SPECIAL;
-var COLLECTION = ARR | OBJ;
-var ALL = ATOM | COLLECTION;
-var Allow = {
-  STR,
-  NUM,
-  ARR,
-  OBJ,
-  NULL,
-  BOOL,
-  NAN,
-  INFINITY,
-  MINUS_INFINITY,
-  INF,
-  SPECIAL,
-  ATOM,
-  COLLECTION,
-  ALL
-};
-var PartialJSON = class extends Error {
-};
-var MalformedJSON = class extends Error {
-};
-function parseJSON(jsonString, allowPartial = Allow.ALL) {
-  if (typeof jsonString !== "string") {
-    throw new TypeError(`expecting str, got ${typeof jsonString}`);
-  }
-  if (!jsonString.trim()) {
-    throw new Error(`${jsonString} is empty`);
-  }
-  return _parseJSON(jsonString.trim(), allowPartial);
-}
-var _parseJSON = (jsonString, allow) => {
-  const length = jsonString.length;
-  let index = 0;
-  const markPartialJSON = (msg) => {
-    throw new PartialJSON(`${msg} at position ${index}`);
-  };
-  const throwMalformedError = (msg) => {
-    throw new MalformedJSON(`${msg} at position ${index}`);
-  };
-  const parseAny = () => {
-    skipBlank();
-    if (index >= length)
-      markPartialJSON("Unexpected end of input");
-    if (jsonString[index] === '"')
-      return parseStr();
-    if (jsonString[index] === "{")
-      return parseObj();
-    if (jsonString[index] === "[")
-      return parseArr();
-    if (jsonString.substring(index, index + 4) === "null" || Allow.NULL & allow && length - index < 4 && "null".startsWith(jsonString.substring(index))) {
-      index += 4;
-      return null;
-    }
-    if (jsonString.substring(index, index + 4) === "true" || Allow.BOOL & allow && length - index < 4 && "true".startsWith(jsonString.substring(index))) {
-      index += 4;
-      return true;
-    }
-    if (jsonString.substring(index, index + 5) === "false" || Allow.BOOL & allow && length - index < 5 && "false".startsWith(jsonString.substring(index))) {
-      index += 5;
-      return false;
-    }
-    if (jsonString.substring(index, index + 8) === "Infinity" || Allow.INFINITY & allow && length - index < 8 && "Infinity".startsWith(jsonString.substring(index))) {
-      index += 8;
-      return Infinity;
-    }
-    if (jsonString.substring(index, index + 9) === "-Infinity" || Allow.MINUS_INFINITY & allow && 1 < length - index && length - index < 9 && "-Infinity".startsWith(jsonString.substring(index))) {
-      index += 9;
-      return -Infinity;
-    }
-    if (jsonString.substring(index, index + 3) === "NaN" || Allow.NAN & allow && length - index < 3 && "NaN".startsWith(jsonString.substring(index))) {
-      index += 3;
-      return NaN;
-    }
-    return parseNum();
-  };
-  const parseStr = () => {
-    const start = index;
-    let escape2 = false;
-    index++;
-    while (index < length && (jsonString[index] !== '"' || escape2 && jsonString[index - 1] === "\\")) {
-      escape2 = jsonString[index] === "\\" ? !escape2 : false;
-      index++;
-    }
-    if (jsonString.charAt(index) == '"') {
-      try {
-        return JSON.parse(jsonString.substring(start, ++index - Number(escape2)));
-      } catch (e) {
-        throwMalformedError(String(e));
-      }
-    } else if (Allow.STR & allow) {
-      try {
-        return JSON.parse(jsonString.substring(start, index - Number(escape2)) + '"');
-      } catch (e) {
-        return JSON.parse(jsonString.substring(start, jsonString.lastIndexOf("\\")) + '"');
-      }
-    }
-    markPartialJSON("Unterminated string literal");
-  };
-  const parseObj = () => {
-    index++;
-    skipBlank();
-    const obj = {};
-    try {
-      while (jsonString[index] !== "}") {
-        skipBlank();
-        if (index >= length && Allow.OBJ & allow)
-          return obj;
-        const key = parseStr();
-        skipBlank();
-        index++;
-        try {
-          const value = parseAny();
-          Object.defineProperty(obj, key, { value, writable: true, enumerable: true, configurable: true });
-        } catch (e) {
-          if (Allow.OBJ & allow)
-            return obj;
-          else
-            throw e;
-        }
-        skipBlank();
-        if (jsonString[index] === ",")
-          index++;
-      }
-    } catch (e) {
-      if (Allow.OBJ & allow)
-        return obj;
-      else
-        markPartialJSON("Expected '}' at end of object");
-    }
-    index++;
-    return obj;
-  };
-  const parseArr = () => {
-    index++;
-    const arr = [];
-    try {
-      while (jsonString[index] !== "]") {
-        arr.push(parseAny());
-        skipBlank();
-        if (jsonString[index] === ",") {
-          index++;
-        }
-      }
-    } catch (e) {
-      if (Allow.ARR & allow) {
-        return arr;
-      }
-      markPartialJSON("Expected ']' at end of array");
-    }
-    index++;
-    return arr;
-  };
-  const parseNum = () => {
-    if (index === 0) {
-      if (jsonString === "-" && Allow.NUM & allow)
-        markPartialJSON("Not sure what '-' is");
-      try {
-        return JSON.parse(jsonString);
-      } catch (e) {
-        if (Allow.NUM & allow) {
-          try {
-            if ("." === jsonString[jsonString.length - 1])
-              return JSON.parse(jsonString.substring(0, jsonString.lastIndexOf(".")));
-            return JSON.parse(jsonString.substring(0, jsonString.lastIndexOf("e")));
-          } catch (e2) {
-          }
-        }
-        throwMalformedError(String(e));
-      }
-    }
-    const start = index;
-    if (jsonString[index] === "-")
-      index++;
-    while (jsonString[index] && !",]}".includes(jsonString[index]))
-      index++;
-    if (index == length && !(Allow.NUM & allow))
-      markPartialJSON("Unterminated number literal");
-    try {
-      return JSON.parse(jsonString.substring(start, index));
-    } catch (e) {
-      if (jsonString.substring(start, index) === "-" && Allow.NUM & allow)
-        markPartialJSON("Not sure what '-' is");
-      try {
-        return JSON.parse(jsonString.substring(start, jsonString.lastIndexOf("e")));
-      } catch (e2) {
-        throwMalformedError(String(e2));
-      }
-    }
-  };
-  const skipBlank = () => {
-    while (index < length && " \n\r	".includes(jsonString[index])) {
-      index++;
-    }
-  };
-  return parseAny();
-};
-var partialParse = (input) => parseJSON(input, Allow.ALL ^ Allow.NUM);
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/lib/ChatCompletionStream.mjs
-var _ChatCompletionStream_instances;
-var _ChatCompletionStream_params;
-var _ChatCompletionStream_choiceEventStates;
-var _ChatCompletionStream_currentChatCompletionSnapshot;
-var _ChatCompletionStream_beginRequest;
-var _ChatCompletionStream_getChoiceEventState;
-var _ChatCompletionStream_addChunk;
-var _ChatCompletionStream_emitToolCallDoneEvent;
-var _ChatCompletionStream_emitContentDoneEvents;
-var _ChatCompletionStream_endRequest;
-var _ChatCompletionStream_getAutoParseableResponseFormat;
-var _ChatCompletionStream_accumulateChatCompletion;
-var ChatCompletionStream = class _ChatCompletionStream extends AbstractChatCompletionRunner {
-  constructor(params) {
-    super();
-    _ChatCompletionStream_instances.add(this);
-    _ChatCompletionStream_params.set(this, void 0);
-    _ChatCompletionStream_choiceEventStates.set(this, void 0);
-    _ChatCompletionStream_currentChatCompletionSnapshot.set(this, void 0);
-    __classPrivateFieldSet2(this, _ChatCompletionStream_params, params, "f");
-    __classPrivateFieldSet2(this, _ChatCompletionStream_choiceEventStates, [], "f");
-  }
-  get currentChatCompletionSnapshot() {
-    return __classPrivateFieldGet2(this, _ChatCompletionStream_currentChatCompletionSnapshot, "f");
-  }
-  /**
-   * Intended for use on the frontend, consuming a stream produced with
-   * `.toReadableStream()` on the backend.
-   *
-   * Note that messages sent to the model do not appear in `.on('message')`
-   * in this context.
-   */
-  static fromReadableStream(stream) {
-    const runner = new _ChatCompletionStream(null);
-    runner._run(() => runner._fromReadableStream(stream));
-    return runner;
-  }
-  static createChatCompletion(client, params, options) {
-    const runner = new _ChatCompletionStream(params);
-    runner._run(() => runner._runChatCompletion(client, { ...params, stream: true }, { ...options, headers: { ...options?.headers, "X-Stainless-Helper-Method": "stream" } }));
-    return runner;
-  }
-  async _createChatCompletion(client, params, options) {
-    super._createChatCompletion;
-    const signal = options?.signal;
-    if (signal) {
-      if (signal.aborted)
-        this.controller.abort();
-      signal.addEventListener("abort", () => this.controller.abort());
-    }
-    __classPrivateFieldGet2(this, _ChatCompletionStream_instances, "m", _ChatCompletionStream_beginRequest).call(this);
-    const stream = await client.chat.completions.create({ ...params, stream: true }, { ...options, signal: this.controller.signal });
-    this._connected();
-    for await (const chunk of stream) {
-      __classPrivateFieldGet2(this, _ChatCompletionStream_instances, "m", _ChatCompletionStream_addChunk).call(this, chunk);
-    }
-    if (stream.controller.signal?.aborted) {
-      throw new APIUserAbortError();
-    }
-    return this._addChatCompletion(__classPrivateFieldGet2(this, _ChatCompletionStream_instances, "m", _ChatCompletionStream_endRequest).call(this));
-  }
-  async _fromReadableStream(readableStream, options) {
-    const signal = options?.signal;
-    if (signal) {
-      if (signal.aborted)
-        this.controller.abort();
-      signal.addEventListener("abort", () => this.controller.abort());
-    }
-    __classPrivateFieldGet2(this, _ChatCompletionStream_instances, "m", _ChatCompletionStream_beginRequest).call(this);
-    this._connected();
-    const stream = Stream.fromReadableStream(readableStream, this.controller);
-    let chatId;
-    for await (const chunk of stream) {
-      if (chatId && chatId !== chunk.id) {
-        this._addChatCompletion(__classPrivateFieldGet2(this, _ChatCompletionStream_instances, "m", _ChatCompletionStream_endRequest).call(this));
-      }
-      __classPrivateFieldGet2(this, _ChatCompletionStream_instances, "m", _ChatCompletionStream_addChunk).call(this, chunk);
-      chatId = chunk.id;
-    }
-    if (stream.controller.signal?.aborted) {
-      throw new APIUserAbortError();
-    }
-    return this._addChatCompletion(__classPrivateFieldGet2(this, _ChatCompletionStream_instances, "m", _ChatCompletionStream_endRequest).call(this));
-  }
-  [(_ChatCompletionStream_params = /* @__PURE__ */ new WeakMap(), _ChatCompletionStream_choiceEventStates = /* @__PURE__ */ new WeakMap(), _ChatCompletionStream_currentChatCompletionSnapshot = /* @__PURE__ */ new WeakMap(), _ChatCompletionStream_instances = /* @__PURE__ */ new WeakSet(), _ChatCompletionStream_beginRequest = function _ChatCompletionStream_beginRequest2() {
-    if (this.ended)
-      return;
-    __classPrivateFieldSet2(this, _ChatCompletionStream_currentChatCompletionSnapshot, void 0, "f");
-  }, _ChatCompletionStream_getChoiceEventState = function _ChatCompletionStream_getChoiceEventState2(choice) {
-    let state = __classPrivateFieldGet2(this, _ChatCompletionStream_choiceEventStates, "f")[choice.index];
-    if (state) {
-      return state;
-    }
-    state = {
-      content_done: false,
-      refusal_done: false,
-      logprobs_content_done: false,
-      logprobs_refusal_done: false,
-      done_tool_calls: /* @__PURE__ */ new Set(),
-      current_tool_call_index: null
-    };
-    __classPrivateFieldGet2(this, _ChatCompletionStream_choiceEventStates, "f")[choice.index] = state;
-    return state;
-  }, _ChatCompletionStream_addChunk = function _ChatCompletionStream_addChunk2(chunk) {
-    if (this.ended)
-      return;
-    const completion = __classPrivateFieldGet2(this, _ChatCompletionStream_instances, "m", _ChatCompletionStream_accumulateChatCompletion).call(this, chunk);
-    this._emit("chunk", chunk, completion);
-    for (const choice of chunk.choices) {
-      const choiceSnapshot = completion.choices[choice.index];
-      if (choice.delta.content != null && choiceSnapshot.message?.role === "assistant" && choiceSnapshot.message?.content) {
-        this._emit("content", choice.delta.content, choiceSnapshot.message.content);
-        this._emit("content.delta", {
-          delta: choice.delta.content,
-          snapshot: choiceSnapshot.message.content,
-          parsed: choiceSnapshot.message.parsed
-        });
-      }
-      if (choice.delta.refusal != null && choiceSnapshot.message?.role === "assistant" && choiceSnapshot.message?.refusal) {
-        this._emit("refusal.delta", {
-          delta: choice.delta.refusal,
-          snapshot: choiceSnapshot.message.refusal
-        });
-      }
-      if (choice.logprobs?.content != null && choiceSnapshot.message?.role === "assistant") {
-        this._emit("logprobs.content.delta", {
-          content: choice.logprobs?.content,
-          snapshot: choiceSnapshot.logprobs?.content ?? []
-        });
-      }
-      if (choice.logprobs?.refusal != null && choiceSnapshot.message?.role === "assistant") {
-        this._emit("logprobs.refusal.delta", {
-          refusal: choice.logprobs?.refusal,
-          snapshot: choiceSnapshot.logprobs?.refusal ?? []
-        });
-      }
-      const state = __classPrivateFieldGet2(this, _ChatCompletionStream_instances, "m", _ChatCompletionStream_getChoiceEventState).call(this, choiceSnapshot);
-      if (choiceSnapshot.finish_reason) {
-        __classPrivateFieldGet2(this, _ChatCompletionStream_instances, "m", _ChatCompletionStream_emitContentDoneEvents).call(this, choiceSnapshot);
-        if (state.current_tool_call_index != null) {
-          __classPrivateFieldGet2(this, _ChatCompletionStream_instances, "m", _ChatCompletionStream_emitToolCallDoneEvent).call(this, choiceSnapshot, state.current_tool_call_index);
-        }
-      }
-      for (const toolCall of choice.delta.tool_calls ?? []) {
-        if (state.current_tool_call_index !== toolCall.index) {
-          __classPrivateFieldGet2(this, _ChatCompletionStream_instances, "m", _ChatCompletionStream_emitContentDoneEvents).call(this, choiceSnapshot);
-          if (state.current_tool_call_index != null) {
-            __classPrivateFieldGet2(this, _ChatCompletionStream_instances, "m", _ChatCompletionStream_emitToolCallDoneEvent).call(this, choiceSnapshot, state.current_tool_call_index);
-          }
-        }
-        state.current_tool_call_index = toolCall.index;
-      }
-      for (const toolCallDelta of choice.delta.tool_calls ?? []) {
-        const toolCallSnapshot = choiceSnapshot.message.tool_calls?.[toolCallDelta.index];
-        if (!toolCallSnapshot?.type) {
-          continue;
-        }
-        if (toolCallSnapshot?.type === "function") {
-          this._emit("tool_calls.function.arguments.delta", {
-            name: toolCallSnapshot.function?.name,
-            index: toolCallDelta.index,
-            arguments: toolCallSnapshot.function.arguments,
-            parsed_arguments: toolCallSnapshot.function.parsed_arguments,
-            arguments_delta: toolCallDelta.function?.arguments ?? ""
-          });
-        } else {
-          assertNever2(toolCallSnapshot?.type);
-        }
-      }
-    }
-  }, _ChatCompletionStream_emitToolCallDoneEvent = function _ChatCompletionStream_emitToolCallDoneEvent2(choiceSnapshot, toolCallIndex) {
-    const state = __classPrivateFieldGet2(this, _ChatCompletionStream_instances, "m", _ChatCompletionStream_getChoiceEventState).call(this, choiceSnapshot);
-    if (state.done_tool_calls.has(toolCallIndex)) {
-      return;
-    }
-    const toolCallSnapshot = choiceSnapshot.message.tool_calls?.[toolCallIndex];
-    if (!toolCallSnapshot) {
-      throw new Error("no tool call snapshot");
-    }
-    if (!toolCallSnapshot.type) {
-      throw new Error("tool call snapshot missing `type`");
-    }
-    if (toolCallSnapshot.type === "function") {
-      const inputTool = __classPrivateFieldGet2(this, _ChatCompletionStream_params, "f")?.tools?.find((tool) => isChatCompletionFunctionTool(tool) && tool.function.name === toolCallSnapshot.function.name);
-      this._emit("tool_calls.function.arguments.done", {
-        name: toolCallSnapshot.function.name,
-        index: toolCallIndex,
-        arguments: toolCallSnapshot.function.arguments,
-        parsed_arguments: isAutoParsableTool(inputTool) ? inputTool.$parseRaw(toolCallSnapshot.function.arguments) : inputTool?.function.strict ? JSON.parse(toolCallSnapshot.function.arguments) : null
-      });
-    } else {
-      assertNever2(toolCallSnapshot.type);
-    }
-  }, _ChatCompletionStream_emitContentDoneEvents = function _ChatCompletionStream_emitContentDoneEvents2(choiceSnapshot) {
-    const state = __classPrivateFieldGet2(this, _ChatCompletionStream_instances, "m", _ChatCompletionStream_getChoiceEventState).call(this, choiceSnapshot);
-    if (choiceSnapshot.message.content && !state.content_done) {
-      state.content_done = true;
-      const responseFormat = __classPrivateFieldGet2(this, _ChatCompletionStream_instances, "m", _ChatCompletionStream_getAutoParseableResponseFormat).call(this);
-      this._emit("content.done", {
-        content: choiceSnapshot.message.content,
-        parsed: responseFormat ? responseFormat.$parseRaw(choiceSnapshot.message.content) : null
-      });
-    }
-    if (choiceSnapshot.message.refusal && !state.refusal_done) {
-      state.refusal_done = true;
-      this._emit("refusal.done", { refusal: choiceSnapshot.message.refusal });
-    }
-    if (choiceSnapshot.logprobs?.content && !state.logprobs_content_done) {
-      state.logprobs_content_done = true;
-      this._emit("logprobs.content.done", { content: choiceSnapshot.logprobs.content });
-    }
-    if (choiceSnapshot.logprobs?.refusal && !state.logprobs_refusal_done) {
-      state.logprobs_refusal_done = true;
-      this._emit("logprobs.refusal.done", { refusal: choiceSnapshot.logprobs.refusal });
-    }
-  }, _ChatCompletionStream_endRequest = function _ChatCompletionStream_endRequest2() {
-    if (this.ended) {
-      throw new OpenAIError(`stream has ended, this shouldn't happen`);
-    }
-    const snapshot = __classPrivateFieldGet2(this, _ChatCompletionStream_currentChatCompletionSnapshot, "f");
-    if (!snapshot) {
-      throw new OpenAIError(`request ended without sending any chunks`);
-    }
-    __classPrivateFieldSet2(this, _ChatCompletionStream_currentChatCompletionSnapshot, void 0, "f");
-    __classPrivateFieldSet2(this, _ChatCompletionStream_choiceEventStates, [], "f");
-    return finalizeChatCompletion(snapshot, __classPrivateFieldGet2(this, _ChatCompletionStream_params, "f"));
-  }, _ChatCompletionStream_getAutoParseableResponseFormat = function _ChatCompletionStream_getAutoParseableResponseFormat2() {
-    const responseFormat = __classPrivateFieldGet2(this, _ChatCompletionStream_params, "f")?.response_format;
-    if (isAutoParsableResponseFormat(responseFormat)) {
-      return responseFormat;
-    }
-    return null;
-  }, _ChatCompletionStream_accumulateChatCompletion = function _ChatCompletionStream_accumulateChatCompletion2(chunk) {
-    var _a3, _b, _c, _d;
-    let snapshot = __classPrivateFieldGet2(this, _ChatCompletionStream_currentChatCompletionSnapshot, "f");
-    const { choices, ...rest } = chunk;
-    if (!snapshot) {
-      snapshot = __classPrivateFieldSet2(this, _ChatCompletionStream_currentChatCompletionSnapshot, {
-        ...rest,
-        choices: []
-      }, "f");
-    } else {
-      Object.assign(snapshot, rest);
-    }
-    for (const { delta, finish_reason, index, logprobs = null, ...other } of chunk.choices) {
-      let choice = snapshot.choices[index];
-      if (!choice) {
-        choice = snapshot.choices[index] = { finish_reason, index, message: {}, logprobs, ...other };
-      }
-      if (logprobs) {
-        if (!choice.logprobs) {
-          choice.logprobs = Object.assign({}, logprobs);
-        } else {
-          const { content: content2, refusal: refusal2, ...rest3 } = logprobs;
-          assertIsEmpty(rest3);
-          Object.assign(choice.logprobs, rest3);
-          if (content2) {
-            (_a3 = choice.logprobs).content ?? (_a3.content = []);
-            choice.logprobs.content.push(...content2);
-          }
-          if (refusal2) {
-            (_b = choice.logprobs).refusal ?? (_b.refusal = []);
-            choice.logprobs.refusal.push(...refusal2);
-          }
-        }
-      }
-      if (finish_reason) {
-        choice.finish_reason = finish_reason;
-        if (__classPrivateFieldGet2(this, _ChatCompletionStream_params, "f") && hasAutoParseableInput(__classPrivateFieldGet2(this, _ChatCompletionStream_params, "f"))) {
-          if (finish_reason === "length") {
-            throw new LengthFinishReasonError();
-          }
-          if (finish_reason === "content_filter") {
-            throw new ContentFilterFinishReasonError();
-          }
-        }
-      }
-      Object.assign(choice, other);
-      if (!delta)
-        continue;
-      const { content, refusal, function_call, role, tool_calls, ...rest2 } = delta;
-      assertIsEmpty(rest2);
-      Object.assign(choice.message, rest2);
-      if (refusal) {
-        choice.message.refusal = (choice.message.refusal || "") + refusal;
-      }
-      if (role)
-        choice.message.role = role;
-      if (function_call) {
-        if (!choice.message.function_call) {
-          choice.message.function_call = function_call;
-        } else {
-          if (function_call.name)
-            choice.message.function_call.name = function_call.name;
-          if (function_call.arguments) {
-            (_c = choice.message.function_call).arguments ?? (_c.arguments = "");
-            choice.message.function_call.arguments += function_call.arguments;
-          }
-        }
-      }
-      if (content) {
-        choice.message.content = (choice.message.content || "") + content;
-        if (!choice.message.refusal && __classPrivateFieldGet2(this, _ChatCompletionStream_instances, "m", _ChatCompletionStream_getAutoParseableResponseFormat).call(this)) {
-          choice.message.parsed = partialParse(choice.message.content);
-        }
-      }
-      if (tool_calls) {
-        if (!choice.message.tool_calls)
-          choice.message.tool_calls = [];
-        for (const { index: index2, id, type, function: fn, ...rest3 } of tool_calls) {
-          const tool_call = (_d = choice.message.tool_calls)[index2] ?? (_d[index2] = {});
-          Object.assign(tool_call, rest3);
-          if (id)
-            tool_call.id = id;
-          if (type)
-            tool_call.type = type;
-          if (fn)
-            tool_call.function ?? (tool_call.function = { name: fn.name ?? "", arguments: "" });
-          if (fn?.name)
-            tool_call.function.name = fn.name;
-          if (fn?.arguments) {
-            tool_call.function.arguments += fn.arguments;
-            if (shouldParseToolCall(__classPrivateFieldGet2(this, _ChatCompletionStream_params, "f"), tool_call)) {
-              tool_call.function.parsed_arguments = partialParse(tool_call.function.arguments);
-            }
-          }
-        }
-      }
-    }
-    return snapshot;
-  }, Symbol.asyncIterator)]() {
-    const pushQueue = [];
-    const readQueue = [];
-    let done = false;
-    this.on("chunk", (chunk) => {
-      const reader = readQueue.shift();
-      if (reader) {
-        reader.resolve(chunk);
-      } else {
-        pushQueue.push(chunk);
-      }
-    });
-    this.on("end", () => {
-      done = true;
-      for (const reader of readQueue) {
-        reader.resolve(void 0);
-      }
-      readQueue.length = 0;
-    });
-    this.on("abort", (err) => {
-      done = true;
-      for (const reader of readQueue) {
-        reader.reject(err);
-      }
-      readQueue.length = 0;
-    });
-    this.on("error", (err) => {
-      done = true;
-      for (const reader of readQueue) {
-        reader.reject(err);
-      }
-      readQueue.length = 0;
-    });
-    return {
-      next: async () => {
-        if (!pushQueue.length) {
-          if (done) {
-            return { value: void 0, done: true };
-          }
-          return new Promise((resolve, reject) => readQueue.push({ resolve, reject })).then((chunk2) => chunk2 ? { value: chunk2, done: false } : { value: void 0, done: true });
-        }
-        const chunk = pushQueue.shift();
-        return { value: chunk, done: false };
-      },
-      return: async () => {
-        this.abort();
-        return { value: void 0, done: true };
-      }
-    };
-  }
-  toReadableStream() {
-    const stream = new Stream(this[Symbol.asyncIterator].bind(this), this.controller);
-    return stream.toReadableStream();
-  }
-};
-function finalizeChatCompletion(snapshot, params) {
-  const { id, choices, created, model, system_fingerprint, ...rest } = snapshot;
-  const completion = {
-    ...rest,
-    id,
-    choices: choices.map(({ message, finish_reason, index, logprobs, ...choiceRest }) => {
-      if (!finish_reason) {
-        throw new OpenAIError(`missing finish_reason for choice ${index}`);
-      }
-      const { content = null, function_call, tool_calls, ...messageRest } = message;
-      const role = message.role;
-      if (!role) {
-        throw new OpenAIError(`missing role for choice ${index}`);
-      }
-      if (function_call) {
-        const { arguments: args, name } = function_call;
-        if (args == null) {
-          throw new OpenAIError(`missing function_call.arguments for choice ${index}`);
-        }
-        if (!name) {
-          throw new OpenAIError(`missing function_call.name for choice ${index}`);
-        }
-        return {
-          ...choiceRest,
-          message: {
-            content,
-            function_call: { arguments: args, name },
-            role,
-            refusal: message.refusal ?? null
-          },
-          finish_reason,
-          index,
-          logprobs
-        };
-      }
-      if (tool_calls) {
-        return {
-          ...choiceRest,
-          index,
-          finish_reason,
-          logprobs,
-          message: {
-            ...messageRest,
-            role,
-            content,
-            refusal: message.refusal ?? null,
-            tool_calls: tool_calls.map((tool_call, i) => {
-              const { function: fn, type, id: id2, ...toolRest } = tool_call;
-              const { arguments: args, name, ...fnRest } = fn || {};
-              if (id2 == null) {
-                throw new OpenAIError(`missing choices[${index}].tool_calls[${i}].id
-${str(snapshot)}`);
-              }
-              if (type == null) {
-                throw new OpenAIError(`missing choices[${index}].tool_calls[${i}].type
-${str(snapshot)}`);
-              }
-              if (name == null) {
-                throw new OpenAIError(`missing choices[${index}].tool_calls[${i}].function.name
-${str(snapshot)}`);
-              }
-              if (args == null) {
-                throw new OpenAIError(`missing choices[${index}].tool_calls[${i}].function.arguments
-${str(snapshot)}`);
-              }
-              return { ...toolRest, id: id2, type, function: { ...fnRest, name, arguments: args } };
-            })
-          }
-        };
-      }
-      return {
-        ...choiceRest,
-        message: { ...messageRest, content, role, refusal: message.refusal ?? null },
-        finish_reason,
-        index,
-        logprobs
-      };
-    }),
-    created,
-    model,
-    object: "chat.completion",
-    ...system_fingerprint ? { system_fingerprint } : {}
-  };
-  return maybeParseChatCompletion(completion, params);
-}
-function str(x) {
-  return JSON.stringify(x);
-}
-function assertIsEmpty(obj) {
-  return;
-}
-function assertNever2(_x) {
-}
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/lib/ChatCompletionStreamingRunner.mjs
-var ChatCompletionStreamingRunner = class _ChatCompletionStreamingRunner extends ChatCompletionStream {
-  static fromReadableStream(stream) {
-    const runner = new _ChatCompletionStreamingRunner(null);
-    runner._run(() => runner._fromReadableStream(stream));
-    return runner;
-  }
-  static runTools(client, params, options) {
-    const runner = new _ChatCompletionStreamingRunner(
-      // @ts-expect-error TODO these types are incompatible
-      params
-    );
-    const opts = {
-      ...options,
-      headers: { ...options?.headers, "X-Stainless-Helper-Method": "runTools" }
-    };
-    runner._run(() => runner._runTools(client, params, opts));
-    return runner;
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/chat/completions/completions.mjs
-var Completions = class extends APIResource {
-  constructor() {
-    super(...arguments);
-    this.messages = new Messages(this._client);
-  }
-  create(body, options) {
-    return this._client.post("/chat/completions", {
-      body,
-      ...options,
-      stream: body.stream ?? false,
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Get a stored chat completion. Only Chat Completions that have been created with
-   * the `store` parameter set to `true` will be returned.
-   *
-   * @example
-   * ```ts
-   * const chatCompletion =
-   *   await client.chat.completions.retrieve('completion_id');
-   * ```
-   */
-  retrieve(completionID, options) {
-    return this._client.get(path`/chat/completions/${completionID}`, {
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Modify a stored chat completion. Only Chat Completions that have been created
-   * with the `store` parameter set to `true` can be modified. Currently, the only
-   * supported modification is to update the `metadata` field.
-   *
-   * @example
-   * ```ts
-   * const chatCompletion = await client.chat.completions.update(
-   *   'completion_id',
-   *   { metadata: { foo: 'string' } },
-   * );
-   * ```
-   */
-  update(completionID, body, options) {
-    return this._client.post(path`/chat/completions/${completionID}`, {
-      body,
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * List stored Chat Completions. Only Chat Completions that have been stored with
-   * the `store` parameter set to `true` will be returned.
-   *
-   * @example
-   * ```ts
-   * // Automatically fetches more pages as needed.
-   * for await (const chatCompletion of client.chat.completions.list()) {
-   *   // ...
-   * }
-   * ```
-   */
-  list(query = {}, options) {
-    return this._client.getAPIList("/chat/completions", CursorPage, {
-      query,
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Delete a stored chat completion. Only Chat Completions that have been created
-   * with the `store` parameter set to `true` can be deleted.
-   *
-   * @example
-   * ```ts
-   * const chatCompletionDeleted =
-   *   await client.chat.completions.delete('completion_id');
-   * ```
-   */
-  delete(completionID, options) {
-    return this._client.delete(path`/chat/completions/${completionID}`, {
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-  parse(body, options) {
-    validateInputTools(body.tools);
-    return this._client.chat.completions.create(body, {
-      ...options,
-      headers: {
-        ...options?.headers,
-        "X-Stainless-Helper-Method": "chat.completions.parse"
-      }
-    })._thenUnwrap((completion) => parseChatCompletion(completion, body));
-  }
-  runTools(body, options) {
-    if (body.stream) {
-      return ChatCompletionStreamingRunner.runTools(this._client, body, options);
-    }
-    return ChatCompletionRunner.runTools(this._client, body, options);
-  }
-  /**
-   * Creates a chat completion stream
-   */
-  stream(body, options) {
-    return ChatCompletionStream.createChatCompletion(this._client, body, options);
-  }
-};
-Completions.Messages = Messages;
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/chat/chat.mjs
-var Chat = class extends APIResource {
-  constructor() {
-    super(...arguments);
-    this.completions = new Completions(this._client);
-  }
-};
-Chat.Completions = Completions;
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/admin-api-keys.mjs
-var AdminAPIKeys = class extends APIResource {
-  /**
-   * Create an organization admin API key
-   *
-   * @example
-   * ```ts
-   * const adminAPIKey =
-   *   await client.admin.organization.adminAPIKeys.create({
-   *     name: 'New Admin Key',
-   *   });
-   * ```
-   */
-  create(body, options) {
-    return this._client.post("/organization/admin_api_keys", {
-      body,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Retrieve a single organization API key
-   *
-   * @example
-   * ```ts
-   * const adminAPIKey =
-   *   await client.admin.organization.adminAPIKeys.retrieve(
-   *     'key_id',
-   *   );
-   * ```
-   */
-  retrieve(keyID, options) {
-    return this._client.get(path`/organization/admin_api_keys/${keyID}`, {
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * List organization API keys
-   *
-   * @example
-   * ```ts
-   * // Automatically fetches more pages as needed.
-   * for await (const adminAPIKey of client.admin.organization.adminAPIKeys.list()) {
-   *   // ...
-   * }
-   * ```
-   */
-  list(query = {}, options) {
-    return this._client.getAPIList("/organization/admin_api_keys", CursorPage, {
-      query,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Delete an organization admin API key
-   *
-   * @example
-   * ```ts
-   * const adminAPIKey =
-   *   await client.admin.organization.adminAPIKeys.delete(
-   *     'key_id',
-   *   );
-   * ```
-   */
-  delete(keyID, options) {
-    return this._client.delete(path`/organization/admin_api_keys/${keyID}`, {
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/audit-logs.mjs
-var AuditLogs = class extends APIResource {
-  /**
-   * List user actions and configuration changes within this organization.
-   *
-   * @example
-   * ```ts
-   * // Automatically fetches more pages as needed.
-   * for await (const auditLogListResponse of client.admin.organization.auditLogs.list()) {
-   *   // ...
-   * }
-   * ```
-   */
-  list(query = {}, options) {
-    return this._client.getAPIList("/organization/audit_logs", ConversationCursorPage, {
-      query,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/certificates.mjs
-var Certificates = class extends APIResource {
-  /**
-   * Upload a certificate to the organization. This does **not** automatically
-   * activate the certificate.
-   *
-   * Organizations can upload up to 50 certificates.
-   *
-   * @example
-   * ```ts
-   * const certificate =
-   *   await client.admin.organization.certificates.create({
-   *     certificate: 'certificate',
-   *   });
-   * ```
-   */
-  create(body, options) {
-    return this._client.post("/organization/certificates", {
-      body,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Get a certificate that has been uploaded to the organization.
-   *
-   * You can get a certificate regardless of whether it is active or not.
-   *
-   * @example
-   * ```ts
-   * const certificate =
-   *   await client.admin.organization.certificates.retrieve(
-   *     'certificate_id',
-   *   );
-   * ```
-   */
-  retrieve(certificateID, query = {}, options) {
-    return this._client.get(path`/organization/certificates/${certificateID}`, {
-      query,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Modify a certificate. Note that only the name can be modified.
-   *
-   * @example
-   * ```ts
-   * const certificate =
-   *   await client.admin.organization.certificates.update(
-   *     'certificate_id',
-   *   );
-   * ```
-   */
-  update(certificateID, body, options) {
-    return this._client.post(path`/organization/certificates/${certificateID}`, {
-      body,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * List uploaded certificates for this organization.
-   *
-   * @example
-   * ```ts
-   * // Automatically fetches more pages as needed.
-   * for await (const certificateListResponse of client.admin.organization.certificates.list()) {
-   *   // ...
-   * }
-   * ```
-   */
-  list(query = {}, options) {
-    return this._client.getAPIList("/organization/certificates", ConversationCursorPage, { query, ...options, __security: { adminAPIKeyAuth: true } });
-  }
-  /**
-   * Delete a certificate from the organization.
-   *
-   * The certificate must be inactive for the organization and all projects.
-   *
-   * @example
-   * ```ts
-   * const certificate =
-   *   await client.admin.organization.certificates.delete(
-   *     'certificate_id',
-   *   );
-   * ```
-   */
-  delete(certificateID, options) {
-    return this._client.delete(path`/organization/certificates/${certificateID}`, {
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Activate certificates at the organization level.
-   *
-   * You can atomically and idempotently activate up to 10 certificates at a time.
-   *
-   * @example
-   * ```ts
-   * // Automatically fetches more pages as needed.
-   * for await (const certificateActivateResponse of client.admin.organization.certificates.activate(
-   *   { certificate_ids: ['cert_abc'] },
-   * )) {
-   *   // ...
-   * }
-   * ```
-   */
-  activate(body, options) {
-    return this._client.getAPIList("/organization/certificates/activate", Page, {
-      body,
-      method: "post",
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Deactivate certificates at the organization level.
-   *
-   * You can atomically and idempotently deactivate up to 10 certificates at a time.
-   *
-   * @example
-   * ```ts
-   * // Automatically fetches more pages as needed.
-   * for await (const certificateDeactivateResponse of client.admin.organization.certificates.deactivate(
-   *   { certificate_ids: ['cert_abc'] },
-   * )) {
-   *   // ...
-   * }
-   * ```
-   */
-  deactivate(body, options) {
-    return this._client.getAPIList("/organization/certificates/deactivate", Page, { body, method: "post", ...options, __security: { adminAPIKeyAuth: true } });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/data-retention.mjs
-var DataRetention = class extends APIResource {
-  /**
-   * Retrieves organization data retention controls.
-   *
-   * @example
-   * ```ts
-   * const organizationDataRetention =
-   *   await client.admin.organization.dataRetention.retrieve();
-   * ```
-   */
-  retrieve(options) {
-    return this._client.get("/organization/data_retention", {
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Updates organization data retention controls.
-   *
-   * @example
-   * ```ts
-   * const organizationDataRetention =
-   *   await client.admin.organization.dataRetention.update({
-   *     retention_type: 'zero_data_retention',
-   *   });
-   * ```
-   */
-  update(body, options) {
-    return this._client.post("/organization/data_retention", {
-      body,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/invites.mjs
-var Invites = class extends APIResource {
-  /**
-   * Create an invite for a user to the organization. The invite must be accepted by
-   * the user before they have access to the organization.
-   *
-   * @example
-   * ```ts
-   * const invite =
-   *   await client.admin.organization.invites.create({
-   *     email: 'email',
-   *     role: 'reader',
-   *   });
-   * ```
-   */
-  create(body, options) {
-    return this._client.post("/organization/invites", {
-      body,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Retrieves an invite.
-   *
-   * @example
-   * ```ts
-   * const invite =
-   *   await client.admin.organization.invites.retrieve(
-   *     'invite_id',
-   *   );
-   * ```
-   */
-  retrieve(inviteID, options) {
-    return this._client.get(path`/organization/invites/${inviteID}`, {
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Returns a list of invites in the organization.
-   *
-   * @example
-   * ```ts
-   * // Automatically fetches more pages as needed.
-   * for await (const invite of client.admin.organization.invites.list()) {
-   *   // ...
-   * }
-   * ```
-   */
-  list(query = {}, options) {
-    return this._client.getAPIList("/organization/invites", ConversationCursorPage, {
-      query,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Delete an invite. If the invite has already been accepted, it cannot be deleted.
-   *
-   * @example
-   * ```ts
-   * const invite =
-   *   await client.admin.organization.invites.delete(
-   *     'invite_id',
-   *   );
-   * ```
-   */
-  delete(inviteID, options) {
-    return this._client.delete(path`/organization/invites/${inviteID}`, {
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/roles.mjs
-var Roles = class extends APIResource {
-  /**
-   * Creates a custom role for the organization.
-   *
-   * @example
-   * ```ts
-   * const role = await client.admin.organization.roles.create({
-   *   permissions: ['string'],
-   *   role_name: 'role_name',
-   * });
-   * ```
-   */
-  create(body, options) {
-    return this._client.post("/organization/roles", {
-      body,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Retrieves an organization role.
-   *
-   * @example
-   * ```ts
-   * const role = await client.admin.organization.roles.retrieve(
-   *   'role_id',
-   * );
-   * ```
-   */
-  retrieve(roleID, options) {
-    return this._client.get(path`/organization/roles/${roleID}`, {
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Updates an existing organization role.
-   *
-   * @example
-   * ```ts
-   * const role = await client.admin.organization.roles.update(
-   *   'role_id',
-   * );
-   * ```
-   */
-  update(roleID, body, options) {
-    return this._client.post(path`/organization/roles/${roleID}`, {
-      body,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Lists the roles configured for the organization.
-   *
-   * @example
-   * ```ts
-   * // Automatically fetches more pages as needed.
-   * for await (const role of client.admin.organization.roles.list()) {
-   *   // ...
-   * }
-   * ```
-   */
-  list(query = {}, options) {
-    return this._client.getAPIList("/organization/roles", NextCursorPage, {
-      query,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Deletes a custom role from the organization.
-   *
-   * @example
-   * ```ts
-   * const role = await client.admin.organization.roles.delete(
-   *   'role_id',
-   * );
-   * ```
-   */
-  delete(roleID, options) {
-    return this._client.delete(path`/organization/roles/${roleID}`, {
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/spend-alerts.mjs
-var SpendAlerts = class extends APIResource {
-  /**
-   * Creates an organization spend alert.
-   *
-   * @example
-   * ```ts
-   * const organizationSpendAlert =
-   *   await client.admin.organization.spendAlerts.create({
-   *     currency: 'USD',
-   *     interval: 'month',
-   *     notification_channel: {
-   *       recipients: ['string'],
-   *       type: 'email',
-   *     },
-   *     threshold_amount: 0,
-   *   });
-   * ```
-   */
-  create(body, options) {
-    return this._client.post("/organization/spend_alerts", {
-      body,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Updates an organization spend alert.
-   *
-   * @example
-   * ```ts
-   * const organizationSpendAlert =
-   *   await client.admin.organization.spendAlerts.update(
-   *     'alert_id',
-   *     {
-   *       currency: 'USD',
-   *       interval: 'month',
-   *       notification_channel: {
-   *         recipients: ['string'],
-   *         type: 'email',
-   *       },
-   *       threshold_amount: 0,
-   *     },
-   *   );
-   * ```
-   */
-  update(alertID, body, options) {
-    return this._client.post(path`/organization/spend_alerts/${alertID}`, {
-      body,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Lists organization spend alerts.
-   *
-   * @example
-   * ```ts
-   * // Automatically fetches more pages as needed.
-   * for await (const organizationSpendAlert of client.admin.organization.spendAlerts.list()) {
-   *   // ...
-   * }
-   * ```
-   */
-  list(query = {}, options) {
-    return this._client.getAPIList("/organization/spend_alerts", ConversationCursorPage, { query, ...options, __security: { adminAPIKeyAuth: true } });
-  }
-  /**
-   * Deletes an organization spend alert.
-   *
-   * @example
-   * ```ts
-   * const organizationSpendAlertDeleted =
-   *   await client.admin.organization.spendAlerts.delete(
-   *     'alert_id',
-   *   );
-   * ```
-   */
-  delete(alertID, options) {
-    return this._client.delete(path`/organization/spend_alerts/${alertID}`, {
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/usage.mjs
-var Usage = class extends APIResource {
-  /**
-   * Get audio speeches usage details for the organization.
-   *
-   * @example
-   * ```ts
-   * const response =
-   *   await client.admin.organization.usage.audioSpeeches({
-   *     start_time: 0,
-   *   });
-   * ```
-   */
-  audioSpeeches(query, options) {
-    return this._client.get("/organization/usage/audio_speeches", {
-      query,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Get audio transcriptions usage details for the organization.
-   *
-   * @example
-   * ```ts
-   * const response =
-   *   await client.admin.organization.usage.audioTranscriptions(
-   *     { start_time: 0 },
-   *   );
-   * ```
-   */
-  audioTranscriptions(query, options) {
-    return this._client.get("/organization/usage/audio_transcriptions", {
-      query,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Get code interpreter sessions usage details for the organization.
-   *
-   * @example
-   * ```ts
-   * const response =
-   *   await client.admin.organization.usage.codeInterpreterSessions(
-   *     { start_time: 0 },
-   *   );
-   * ```
-   */
-  codeInterpreterSessions(query, options) {
-    return this._client.get("/organization/usage/code_interpreter_sessions", {
-      query,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Get completions usage details for the organization.
-   *
-   * @example
-   * ```ts
-   * const response =
-   *   await client.admin.organization.usage.completions({
-   *     start_time: 0,
-   *   });
-   * ```
-   */
-  completions(query, options) {
-    return this._client.get("/organization/usage/completions", {
-      query,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Get costs details for the organization.
-   *
-   * @example
-   * ```ts
-   * const response =
-   *   await client.admin.organization.usage.costs({
-   *     start_time: 0,
-   *   });
-   * ```
-   */
-  costs(query, options) {
-    return this._client.get("/organization/costs", {
-      query,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Get embeddings usage details for the organization.
-   *
-   * @example
-   * ```ts
-   * const response =
-   *   await client.admin.organization.usage.embeddings({
-   *     start_time: 0,
-   *   });
-   * ```
-   */
-  embeddings(query, options) {
-    return this._client.get("/organization/usage/embeddings", {
-      query,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Get file search calls usage details for the organization.
-   *
-   * @example
-   * ```ts
-   * const response =
-   *   await client.admin.organization.usage.fileSearchCalls({
-   *     start_time: 0,
-   *   });
-   * ```
-   */
-  fileSearchCalls(query, options) {
-    return this._client.get("/organization/usage/file_search_calls", {
-      query,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Get images usage details for the organization.
-   *
-   * @example
-   * ```ts
-   * const response =
-   *   await client.admin.organization.usage.images({
-   *     start_time: 0,
-   *   });
-   * ```
-   */
-  images(query, options) {
-    return this._client.get("/organization/usage/images", {
-      query,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Get moderations usage details for the organization.
-   *
-   * @example
-   * ```ts
-   * const response =
-   *   await client.admin.organization.usage.moderations({
-   *     start_time: 0,
-   *   });
-   * ```
-   */
-  moderations(query, options) {
-    return this._client.get("/organization/usage/moderations", {
-      query,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Get vector stores usage details for the organization.
-   *
-   * @example
-   * ```ts
-   * const response =
-   *   await client.admin.organization.usage.vectorStores({
-   *     start_time: 0,
-   *   });
-   * ```
-   */
-  vectorStores(query, options) {
-    return this._client.get("/organization/usage/vector_stores", {
-      query,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Get web search calls usage details for the organization.
-   *
-   * @example
-   * ```ts
-   * const response =
-   *   await client.admin.organization.usage.webSearchCalls({
-   *     start_time: 0,
-   *   });
-   * ```
-   */
-  webSearchCalls(query, options) {
-    return this._client.get("/organization/usage/web_search_calls", {
-      query,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/groups/roles.mjs
-var Roles2 = class extends APIResource {
-  /**
-   * Assigns an organization role to a group within the organization.
-   *
-   * @example
-   * ```ts
-   * const role =
-   *   await client.admin.organization.groups.roles.create(
-   *     'group_id',
-   *     { role_id: 'role_id' },
-   *   );
-   * ```
-   */
-  create(groupID, body, options) {
-    return this._client.post(path`/organization/groups/${groupID}/roles`, {
-      body,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Retrieves an organization role assigned to a group.
-   *
-   * @example
-   * ```ts
-   * const role =
-   *   await client.admin.organization.groups.roles.retrieve(
-   *     'role_id',
-   *     { group_id: 'group_id' },
-   *   );
-   * ```
-   */
-  retrieve(roleID, params, options) {
-    const { group_id } = params;
-    return this._client.get(path`/organization/groups/${group_id}/roles/${roleID}`, {
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Lists the organization roles assigned to a group within the organization.
-   *
-   * @example
-   * ```ts
-   * // Automatically fetches more pages as needed.
-   * for await (const roleListResponse of client.admin.organization.groups.roles.list(
-   *   'group_id',
-   * )) {
-   *   // ...
-   * }
-   * ```
-   */
-  list(groupID, query = {}, options) {
-    return this._client.getAPIList(path`/organization/groups/${groupID}/roles`, NextCursorPage, { query, ...options, __security: { adminAPIKeyAuth: true } });
-  }
-  /**
-   * Unassigns an organization role from a group within the organization.
-   *
-   * @example
-   * ```ts
-   * const role =
-   *   await client.admin.organization.groups.roles.delete(
-   *     'role_id',
-   *     { group_id: 'group_id' },
-   *   );
-   * ```
-   */
-  delete(roleID, params, options) {
-    const { group_id } = params;
-    return this._client.delete(path`/organization/groups/${group_id}/roles/${roleID}`, {
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/groups/users.mjs
-var Users = class extends APIResource {
-  /**
-   * Adds a user to a group.
-   *
-   * @example
-   * ```ts
-   * const user =
-   *   await client.admin.organization.groups.users.create(
-   *     'group_id',
-   *     { user_id: 'user_id' },
-   *   );
-   * ```
-   */
-  create(groupID, body, options) {
-    return this._client.post(path`/organization/groups/${groupID}/users`, {
-      body,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Retrieves a user in a group.
-   *
-   * @example
-   * ```ts
-   * const user =
-   *   await client.admin.organization.groups.users.retrieve(
-   *     'user_id',
-   *     { group_id: 'group_id' },
-   *   );
-   * ```
-   */
-  retrieve(userID, params, options) {
-    const { group_id } = params;
-    return this._client.get(path`/organization/groups/${group_id}/users/${userID}`, {
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Lists the users assigned to a group.
-   *
-   * @example
-   * ```ts
-   * // Automatically fetches more pages as needed.
-   * for await (const organizationGroupUser of client.admin.organization.groups.users.list(
-   *   'group_id',
-   * )) {
-   *   // ...
-   * }
-   * ```
-   */
-  list(groupID, query = {}, options) {
-    return this._client.getAPIList(path`/organization/groups/${groupID}/users`, NextCursorPage, { query, ...options, __security: { adminAPIKeyAuth: true } });
-  }
-  /**
-   * Removes a user from a group.
-   *
-   * @example
-   * ```ts
-   * const user =
-   *   await client.admin.organization.groups.users.delete(
-   *     'user_id',
-   *     { group_id: 'group_id' },
-   *   );
-   * ```
-   */
-  delete(userID, params, options) {
-    const { group_id } = params;
-    return this._client.delete(path`/organization/groups/${group_id}/users/${userID}`, {
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/groups/groups.mjs
-var Groups = class extends APIResource {
-  constructor() {
-    super(...arguments);
-    this.users = new Users(this._client);
-    this.roles = new Roles2(this._client);
-  }
-  /**
-   * Creates a new group in the organization.
-   *
-   * @example
-   * ```ts
-   * const group = await client.admin.organization.groups.create(
-   *   { name: 'x' },
-   * );
-   * ```
-   */
-  create(body, options) {
-    return this._client.post("/organization/groups", {
-      body,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Retrieves a group.
-   *
-   * @example
-   * ```ts
-   * const group =
-   *   await client.admin.organization.groups.retrieve(
-   *     'group_id',
-   *   );
-   * ```
-   */
-  retrieve(groupID, options) {
-    return this._client.get(path`/organization/groups/${groupID}`, {
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Updates a group's information.
-   *
-   * @example
-   * ```ts
-   * const group = await client.admin.organization.groups.update(
-   *   'group_id',
-   *   { name: 'x' },
-   * );
-   * ```
-   */
-  update(groupID, body, options) {
-    return this._client.post(path`/organization/groups/${groupID}`, {
-      body,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Lists all groups in the organization.
-   *
-   * @example
-   * ```ts
-   * // Automatically fetches more pages as needed.
-   * for await (const group of client.admin.organization.groups.list()) {
-   *   // ...
-   * }
-   * ```
-   */
-  list(query = {}, options) {
-    return this._client.getAPIList("/organization/groups", NextCursorPage, {
-      query,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Deletes a group from the organization.
-   *
-   * @example
-   * ```ts
-   * const group = await client.admin.organization.groups.delete(
-   *   'group_id',
-   * );
-   * ```
-   */
-  delete(groupID, options) {
-    return this._client.delete(path`/organization/groups/${groupID}`, {
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-};
-Groups.Users = Users;
-Groups.Roles = Roles2;
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/projects/api-keys.mjs
-var APIKeys = class extends APIResource {
-  /**
-   * Retrieves an API key in the project.
-   *
-   * @example
-   * ```ts
-   * const projectAPIKey =
-   *   await client.admin.organization.projects.apiKeys.retrieve(
-   *     'api_key_id',
-   *     { project_id: 'project_id' },
-   *   );
-   * ```
-   */
-  retrieve(apiKeyID, params, options) {
-    const { project_id } = params;
-    return this._client.get(path`/organization/projects/${project_id}/api_keys/${apiKeyID}`, {
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Returns a list of API keys in the project.
-   *
-   * @example
-   * ```ts
-   * // Automatically fetches more pages as needed.
-   * for await (const projectAPIKey of client.admin.organization.projects.apiKeys.list(
-   *   'project_id',
-   * )) {
-   *   // ...
-   * }
-   * ```
-   */
-  list(projectID, query = {}, options) {
-    return this._client.getAPIList(path`/organization/projects/${projectID}/api_keys`, ConversationCursorPage, { query, ...options, __security: { adminAPIKeyAuth: true } });
-  }
-  /**
-   * Deletes an API key from the project.
-   *
-   * Returns confirmation of the key deletion, or an error if the key belonged to a
-   * service account.
-   *
-   * @example
-   * ```ts
-   * const apiKey =
-   *   await client.admin.organization.projects.apiKeys.delete(
-   *     'api_key_id',
-   *     { project_id: 'project_id' },
-   *   );
-   * ```
-   */
-  delete(apiKeyID, params, options) {
-    const { project_id } = params;
-    return this._client.delete(path`/organization/projects/${project_id}/api_keys/${apiKeyID}`, {
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/projects/certificates.mjs
-var Certificates2 = class extends APIResource {
-  /**
-   * List certificates for this project.
-   *
-   * @example
-   * ```ts
-   * // Automatically fetches more pages as needed.
-   * for await (const certificateListResponse of client.admin.organization.projects.certificates.list(
-   *   'project_id',
-   * )) {
-   *   // ...
-   * }
-   * ```
-   */
-  list(projectID, query = {}, options) {
-    return this._client.getAPIList(path`/organization/projects/${projectID}/certificates`, ConversationCursorPage, { query, ...options, __security: { adminAPIKeyAuth: true } });
-  }
-  /**
-   * Activate certificates at the project level.
-   *
-   * You can atomically and idempotently activate up to 10 certificates at a time.
-   *
-   * @example
-   * ```ts
-   * // Automatically fetches more pages as needed.
-   * for await (const certificateActivateResponse of client.admin.organization.projects.certificates.activate(
-   *   'project_id',
-   *   { certificate_ids: ['cert_abc'] },
-   * )) {
-   *   // ...
-   * }
-   * ```
-   */
-  activate(projectID, body, options) {
-    return this._client.getAPIList(path`/organization/projects/${projectID}/certificates/activate`, Page, { body, method: "post", ...options, __security: { adminAPIKeyAuth: true } });
-  }
-  /**
-   * Deactivate certificates at the project level. You can atomically and
-   * idempotently deactivate up to 10 certificates at a time.
-   *
-   * @example
-   * ```ts
-   * // Automatically fetches more pages as needed.
-   * for await (const certificateDeactivateResponse of client.admin.organization.projects.certificates.deactivate(
-   *   'project_id',
-   *   { certificate_ids: ['cert_abc'] },
-   * )) {
-   *   // ...
-   * }
-   * ```
-   */
-  deactivate(projectID, body, options) {
-    return this._client.getAPIList(path`/organization/projects/${projectID}/certificates/deactivate`, Page, { body, method: "post", ...options, __security: { adminAPIKeyAuth: true } });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/projects/data-retention.mjs
-var DataRetention2 = class extends APIResource {
-  /**
-   * Retrieves project data retention controls.
-   *
-   * @example
-   * ```ts
-   * const projectDataRetention =
-   *   await client.admin.organization.projects.dataRetention.retrieve(
-   *     'project_id',
-   *   );
-   * ```
-   */
-  retrieve(projectID, options) {
-    return this._client.get(path`/organization/projects/${projectID}/data_retention`, {
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Updates project data retention controls.
-   *
-   * @example
-   * ```ts
-   * const projectDataRetention =
-   *   await client.admin.organization.projects.dataRetention.update(
-   *     'project_id',
-   *     { retention_type: 'organization_default' },
-   *   );
-   * ```
-   */
-  update(projectID, body, options) {
-    return this._client.post(path`/organization/projects/${projectID}/data_retention`, {
-      body,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/projects/hosted-tool-permissions.mjs
-var HostedToolPermissions = class extends APIResource {
-  /**
-   * Returns hosted tool permissions for a project.
-   *
-   * @example
-   * ```ts
-   * const projectHostedToolPermissions =
-   *   await client.admin.organization.projects.hostedToolPermissions.retrieve(
-   *     'project_id',
-   *   );
-   * ```
-   */
-  retrieve(projectID, options) {
-    return this._client.get(path`/organization/projects/${projectID}/hosted_tool_permissions`, {
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Updates hosted tool permissions for a project.
-   *
-   * @example
-   * ```ts
-   * const projectHostedToolPermissions =
-   *   await client.admin.organization.projects.hostedToolPermissions.update(
-   *     'project_id',
-   *   );
-   * ```
-   */
-  update(projectID, body, options) {
-    return this._client.post(path`/organization/projects/${projectID}/hosted_tool_permissions`, {
-      body,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/projects/model-permissions.mjs
-var ModelPermissions = class extends APIResource {
-  /**
-   * Returns model permissions for a project.
-   *
-   * @example
-   * ```ts
-   * const projectModelPermissions =
-   *   await client.admin.organization.projects.modelPermissions.retrieve(
-   *     'project_id',
-   *   );
-   * ```
-   */
-  retrieve(projectID, options) {
-    return this._client.get(path`/organization/projects/${projectID}/model_permissions`, {
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Updates model permissions for a project.
-   *
-   * @example
-   * ```ts
-   * const projectModelPermissions =
-   *   await client.admin.organization.projects.modelPermissions.update(
-   *     'project_id',
-   *     { mode: 'allow_list', model_ids: ['string'] },
-   *   );
-   * ```
-   */
-  update(projectID, body, options) {
-    return this._client.post(path`/organization/projects/${projectID}/model_permissions`, {
-      body,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Deletes model permissions for a project.
-   *
-   * @example
-   * ```ts
-   * const projectModelPermissionsDeleted =
-   *   await client.admin.organization.projects.modelPermissions.delete(
-   *     'project_id',
-   *   );
-   * ```
-   */
-  delete(projectID, options) {
-    return this._client.delete(path`/organization/projects/${projectID}/model_permissions`, {
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/projects/rate-limits.mjs
-var RateLimits = class extends APIResource {
-  /**
-   * Returns the rate limits per model for a project.
-   *
-   * @example
-   * ```ts
-   * // Automatically fetches more pages as needed.
-   * for await (const projectRateLimit of client.admin.organization.projects.rateLimits.listRateLimits(
-   *   'project_id',
-   * )) {
-   *   // ...
-   * }
-   * ```
-   */
-  listRateLimits(projectID, query = {}, options) {
-    return this._client.getAPIList(path`/organization/projects/${projectID}/rate_limits`, ConversationCursorPage, { query, ...options, __security: { adminAPIKeyAuth: true } });
-  }
-  /**
-   * Updates a project rate limit.
-   *
-   * @example
-   * ```ts
-   * const projectRateLimit =
-   *   await client.admin.organization.projects.rateLimits.updateRateLimit(
-   *     'rate_limit_id',
-   *     { project_id: 'project_id' },
-   *   );
-   * ```
-   */
-  updateRateLimit(rateLimitID, params, options) {
-    const { project_id, ...body } = params;
-    return this._client.post(path`/organization/projects/${project_id}/rate_limits/${rateLimitID}`, {
-      body,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/projects/roles.mjs
-var Roles3 = class extends APIResource {
-  /**
-   * Creates a custom role for a project.
-   *
-   * @example
-   * ```ts
-   * const role =
-   *   await client.admin.organization.projects.roles.create(
-   *     'project_id',
-   *     { permissions: ['string'], role_name: 'role_name' },
-   *   );
-   * ```
-   */
-  create(projectID, body, options) {
-    return this._client.post(path`/projects/${projectID}/roles`, {
-      body,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Retrieves a project role.
-   *
-   * @example
-   * ```ts
-   * const role =
-   *   await client.admin.organization.projects.roles.retrieve(
-   *     'role_id',
-   *     { project_id: 'project_id' },
-   *   );
-   * ```
-   */
-  retrieve(roleID, params, options) {
-    const { project_id } = params;
-    return this._client.get(path`/projects/${project_id}/roles/${roleID}`, {
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Updates an existing project role.
-   *
-   * @example
-   * ```ts
-   * const role =
-   *   await client.admin.organization.projects.roles.update(
-   *     'role_id',
-   *     { project_id: 'project_id' },
-   *   );
-   * ```
-   */
-  update(roleID, params, options) {
-    const { project_id, ...body } = params;
-    return this._client.post(path`/projects/${project_id}/roles/${roleID}`, {
-      body,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Lists the roles configured for a project.
-   *
-   * @example
-   * ```ts
-   * // Automatically fetches more pages as needed.
-   * for await (const role of client.admin.organization.projects.roles.list(
-   *   'project_id',
-   * )) {
-   *   // ...
-   * }
-   * ```
-   */
-  list(projectID, query = {}, options) {
-    return this._client.getAPIList(path`/projects/${projectID}/roles`, NextCursorPage, {
-      query,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Deletes a custom role from a project.
-   *
-   * @example
-   * ```ts
-   * const role =
-   *   await client.admin.organization.projects.roles.delete(
-   *     'role_id',
-   *     { project_id: 'project_id' },
-   *   );
-   * ```
-   */
-  delete(roleID, params, options) {
-    const { project_id } = params;
-    return this._client.delete(path`/projects/${project_id}/roles/${roleID}`, {
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/projects/service-accounts.mjs
-var ServiceAccounts = class extends APIResource {
-  /**
-   * Creates a new service account in the project. This also returns an unredacted
-   * API key for the service account.
-   *
-   * @example
-   * ```ts
-   * const serviceAccount =
-   *   await client.admin.organization.projects.serviceAccounts.create(
-   *     'project_id',
-   *     { name: 'name' },
-   *   );
-   * ```
-   */
-  create(projectID, body, options) {
-    return this._client.post(path`/organization/projects/${projectID}/service_accounts`, {
-      body,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Retrieves a service account in the project.
-   *
-   * @example
-   * ```ts
-   * const projectServiceAccount =
-   *   await client.admin.organization.projects.serviceAccounts.retrieve(
-   *     'service_account_id',
-   *     { project_id: 'project_id' },
-   *   );
-   * ```
-   */
-  retrieve(serviceAccountID, params, options) {
-    const { project_id } = params;
-    return this._client.get(path`/organization/projects/${project_id}/service_accounts/${serviceAccountID}`, {
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Updates a service account in the project.
-   *
-   * @example
-   * ```ts
-   * const projectServiceAccount =
-   *   await client.admin.organization.projects.serviceAccounts.update(
-   *     'service_account_id',
-   *     { project_id: 'project_id' },
-   *   );
-   * ```
-   */
-  update(serviceAccountID, params, options) {
-    const { project_id, ...body } = params;
-    return this._client.post(path`/organization/projects/${project_id}/service_accounts/${serviceAccountID}`, { body, ...options, __security: { adminAPIKeyAuth: true } });
-  }
-  /**
-   * Returns a list of service accounts in the project.
-   *
-   * @example
-   * ```ts
-   * // Automatically fetches more pages as needed.
-   * for await (const projectServiceAccount of client.admin.organization.projects.serviceAccounts.list(
-   *   'project_id',
-   * )) {
-   *   // ...
-   * }
-   * ```
-   */
-  list(projectID, query = {}, options) {
-    return this._client.getAPIList(path`/organization/projects/${projectID}/service_accounts`, ConversationCursorPage, { query, ...options, __security: { adminAPIKeyAuth: true } });
-  }
-  /**
-   * Deletes a service account from the project.
-   *
-   * Returns confirmation of service account deletion, or an error if the project is
-   * archived (archived projects have no service accounts).
-   *
-   * @example
-   * ```ts
-   * const serviceAccount =
-   *   await client.admin.organization.projects.serviceAccounts.delete(
-   *     'service_account_id',
-   *     { project_id: 'project_id' },
-   *   );
-   * ```
-   */
-  delete(serviceAccountID, params, options) {
-    const { project_id } = params;
-    return this._client.delete(path`/organization/projects/${project_id}/service_accounts/${serviceAccountID}`, { ...options, __security: { adminAPIKeyAuth: true } });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/projects/spend-alerts.mjs
-var SpendAlerts2 = class extends APIResource {
-  /**
-   * Creates a project spend alert.
-   *
-   * @example
-   * ```ts
-   * const projectSpendAlert =
-   *   await client.admin.organization.projects.spendAlerts.create(
-   *     'project_id',
-   *     {
-   *       currency: 'USD',
-   *       interval: 'month',
-   *       notification_channel: {
-   *         recipients: ['string'],
-   *         type: 'email',
-   *       },
-   *       threshold_amount: 0,
-   *     },
-   *   );
-   * ```
-   */
-  create(projectID, body, options) {
-    return this._client.post(path`/organization/projects/${projectID}/spend_alerts`, {
-      body,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Updates a project spend alert.
-   *
-   * @example
-   * ```ts
-   * const projectSpendAlert =
-   *   await client.admin.organization.projects.spendAlerts.update(
-   *     'alert_id',
-   *     {
-   *       project_id: 'project_id',
-   *       currency: 'USD',
-   *       interval: 'month',
-   *       notification_channel: {
-   *         recipients: ['string'],
-   *         type: 'email',
-   *       },
-   *       threshold_amount: 0,
-   *     },
-   *   );
-   * ```
-   */
-  update(alertID, params, options) {
-    const { project_id, ...body } = params;
-    return this._client.post(path`/organization/projects/${project_id}/spend_alerts/${alertID}`, {
-      body,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Lists project spend alerts.
-   *
-   * @example
-   * ```ts
-   * // Automatically fetches more pages as needed.
-   * for await (const projectSpendAlert of client.admin.organization.projects.spendAlerts.list(
-   *   'project_id',
-   * )) {
-   *   // ...
-   * }
-   * ```
-   */
-  list(projectID, query = {}, options) {
-    return this._client.getAPIList(path`/organization/projects/${projectID}/spend_alerts`, ConversationCursorPage, { query, ...options, __security: { adminAPIKeyAuth: true } });
-  }
-  /**
-   * Deletes a project spend alert.
-   *
-   * @example
-   * ```ts
-   * const projectSpendAlertDeleted =
-   *   await client.admin.organization.projects.spendAlerts.delete(
-   *     'alert_id',
-   *     { project_id: 'project_id' },
-   *   );
-   * ```
-   */
-  delete(alertID, params, options) {
-    const { project_id } = params;
-    return this._client.delete(path`/organization/projects/${project_id}/spend_alerts/${alertID}`, {
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/projects/groups/roles.mjs
-var Roles4 = class extends APIResource {
-  /**
-   * Assigns a project role to a group within a project.
-   *
-   * @example
-   * ```ts
-   * const role =
-   *   await client.admin.organization.projects.groups.roles.create(
-   *     'group_id',
-   *     { project_id: 'project_id', role_id: 'role_id' },
-   *   );
-   * ```
-   */
-  create(groupID, params, options) {
-    const { project_id, ...body } = params;
-    return this._client.post(path`/projects/${project_id}/groups/${groupID}/roles`, {
-      body,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Retrieves a project role assigned to a group.
-   *
-   * @example
-   * ```ts
-   * const role =
-   *   await client.admin.organization.projects.groups.roles.retrieve(
-   *     'role_id',
-   *     { project_id: 'project_id', group_id: 'group_id' },
-   *   );
-   * ```
-   */
-  retrieve(roleID, params, options) {
-    const { project_id, group_id } = params;
-    return this._client.get(path`/projects/${project_id}/groups/${group_id}/roles/${roleID}`, {
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Lists the project roles assigned to a group within a project.
-   *
-   * @example
-   * ```ts
-   * // Automatically fetches more pages as needed.
-   * for await (const roleListResponse of client.admin.organization.projects.groups.roles.list(
-   *   'group_id',
-   *   { project_id: 'project_id' },
-   * )) {
-   *   // ...
-   * }
-   * ```
-   */
-  list(groupID, params, options) {
-    const { project_id, ...query } = params;
-    return this._client.getAPIList(path`/projects/${project_id}/groups/${groupID}/roles`, NextCursorPage, { query, ...options, __security: { adminAPIKeyAuth: true } });
-  }
-  /**
-   * Unassigns a project role from a group within a project.
-   *
-   * @example
-   * ```ts
-   * const role =
-   *   await client.admin.organization.projects.groups.roles.delete(
-   *     'role_id',
-   *     { project_id: 'project_id', group_id: 'group_id' },
-   *   );
-   * ```
-   */
-  delete(roleID, params, options) {
-    const { project_id, group_id } = params;
-    return this._client.delete(path`/projects/${project_id}/groups/${group_id}/roles/${roleID}`, {
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/projects/groups/groups.mjs
-var Groups2 = class extends APIResource {
-  constructor() {
-    super(...arguments);
-    this.roles = new Roles4(this._client);
-  }
-  /**
-   * Grants a group access to a project.
-   *
-   * @example
-   * ```ts
-   * const projectGroup =
-   *   await client.admin.organization.projects.groups.create(
-   *     'project_id',
-   *     { group_id: 'group_id', role: 'role' },
-   *   );
-   * ```
-   */
-  create(projectID, body, options) {
-    return this._client.post(path`/organization/projects/${projectID}/groups`, {
-      body,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Retrieves a project's group.
-   *
-   * @example
-   * ```ts
-   * const projectGroup =
-   *   await client.admin.organization.projects.groups.retrieve(
-   *     'group_id',
-   *     { project_id: 'project_id' },
-   *   );
-   * ```
-   */
-  retrieve(groupID, params, options) {
-    const { project_id, ...query } = params;
-    return this._client.get(path`/organization/projects/${project_id}/groups/${groupID}`, {
-      query,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Lists the groups that have access to a project.
-   *
-   * @example
-   * ```ts
-   * // Automatically fetches more pages as needed.
-   * for await (const projectGroup of client.admin.organization.projects.groups.list(
-   *   'project_id',
-   * )) {
-   *   // ...
-   * }
-   * ```
-   */
-  list(projectID, query = {}, options) {
-    return this._client.getAPIList(path`/organization/projects/${projectID}/groups`, NextCursorPage, { query, ...options, __security: { adminAPIKeyAuth: true } });
-  }
-  /**
-   * Revokes a group's access to a project.
-   *
-   * @example
-   * ```ts
-   * const group =
-   *   await client.admin.organization.projects.groups.delete(
-   *     'group_id',
-   *     { project_id: 'project_id' },
-   *   );
-   * ```
-   */
-  delete(groupID, params, options) {
-    const { project_id } = params;
-    return this._client.delete(path`/organization/projects/${project_id}/groups/${groupID}`, {
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-};
-Groups2.Roles = Roles4;
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/projects/users/roles.mjs
-var Roles5 = class extends APIResource {
-  /**
-   * Assigns a project role to a user within a project.
-   *
-   * @example
-   * ```ts
-   * const role =
-   *   await client.admin.organization.projects.users.roles.create(
-   *     'user_id',
-   *     { project_id: 'project_id', role_id: 'role_id' },
-   *   );
-   * ```
-   */
-  create(userID, params, options) {
-    const { project_id, ...body } = params;
-    return this._client.post(path`/projects/${project_id}/users/${userID}/roles`, {
-      body,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Retrieves a project role assigned to a user.
-   *
-   * @example
-   * ```ts
-   * const role =
-   *   await client.admin.organization.projects.users.roles.retrieve(
-   *     'role_id',
-   *     { project_id: 'project_id', user_id: 'user_id' },
-   *   );
-   * ```
-   */
-  retrieve(roleID, params, options) {
-    const { project_id, user_id } = params;
-    return this._client.get(path`/projects/${project_id}/users/${user_id}/roles/${roleID}`, {
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Lists the project roles assigned to a user within a project.
-   *
-   * @example
-   * ```ts
-   * // Automatically fetches more pages as needed.
-   * for await (const roleListResponse of client.admin.organization.projects.users.roles.list(
-   *   'user_id',
-   *   { project_id: 'project_id' },
-   * )) {
-   *   // ...
-   * }
-   * ```
-   */
-  list(userID, params, options) {
-    const { project_id, ...query } = params;
-    return this._client.getAPIList(path`/projects/${project_id}/users/${userID}/roles`, NextCursorPage, { query, ...options, __security: { adminAPIKeyAuth: true } });
-  }
-  /**
-   * Unassigns a project role from a user within a project.
-   *
-   * @example
-   * ```ts
-   * const role =
-   *   await client.admin.organization.projects.users.roles.delete(
-   *     'role_id',
-   *     { project_id: 'project_id', user_id: 'user_id' },
-   *   );
-   * ```
-   */
-  delete(roleID, params, options) {
-    const { project_id, user_id } = params;
-    return this._client.delete(path`/projects/${project_id}/users/${user_id}/roles/${roleID}`, {
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/projects/users/users.mjs
-var Users2 = class extends APIResource {
-  constructor() {
-    super(...arguments);
-    this.roles = new Roles5(this._client);
-  }
-  /**
-   * Adds a user to the project. Users must already be members of the organization to
-   * be added to a project.
-   *
-   * @example
-   * ```ts
-   * const projectUser =
-   *   await client.admin.organization.projects.users.create(
-   *     'project_id',
-   *     { role: 'role' },
-   *   );
-   * ```
-   */
-  create(projectID, body, options) {
-    return this._client.post(path`/organization/projects/${projectID}/users`, {
-      body,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Retrieves a user in the project.
-   *
-   * @example
-   * ```ts
-   * const projectUser =
-   *   await client.admin.organization.projects.users.retrieve(
-   *     'user_id',
-   *     { project_id: 'project_id' },
-   *   );
-   * ```
-   */
-  retrieve(userID, params, options) {
-    const { project_id } = params;
-    return this._client.get(path`/organization/projects/${project_id}/users/${userID}`, {
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Modifies a user's role in the project.
-   *
-   * @example
-   * ```ts
-   * const projectUser =
-   *   await client.admin.organization.projects.users.update(
-   *     'user_id',
-   *     { project_id: 'project_id' },
-   *   );
-   * ```
-   */
-  update(userID, params, options) {
-    const { project_id, ...body } = params;
-    return this._client.post(path`/organization/projects/${project_id}/users/${userID}`, {
-      body,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Returns a list of users in the project.
-   *
-   * @example
-   * ```ts
-   * // Automatically fetches more pages as needed.
-   * for await (const projectUser of client.admin.organization.projects.users.list(
-   *   'project_id',
-   * )) {
-   *   // ...
-   * }
-   * ```
-   */
-  list(projectID, query = {}, options) {
-    return this._client.getAPIList(path`/organization/projects/${projectID}/users`, ConversationCursorPage, { query, ...options, __security: { adminAPIKeyAuth: true } });
-  }
-  /**
-   * Deletes a user from the project.
-   *
-   * Returns confirmation of project user deletion, or an error if the project is
-   * archived (archived projects have no users).
-   *
-   * @example
-   * ```ts
-   * const user =
-   *   await client.admin.organization.projects.users.delete(
-   *     'user_id',
-   *     { project_id: 'project_id' },
-   *   );
-   * ```
-   */
-  delete(userID, params, options) {
-    const { project_id } = params;
-    return this._client.delete(path`/organization/projects/${project_id}/users/${userID}`, {
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-};
-Users2.Roles = Roles5;
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/projects/projects.mjs
-var Projects = class extends APIResource {
-  constructor() {
-    super(...arguments);
-    this.users = new Users2(this._client);
-    this.serviceAccounts = new ServiceAccounts(this._client);
-    this.apiKeys = new APIKeys(this._client);
-    this.rateLimits = new RateLimits(this._client);
-    this.modelPermissions = new ModelPermissions(this._client);
-    this.hostedToolPermissions = new HostedToolPermissions(this._client);
-    this.groups = new Groups2(this._client);
-    this.roles = new Roles3(this._client);
-    this.dataRetention = new DataRetention2(this._client);
-    this.spendAlerts = new SpendAlerts2(this._client);
-    this.certificates = new Certificates2(this._client);
-  }
-  /**
-   * Create a new project in the organization. Projects can be created and archived,
-   * but cannot be deleted.
-   *
-   * @example
-   * ```ts
-   * const project =
-   *   await client.admin.organization.projects.create({
-   *     name: 'name',
-   *   });
-   * ```
-   */
-  create(body, options) {
-    return this._client.post("/organization/projects", {
-      body,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Retrieves a project.
-   *
-   * @example
-   * ```ts
-   * const project =
-   *   await client.admin.organization.projects.retrieve(
-   *     'project_id',
-   *   );
-   * ```
-   */
-  retrieve(projectID, options) {
-    return this._client.get(path`/organization/projects/${projectID}`, {
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Modifies a project in the organization.
-   *
-   * @example
-   * ```ts
-   * const project =
-   *   await client.admin.organization.projects.update(
-   *     'project_id',
-   *   );
-   * ```
-   */
-  update(projectID, body, options) {
-    return this._client.post(path`/organization/projects/${projectID}`, {
-      body,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Returns a list of projects.
-   *
-   * @example
-   * ```ts
-   * // Automatically fetches more pages as needed.
-   * for await (const project of client.admin.organization.projects.list()) {
-   *   // ...
-   * }
-   * ```
-   */
-  list(query = {}, options) {
-    return this._client.getAPIList("/organization/projects", ConversationCursorPage, {
-      query,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Archives a project in the organization. Archived projects cannot be used or
-   * updated.
-   *
-   * @example
-   * ```ts
-   * const project =
-   *   await client.admin.organization.projects.archive(
-   *     'project_id',
-   *   );
-   * ```
-   */
-  archive(projectID, options) {
-    return this._client.post(path`/organization/projects/${projectID}/archive`, {
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-};
-Projects.Users = Users2;
-Projects.ServiceAccounts = ServiceAccounts;
-Projects.APIKeys = APIKeys;
-Projects.RateLimits = RateLimits;
-Projects.ModelPermissions = ModelPermissions;
-Projects.HostedToolPermissions = HostedToolPermissions;
-Projects.Groups = Groups2;
-Projects.Roles = Roles3;
-Projects.DataRetention = DataRetention2;
-Projects.SpendAlerts = SpendAlerts2;
-Projects.Certificates = Certificates2;
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/users/roles.mjs
-var Roles6 = class extends APIResource {
-  /**
-   * Assigns an organization role to a user within the organization.
-   *
-   * @example
-   * ```ts
-   * const role =
-   *   await client.admin.organization.users.roles.create(
-   *     'user_id',
-   *     { role_id: 'role_id' },
-   *   );
-   * ```
-   */
-  create(userID, body, options) {
-    return this._client.post(path`/organization/users/${userID}/roles`, {
-      body,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Retrieves an organization role assigned to a user.
-   *
-   * @example
-   * ```ts
-   * const role =
-   *   await client.admin.organization.users.roles.retrieve(
-   *     'role_id',
-   *     { user_id: 'user_id' },
-   *   );
-   * ```
-   */
-  retrieve(roleID, params, options) {
-    const { user_id } = params;
-    return this._client.get(path`/organization/users/${user_id}/roles/${roleID}`, {
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Lists the organization roles assigned to a user within the organization.
-   *
-   * @example
-   * ```ts
-   * // Automatically fetches more pages as needed.
-   * for await (const roleListResponse of client.admin.organization.users.roles.list(
-   *   'user_id',
-   * )) {
-   *   // ...
-   * }
-   * ```
-   */
-  list(userID, query = {}, options) {
-    return this._client.getAPIList(path`/organization/users/${userID}/roles`, NextCursorPage, { query, ...options, __security: { adminAPIKeyAuth: true } });
-  }
-  /**
-   * Unassigns an organization role from a user within the organization.
-   *
-   * @example
-   * ```ts
-   * const role =
-   *   await client.admin.organization.users.roles.delete(
-   *     'role_id',
-   *     { user_id: 'user_id' },
-   *   );
-   * ```
-   */
-  delete(roleID, params, options) {
-    const { user_id } = params;
-    return this._client.delete(path`/organization/users/${user_id}/roles/${roleID}`, {
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/users/users.mjs
-var Users3 = class extends APIResource {
-  constructor() {
-    super(...arguments);
-    this.roles = new Roles6(this._client);
-  }
-  /**
-   * Retrieves a user by their identifier.
-   *
-   * @example
-   * ```ts
-   * const organizationUser =
-   *   await client.admin.organization.users.retrieve('user_id');
-   * ```
-   */
-  retrieve(userID, options) {
-    return this._client.get(path`/organization/users/${userID}`, {
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Modifies a user's role in the organization.
-   *
-   * @example
-   * ```ts
-   * const organizationUser =
-   *   await client.admin.organization.users.update('user_id');
-   * ```
-   */
-  update(userID, body, options) {
-    return this._client.post(path`/organization/users/${userID}`, {
-      body,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Lists all of the users in the organization.
-   *
-   * @example
-   * ```ts
-   * // Automatically fetches more pages as needed.
-   * for await (const organizationUser of client.admin.organization.users.list()) {
-   *   // ...
-   * }
-   * ```
-   */
-  list(query = {}, options) {
-    return this._client.getAPIList("/organization/users", ConversationCursorPage, {
-      query,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * Deletes a user from the organization.
-   *
-   * @example
-   * ```ts
-   * const user = await client.admin.organization.users.delete(
-   *   'user_id',
-   * );
-   * ```
-   */
-  delete(userID, options) {
-    return this._client.delete(path`/organization/users/${userID}`, {
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-};
-Users3.Roles = Roles6;
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/organization/organization.mjs
-var Organization2 = class extends APIResource {
-  constructor() {
-    super(...arguments);
-    this.auditLogs = new AuditLogs(this._client);
-    this.adminAPIKeys = new AdminAPIKeys(this._client);
-    this.usage = new Usage(this._client);
-    this.invites = new Invites(this._client);
-    this.users = new Users3(this._client);
-    this.groups = new Groups(this._client);
-    this.roles = new Roles(this._client);
-    this.dataRetention = new DataRetention(this._client);
-    this.spendAlerts = new SpendAlerts(this._client);
-    this.certificates = new Certificates(this._client);
-    this.projects = new Projects(this._client);
-  }
-};
-Organization2.AuditLogs = AuditLogs;
-Organization2.AdminAPIKeys = AdminAPIKeys;
-Organization2.Usage = Usage;
-Organization2.Invites = Invites;
-Organization2.Users = Users3;
-Organization2.Groups = Groups;
-Organization2.Roles = Roles;
-Organization2.DataRetention = DataRetention;
-Organization2.SpendAlerts = SpendAlerts;
-Organization2.Certificates = Certificates;
-Organization2.Projects = Projects;
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/admin/admin.mjs
-var Admin = class extends APIResource {
-  constructor() {
-    super(...arguments);
-    this.organization = new Organization2(this._client);
-  }
-};
-Admin.Organization = Organization2;
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/headers.mjs
-var brand_privateNullableHeaders = /* @__PURE__ */ Symbol("brand.privateNullableHeaders");
-function* iterateHeaders(headers) {
-  if (!headers)
-    return;
-  if (brand_privateNullableHeaders in headers) {
-    const { values, nulls } = headers;
-    yield* values.entries();
-    for (const name of nulls) {
-      yield [name, null];
-    }
-    return;
-  }
-  let shouldClear = false;
-  let iter;
-  if (headers instanceof Headers) {
-    iter = headers.entries();
-  } else if (isReadonlyArray(headers)) {
-    iter = headers;
-  } else {
-    shouldClear = true;
-    iter = Object.entries(headers ?? {});
-  }
-  for (let row of iter) {
-    const name = row[0];
-    if (typeof name !== "string")
-      throw new TypeError("expected header name to be a string");
-    const values = isReadonlyArray(row[1]) ? row[1] : [row[1]];
-    let didClear = false;
-    for (const value of values) {
-      if (value === void 0)
-        continue;
-      if (shouldClear && !didClear) {
-        didClear = true;
-        yield [name, null];
-      }
-      yield [name, value];
-    }
-  }
-}
-var buildHeaders = (newHeaders) => {
-  const targetHeaders = new Headers();
-  const nullHeaders = /* @__PURE__ */ new Set();
-  for (const headers of newHeaders) {
-    const seenHeaders = /* @__PURE__ */ new Set();
-    for (const [name, value] of iterateHeaders(headers)) {
-      const lowerName = name.toLowerCase();
-      if (!seenHeaders.has(lowerName)) {
-        targetHeaders.delete(name);
-        seenHeaders.add(lowerName);
-      }
-      if (value === null) {
-        targetHeaders.delete(name);
-        nullHeaders.add(lowerName);
-      } else {
-        targetHeaders.append(name, value);
-        nullHeaders.delete(lowerName);
-      }
-    }
-  }
-  return { [brand_privateNullableHeaders]: true, values: targetHeaders, nulls: nullHeaders };
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/audio/speech.mjs
-var Speech = class extends APIResource {
-  /**
-   * Generates audio from the input text.
-   *
-   * Returns the audio file content, or a stream of audio events.
-   *
-   * @example
-   * ```ts
-   * const speech = await client.audio.speech.create({
-   *   input: 'input',
-   *   model: 'tts-1',
-   *   voice: 'alloy',
-   * });
-   *
-   * const content = await speech.blob();
-   * console.log(content);
-   * ```
-   */
-  create(body, options) {
-    return this._client.post("/audio/speech", {
-      body,
-      ...options,
-      headers: buildHeaders([{ Accept: "application/octet-stream" }, options?.headers]),
-      __security: { bearerAuth: true },
-      __binaryResponse: true
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/audio/transcriptions.mjs
-var Transcriptions = class extends APIResource {
-  create(body, options) {
-    return this._client.post("/audio/transcriptions", multipartFormRequestOptions({
-      body,
-      ...options,
-      stream: body.stream ?? false,
-      __metadata: { model: body.model },
-      __security: { bearerAuth: true }
-    }, this._client));
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/audio/translations.mjs
-var Translations = class extends APIResource {
-  create(body, options) {
-    return this._client.post("/audio/translations", multipartFormRequestOptions({ body, ...options, __metadata: { model: body.model }, __security: { bearerAuth: true } }, this._client));
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/audio/audio.mjs
-var Audio = class extends APIResource {
-  constructor() {
-    super(...arguments);
-    this.transcriptions = new Transcriptions(this._client);
-    this.translations = new Translations(this._client);
-    this.speech = new Speech(this._client);
-  }
-};
-Audio.Transcriptions = Transcriptions;
-Audio.Translations = Translations;
-Audio.Speech = Speech;
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/batches.mjs
-var Batches = class extends APIResource {
-  /**
-   * Creates and executes a batch from an uploaded file of requests
-   */
-  create(body, options) {
-    return this._client.post("/batches", { body, ...options, __security: { bearerAuth: true } });
-  }
-  /**
-   * Retrieves a batch.
-   */
-  retrieve(batchID, options) {
-    return this._client.get(path`/batches/${batchID}`, { ...options, __security: { bearerAuth: true } });
-  }
-  /**
-   * List your organization's batches.
-   */
-  list(query = {}, options) {
-    return this._client.getAPIList("/batches", CursorPage, {
-      query,
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Cancels an in-progress batch. The batch will be in status `cancelling` for up to
-   * 10 minutes, before changing to `cancelled`, where it will have partial results
-   * (if any) available in the output file.
-   */
-  cancel(batchID, options) {
-    return this._client.post(path`/batches/${batchID}/cancel`, {
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/beta/assistants.mjs
-var Assistants = class extends APIResource {
-  /**
-   * Create an assistant with a model and instructions.
-   *
-   * @deprecated
-   */
-  create(body, options) {
-    return this._client.post("/assistants", {
-      body,
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Retrieves an assistant.
-   *
-   * @deprecated
-   */
-  retrieve(assistantID, options) {
-    return this._client.get(path`/assistants/${assistantID}`, {
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Modifies an assistant.
-   *
-   * @deprecated
-   */
-  update(assistantID, body, options) {
-    return this._client.post(path`/assistants/${assistantID}`, {
-      body,
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Returns a list of assistants.
-   *
-   * @deprecated
-   */
-  list(query = {}, options) {
-    return this._client.getAPIList("/assistants", CursorPage, {
-      query,
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Delete an assistant.
-   *
-   * @deprecated
-   */
-  delete(assistantID, options) {
-    return this._client.delete(path`/assistants/${assistantID}`, {
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/beta/realtime/sessions.mjs
-var Sessions = class extends APIResource {
-  /**
-   * Create an ephemeral API token for use in client-side applications with the
-   * Realtime API. Can be configured with the same session parameters as the
-   * `session.update` client event.
-   *
-   * It responds with a session object, plus a `client_secret` key which contains a
-   * usable ephemeral API token that can be used to authenticate browser clients for
-   * the Realtime API.
-   *
-   * @example
-   * ```ts
-   * const session =
-   *   await client.beta.realtime.sessions.create();
-   * ```
-   */
-  create(body, options) {
-    return this._client.post("/realtime/sessions", {
-      body,
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/beta/realtime/transcription-sessions.mjs
-var TranscriptionSessions = class extends APIResource {
-  /**
-   * Create an ephemeral API token for use in client-side applications with the
-   * Realtime API specifically for realtime transcriptions. Can be configured with
-   * the same session parameters as the `transcription_session.update` client event.
-   *
-   * It responds with a session object, plus a `client_secret` key which contains a
-   * usable ephemeral API token that can be used to authenticate browser clients for
-   * the Realtime API.
-   *
-   * @example
-   * ```ts
-   * const transcriptionSession =
-   *   await client.beta.realtime.transcriptionSessions.create();
-   * ```
-   */
-  create(body, options) {
-    return this._client.post("/realtime/transcription_sessions", {
-      body,
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/beta/realtime/realtime.mjs
-var Realtime = class extends APIResource {
-  constructor() {
-    super(...arguments);
-    this.sessions = new Sessions(this._client);
-    this.transcriptionSessions = new TranscriptionSessions(this._client);
-  }
-};
-Realtime.Sessions = Sessions;
-Realtime.TranscriptionSessions = TranscriptionSessions;
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/beta/chatkit/sessions.mjs
-var Sessions2 = class extends APIResource {
-  /**
-   * Create a ChatKit session.
-   *
-   * @example
-   * ```ts
-   * const chatSession =
-   *   await client.beta.chatkit.sessions.create({
-   *     user: 'x',
-   *     workflow: { id: 'id' },
-   *   });
-   * ```
-   */
-  create(body, options) {
-    return this._client.post("/chatkit/sessions", {
-      body,
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "chatkit_beta=v1" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Cancel an active ChatKit session and return its most recent metadata.
-   *
-   * Cancelling prevents new requests from using the issued client secret.
-   *
-   * @example
-   * ```ts
-   * const chatSession =
-   *   await client.beta.chatkit.sessions.cancel('cksess_123');
-   * ```
-   */
-  cancel(sessionID, options) {
-    return this._client.post(path`/chatkit/sessions/${sessionID}/cancel`, {
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "chatkit_beta=v1" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/beta/chatkit/threads.mjs
-var Threads = class extends APIResource {
-  /**
-   * Retrieve a ChatKit thread by its identifier.
-   *
-   * @example
-   * ```ts
-   * const chatkitThread =
-   *   await client.beta.chatkit.threads.retrieve('cthr_123');
-   * ```
-   */
-  retrieve(threadID, options) {
-    return this._client.get(path`/chatkit/threads/${threadID}`, {
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "chatkit_beta=v1" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * List ChatKit threads with optional pagination and user filters.
-   *
-   * @example
-   * ```ts
-   * // Automatically fetches more pages as needed.
-   * for await (const chatkitThread of client.beta.chatkit.threads.list()) {
-   *   // ...
-   * }
-   * ```
-   */
-  list(query = {}, options) {
-    return this._client.getAPIList("/chatkit/threads", ConversationCursorPage, {
-      query,
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "chatkit_beta=v1" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Delete a ChatKit thread along with its items and stored attachments.
-   *
-   * @example
-   * ```ts
-   * const thread = await client.beta.chatkit.threads.delete(
-   *   'cthr_123',
-   * );
-   * ```
-   */
-  delete(threadID, options) {
-    return this._client.delete(path`/chatkit/threads/${threadID}`, {
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "chatkit_beta=v1" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * List items that belong to a ChatKit thread.
-   *
-   * @example
-   * ```ts
-   * // Automatically fetches more pages as needed.
-   * for await (const thread of client.beta.chatkit.threads.listItems(
-   *   'cthr_123',
-   * )) {
-   *   // ...
-   * }
-   * ```
-   */
-  listItems(threadID, query = {}, options) {
-    return this._client.getAPIList(path`/chatkit/threads/${threadID}/items`, ConversationCursorPage, {
-      query,
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "chatkit_beta=v1" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/beta/chatkit/chatkit.mjs
-var ChatKit = class extends APIResource {
-  constructor() {
-    super(...arguments);
-    this.sessions = new Sessions2(this._client);
-    this.threads = new Threads(this._client);
-  }
-};
-ChatKit.Sessions = Sessions2;
-ChatKit.Threads = Threads;
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/beta/threads/messages.mjs
-var Messages2 = class extends APIResource {
-  /**
-   * Create a message.
-   *
-   * @deprecated The Assistants API is deprecated in favor of the Responses API
-   */
-  create(threadID, body, options) {
-    return this._client.post(path`/threads/${threadID}/messages`, {
-      body,
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Retrieve a message.
-   *
-   * @deprecated The Assistants API is deprecated in favor of the Responses API
-   */
-  retrieve(messageID, params, options) {
-    const { thread_id } = params;
-    return this._client.get(path`/threads/${thread_id}/messages/${messageID}`, {
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Modifies a message.
-   *
-   * @deprecated The Assistants API is deprecated in favor of the Responses API
-   */
-  update(messageID, params, options) {
-    const { thread_id, ...body } = params;
-    return this._client.post(path`/threads/${thread_id}/messages/${messageID}`, {
-      body,
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Returns a list of messages for a given thread.
-   *
-   * @deprecated The Assistants API is deprecated in favor of the Responses API
-   */
-  list(threadID, query = {}, options) {
-    return this._client.getAPIList(path`/threads/${threadID}/messages`, CursorPage, {
-      query,
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Deletes a message.
-   *
-   * @deprecated The Assistants API is deprecated in favor of the Responses API
-   */
-  delete(messageID, params, options) {
-    const { thread_id } = params;
-    return this._client.delete(path`/threads/${thread_id}/messages/${messageID}`, {
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/beta/threads/runs/steps.mjs
-var Steps = class extends APIResource {
-  /**
-   * Retrieves a run step.
-   *
-   * @deprecated The Assistants API is deprecated in favor of the Responses API
-   */
-  retrieve(stepID, params, options) {
-    const { thread_id, run_id, ...query } = params;
-    return this._client.get(path`/threads/${thread_id}/runs/${run_id}/steps/${stepID}`, {
-      query,
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Returns a list of run steps belonging to a run.
-   *
-   * @deprecated The Assistants API is deprecated in favor of the Responses API
-   */
-  list(runID, params, options) {
-    const { thread_id, ...query } = params;
-    return this._client.getAPIList(path`/threads/${thread_id}/runs/${runID}/steps`, CursorPage, {
-      query,
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/utils/base64.mjs
-var toFloat32Array = (base64Str) => {
-  if (typeof Buffer !== "undefined") {
-    const buf = Buffer.from(base64Str, "base64");
-    return Array.from(new Float32Array(buf.buffer, buf.byteOffset, buf.length / Float32Array.BYTES_PER_ELEMENT));
-  } else {
-    const binaryStr = atob(base64Str);
-    const len = binaryStr.length;
-    const bytes = new Uint8Array(len);
-    for (let i = 0; i < len; i++) {
-      bytes[i] = binaryStr.charCodeAt(i);
-    }
-    return Array.from(new Float32Array(bytes.buffer));
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/internal/utils/env.mjs
-var readEnv = (env) => {
-  if (typeof globalThis.process !== "undefined") {
-    return globalThis.process.env?.[env]?.trim() || void 0;
-  }
-  if (typeof globalThis.Deno !== "undefined") {
-    return globalThis.Deno.env?.get?.(env)?.trim() || void 0;
-  }
-  return void 0;
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/lib/AssistantStream.mjs
-var _AssistantStream_instances;
-var _a;
-var _AssistantStream_events;
-var _AssistantStream_runStepSnapshots;
-var _AssistantStream_messageSnapshots;
-var _AssistantStream_messageSnapshot;
-var _AssistantStream_finalRun;
-var _AssistantStream_currentContentIndex;
-var _AssistantStream_currentContent;
-var _AssistantStream_currentToolCallIndex;
-var _AssistantStream_currentToolCall;
-var _AssistantStream_currentEvent;
-var _AssistantStream_currentRunSnapshot;
-var _AssistantStream_currentRunStepSnapshot;
-var _AssistantStream_addEvent;
-var _AssistantStream_endRequest;
-var _AssistantStream_handleMessage;
-var _AssistantStream_handleRunStep;
-var _AssistantStream_handleEvent;
-var _AssistantStream_accumulateRunStep;
-var _AssistantStream_accumulateMessage;
-var _AssistantStream_accumulateContent;
-var _AssistantStream_handleRun;
-var AssistantStream = class extends EventStream {
-  constructor() {
-    super(...arguments);
-    _AssistantStream_instances.add(this);
-    _AssistantStream_events.set(this, []);
-    _AssistantStream_runStepSnapshots.set(this, {});
-    _AssistantStream_messageSnapshots.set(this, {});
-    _AssistantStream_messageSnapshot.set(this, void 0);
-    _AssistantStream_finalRun.set(this, void 0);
-    _AssistantStream_currentContentIndex.set(this, void 0);
-    _AssistantStream_currentContent.set(this, void 0);
-    _AssistantStream_currentToolCallIndex.set(this, void 0);
-    _AssistantStream_currentToolCall.set(this, void 0);
-    _AssistantStream_currentEvent.set(this, void 0);
-    _AssistantStream_currentRunSnapshot.set(this, void 0);
-    _AssistantStream_currentRunStepSnapshot.set(this, void 0);
-  }
-  [(_AssistantStream_events = /* @__PURE__ */ new WeakMap(), _AssistantStream_runStepSnapshots = /* @__PURE__ */ new WeakMap(), _AssistantStream_messageSnapshots = /* @__PURE__ */ new WeakMap(), _AssistantStream_messageSnapshot = /* @__PURE__ */ new WeakMap(), _AssistantStream_finalRun = /* @__PURE__ */ new WeakMap(), _AssistantStream_currentContentIndex = /* @__PURE__ */ new WeakMap(), _AssistantStream_currentContent = /* @__PURE__ */ new WeakMap(), _AssistantStream_currentToolCallIndex = /* @__PURE__ */ new WeakMap(), _AssistantStream_currentToolCall = /* @__PURE__ */ new WeakMap(), _AssistantStream_currentEvent = /* @__PURE__ */ new WeakMap(), _AssistantStream_currentRunSnapshot = /* @__PURE__ */ new WeakMap(), _AssistantStream_currentRunStepSnapshot = /* @__PURE__ */ new WeakMap(), _AssistantStream_instances = /* @__PURE__ */ new WeakSet(), Symbol.asyncIterator)]() {
-    const pushQueue = [];
-    const readQueue = [];
-    let done = false;
-    this.on("event", (event) => {
-      const reader = readQueue.shift();
-      if (reader) {
-        reader.resolve(event);
-      } else {
-        pushQueue.push(event);
-      }
-    });
-    this.on("end", () => {
-      done = true;
-      for (const reader of readQueue) {
-        reader.resolve(void 0);
-      }
-      readQueue.length = 0;
-    });
-    this.on("abort", (err) => {
-      done = true;
-      for (const reader of readQueue) {
-        reader.reject(err);
-      }
-      readQueue.length = 0;
-    });
-    this.on("error", (err) => {
-      done = true;
-      for (const reader of readQueue) {
-        reader.reject(err);
-      }
-      readQueue.length = 0;
-    });
-    return {
-      next: async () => {
-        if (!pushQueue.length) {
-          if (done) {
-            return { value: void 0, done: true };
-          }
-          return new Promise((resolve, reject) => readQueue.push({ resolve, reject })).then((chunk2) => chunk2 ? { value: chunk2, done: false } : { value: void 0, done: true });
-        }
-        const chunk = pushQueue.shift();
-        return { value: chunk, done: false };
-      },
-      return: async () => {
-        this.abort();
-        return { value: void 0, done: true };
-      }
-    };
-  }
-  static fromReadableStream(stream) {
-    const runner = new _a();
-    runner._run(() => runner._fromReadableStream(stream));
-    return runner;
-  }
-  async _fromReadableStream(readableStream, options) {
-    const signal = options?.signal;
-    if (signal) {
-      if (signal.aborted)
-        this.controller.abort();
-      signal.addEventListener("abort", () => this.controller.abort());
-    }
-    this._connected();
-    const stream = Stream.fromReadableStream(readableStream, this.controller);
-    for await (const event of stream) {
-      __classPrivateFieldGet2(this, _AssistantStream_instances, "m", _AssistantStream_addEvent).call(this, event);
-    }
-    if (stream.controller.signal?.aborted) {
-      throw new APIUserAbortError();
-    }
-    return this._addRun(__classPrivateFieldGet2(this, _AssistantStream_instances, "m", _AssistantStream_endRequest).call(this));
-  }
-  toReadableStream() {
-    const stream = new Stream(this[Symbol.asyncIterator].bind(this), this.controller);
-    return stream.toReadableStream();
-  }
-  static createToolAssistantStream(runId, runs, params, options) {
-    const runner = new _a();
-    runner._run(() => runner._runToolAssistantStream(runId, runs, params, {
-      ...options,
-      headers: { ...options?.headers, "X-Stainless-Helper-Method": "stream" }
-    }));
-    return runner;
-  }
-  async _createToolAssistantStream(run, runId, params, options) {
-    const signal = options?.signal;
-    if (signal) {
-      if (signal.aborted)
-        this.controller.abort();
-      signal.addEventListener("abort", () => this.controller.abort());
-    }
-    const body = { ...params, stream: true };
-    const stream = await run.submitToolOutputs(runId, body, {
-      ...options,
-      signal: this.controller.signal
-    });
-    this._connected();
-    for await (const event of stream) {
-      __classPrivateFieldGet2(this, _AssistantStream_instances, "m", _AssistantStream_addEvent).call(this, event);
-    }
-    if (stream.controller.signal?.aborted) {
-      throw new APIUserAbortError();
-    }
-    return this._addRun(__classPrivateFieldGet2(this, _AssistantStream_instances, "m", _AssistantStream_endRequest).call(this));
-  }
-  static createThreadAssistantStream(params, thread, options) {
-    const runner = new _a();
-    runner._run(() => runner._threadAssistantStream(params, thread, {
-      ...options,
-      headers: { ...options?.headers, "X-Stainless-Helper-Method": "stream" }
-    }));
-    return runner;
-  }
-  static createAssistantStream(threadId, runs, params, options) {
-    const runner = new _a();
-    runner._run(() => runner._runAssistantStream(threadId, runs, params, {
-      ...options,
-      headers: { ...options?.headers, "X-Stainless-Helper-Method": "stream" }
-    }));
-    return runner;
-  }
-  currentEvent() {
-    return __classPrivateFieldGet2(this, _AssistantStream_currentEvent, "f");
-  }
-  currentRun() {
-    return __classPrivateFieldGet2(this, _AssistantStream_currentRunSnapshot, "f");
-  }
-  currentMessageSnapshot() {
-    return __classPrivateFieldGet2(this, _AssistantStream_messageSnapshot, "f");
-  }
-  currentRunStepSnapshot() {
-    return __classPrivateFieldGet2(this, _AssistantStream_currentRunStepSnapshot, "f");
-  }
-  async finalRunSteps() {
-    await this.done();
-    return Object.values(__classPrivateFieldGet2(this, _AssistantStream_runStepSnapshots, "f"));
-  }
-  async finalMessages() {
-    await this.done();
-    return Object.values(__classPrivateFieldGet2(this, _AssistantStream_messageSnapshots, "f"));
-  }
-  async finalRun() {
-    await this.done();
-    if (!__classPrivateFieldGet2(this, _AssistantStream_finalRun, "f"))
-      throw Error("Final run was not received.");
-    return __classPrivateFieldGet2(this, _AssistantStream_finalRun, "f");
-  }
-  async _createThreadAssistantStream(thread, params, options) {
-    const signal = options?.signal;
-    if (signal) {
-      if (signal.aborted)
-        this.controller.abort();
-      signal.addEventListener("abort", () => this.controller.abort());
-    }
-    const body = { ...params, stream: true };
-    const stream = await thread.createAndRun(body, { ...options, signal: this.controller.signal });
-    this._connected();
-    for await (const event of stream) {
-      __classPrivateFieldGet2(this, _AssistantStream_instances, "m", _AssistantStream_addEvent).call(this, event);
-    }
-    if (stream.controller.signal?.aborted) {
-      throw new APIUserAbortError();
-    }
-    return this._addRun(__classPrivateFieldGet2(this, _AssistantStream_instances, "m", _AssistantStream_endRequest).call(this));
-  }
-  async _createAssistantStream(run, threadId, params, options) {
-    const signal = options?.signal;
-    if (signal) {
-      if (signal.aborted)
-        this.controller.abort();
-      signal.addEventListener("abort", () => this.controller.abort());
-    }
-    const body = { ...params, stream: true };
-    const stream = await run.create(threadId, body, { ...options, signal: this.controller.signal });
-    this._connected();
-    for await (const event of stream) {
-      __classPrivateFieldGet2(this, _AssistantStream_instances, "m", _AssistantStream_addEvent).call(this, event);
-    }
-    if (stream.controller.signal?.aborted) {
-      throw new APIUserAbortError();
-    }
-    return this._addRun(__classPrivateFieldGet2(this, _AssistantStream_instances, "m", _AssistantStream_endRequest).call(this));
-  }
-  static accumulateDelta(acc, delta) {
-    for (const [key, deltaValue] of Object.entries(delta)) {
-      if (!acc.hasOwnProperty(key)) {
-        acc[key] = deltaValue;
-        continue;
-      }
-      let accValue = acc[key];
-      if (accValue === null || accValue === void 0) {
-        acc[key] = deltaValue;
-        continue;
-      }
-      if (key === "index" || key === "type") {
-        acc[key] = deltaValue;
-        continue;
-      }
-      if (typeof accValue === "string" && typeof deltaValue === "string") {
-        accValue += deltaValue;
-      } else if (typeof accValue === "number" && typeof deltaValue === "number") {
-        accValue += deltaValue;
-      } else if (isObj(accValue) && isObj(deltaValue)) {
-        accValue = this.accumulateDelta(accValue, deltaValue);
-      } else if (Array.isArray(accValue) && Array.isArray(deltaValue)) {
-        if (accValue.every((x) => typeof x === "string" || typeof x === "number")) {
-          accValue.push(...deltaValue);
-          continue;
-        }
-        for (const deltaEntry of deltaValue) {
-          if (!isObj(deltaEntry)) {
-            throw new Error(`Expected array delta entry to be an object but got: ${deltaEntry}`);
-          }
-          const index = deltaEntry["index"];
-          if (index == null) {
-            console.error(deltaEntry);
-            throw new Error("Expected array delta entry to have an `index` property");
-          }
-          if (typeof index !== "number") {
-            throw new Error(`Expected array delta entry \`index\` property to be a number but got ${index}`);
-          }
-          const accEntry = accValue[index];
-          if (accEntry == null) {
-            accValue.push(deltaEntry);
-          } else {
-            accValue[index] = this.accumulateDelta(accEntry, deltaEntry);
-          }
-        }
-        continue;
-      } else {
-        throw Error(`Unhandled record type: ${key}, deltaValue: ${deltaValue}, accValue: ${accValue}`);
-      }
-      acc[key] = accValue;
-    }
-    return acc;
-  }
-  _addRun(run) {
-    return run;
-  }
-  async _threadAssistantStream(params, thread, options) {
-    return await this._createThreadAssistantStream(thread, params, options);
-  }
-  async _runAssistantStream(threadId, runs, params, options) {
-    return await this._createAssistantStream(runs, threadId, params, options);
-  }
-  async _runToolAssistantStream(runId, runs, params, options) {
-    return await this._createToolAssistantStream(runs, runId, params, options);
-  }
-};
-_a = AssistantStream, _AssistantStream_addEvent = function _AssistantStream_addEvent2(event) {
-  if (this.ended)
-    return;
-  __classPrivateFieldSet2(this, _AssistantStream_currentEvent, event, "f");
-  __classPrivateFieldGet2(this, _AssistantStream_instances, "m", _AssistantStream_handleEvent).call(this, event);
-  switch (event.event) {
-    case "thread.created":
-      break;
-    case "thread.run.created":
-    case "thread.run.queued":
-    case "thread.run.in_progress":
-    case "thread.run.requires_action":
-    case "thread.run.completed":
-    case "thread.run.incomplete":
-    case "thread.run.failed":
-    case "thread.run.cancelling":
-    case "thread.run.cancelled":
-    case "thread.run.expired":
-      __classPrivateFieldGet2(this, _AssistantStream_instances, "m", _AssistantStream_handleRun).call(this, event);
-      break;
-    case "thread.run.step.created":
-    case "thread.run.step.in_progress":
-    case "thread.run.step.delta":
-    case "thread.run.step.completed":
-    case "thread.run.step.failed":
-    case "thread.run.step.cancelled":
-    case "thread.run.step.expired":
-      __classPrivateFieldGet2(this, _AssistantStream_instances, "m", _AssistantStream_handleRunStep).call(this, event);
-      break;
-    case "thread.message.created":
-    case "thread.message.in_progress":
-    case "thread.message.delta":
-    case "thread.message.completed":
-    case "thread.message.incomplete":
-      __classPrivateFieldGet2(this, _AssistantStream_instances, "m", _AssistantStream_handleMessage).call(this, event);
-      break;
-    case "error":
-      throw new Error("Encountered an error event in event processing - errors should be processed earlier");
-    default:
-      assertNever3(event);
-  }
-}, _AssistantStream_endRequest = function _AssistantStream_endRequest2() {
-  if (this.ended) {
-    throw new OpenAIError(`stream has ended, this shouldn't happen`);
-  }
-  if (!__classPrivateFieldGet2(this, _AssistantStream_finalRun, "f"))
-    throw Error("Final run has not been received");
-  return __classPrivateFieldGet2(this, _AssistantStream_finalRun, "f");
-}, _AssistantStream_handleMessage = function _AssistantStream_handleMessage2(event) {
-  const [accumulatedMessage, newContent] = __classPrivateFieldGet2(this, _AssistantStream_instances, "m", _AssistantStream_accumulateMessage).call(this, event, __classPrivateFieldGet2(this, _AssistantStream_messageSnapshot, "f"));
-  __classPrivateFieldSet2(this, _AssistantStream_messageSnapshot, accumulatedMessage, "f");
-  __classPrivateFieldGet2(this, _AssistantStream_messageSnapshots, "f")[accumulatedMessage.id] = accumulatedMessage;
-  for (const content of newContent) {
-    const snapshotContent = accumulatedMessage.content[content.index];
-    if (snapshotContent?.type == "text") {
-      this._emit("textCreated", snapshotContent.text);
-    }
-  }
-  switch (event.event) {
-    case "thread.message.created":
-      this._emit("messageCreated", event.data);
-      break;
-    case "thread.message.in_progress":
-      break;
-    case "thread.message.delta":
-      this._emit("messageDelta", event.data.delta, accumulatedMessage);
-      if (event.data.delta.content) {
-        for (const content of event.data.delta.content) {
-          if (content.type == "text" && content.text) {
-            let textDelta = content.text;
-            let snapshot = accumulatedMessage.content[content.index];
-            if (snapshot && snapshot.type == "text") {
-              this._emit("textDelta", textDelta, snapshot.text);
-            } else {
-              throw Error("The snapshot associated with this text delta is not text or missing");
-            }
-          }
-          if (content.index != __classPrivateFieldGet2(this, _AssistantStream_currentContentIndex, "f")) {
-            if (__classPrivateFieldGet2(this, _AssistantStream_currentContent, "f")) {
-              switch (__classPrivateFieldGet2(this, _AssistantStream_currentContent, "f").type) {
-                case "text":
-                  this._emit("textDone", __classPrivateFieldGet2(this, _AssistantStream_currentContent, "f").text, __classPrivateFieldGet2(this, _AssistantStream_messageSnapshot, "f"));
-                  break;
-                case "image_file":
-                  this._emit("imageFileDone", __classPrivateFieldGet2(this, _AssistantStream_currentContent, "f").image_file, __classPrivateFieldGet2(this, _AssistantStream_messageSnapshot, "f"));
-                  break;
-              }
-            }
-            __classPrivateFieldSet2(this, _AssistantStream_currentContentIndex, content.index, "f");
-          }
-          __classPrivateFieldSet2(this, _AssistantStream_currentContent, accumulatedMessage.content[content.index], "f");
-        }
-      }
-      break;
-    case "thread.message.completed":
-    case "thread.message.incomplete":
-      if (__classPrivateFieldGet2(this, _AssistantStream_currentContentIndex, "f") !== void 0) {
-        const currentContent = event.data.content[__classPrivateFieldGet2(this, _AssistantStream_currentContentIndex, "f")];
-        if (currentContent) {
-          switch (currentContent.type) {
-            case "image_file":
-              this._emit("imageFileDone", currentContent.image_file, __classPrivateFieldGet2(this, _AssistantStream_messageSnapshot, "f"));
-              break;
-            case "text":
-              this._emit("textDone", currentContent.text, __classPrivateFieldGet2(this, _AssistantStream_messageSnapshot, "f"));
-              break;
-          }
-        }
-      }
-      if (__classPrivateFieldGet2(this, _AssistantStream_messageSnapshot, "f")) {
-        this._emit("messageDone", event.data);
-      }
-      __classPrivateFieldSet2(this, _AssistantStream_messageSnapshot, void 0, "f");
-  }
-}, _AssistantStream_handleRunStep = function _AssistantStream_handleRunStep2(event) {
-  const accumulatedRunStep = __classPrivateFieldGet2(this, _AssistantStream_instances, "m", _AssistantStream_accumulateRunStep).call(this, event);
-  __classPrivateFieldSet2(this, _AssistantStream_currentRunStepSnapshot, accumulatedRunStep, "f");
-  switch (event.event) {
-    case "thread.run.step.created":
-      this._emit("runStepCreated", event.data);
-      break;
-    case "thread.run.step.delta":
-      const delta = event.data.delta;
-      if (delta.step_details && delta.step_details.type == "tool_calls" && delta.step_details.tool_calls && accumulatedRunStep.step_details.type == "tool_calls") {
-        for (const toolCall of delta.step_details.tool_calls) {
-          if (toolCall.index == __classPrivateFieldGet2(this, _AssistantStream_currentToolCallIndex, "f")) {
-            this._emit("toolCallDelta", toolCall, accumulatedRunStep.step_details.tool_calls[toolCall.index]);
-          } else {
-            if (__classPrivateFieldGet2(this, _AssistantStream_currentToolCall, "f")) {
-              this._emit("toolCallDone", __classPrivateFieldGet2(this, _AssistantStream_currentToolCall, "f"));
-            }
-            __classPrivateFieldSet2(this, _AssistantStream_currentToolCallIndex, toolCall.index, "f");
-            __classPrivateFieldSet2(this, _AssistantStream_currentToolCall, accumulatedRunStep.step_details.tool_calls[toolCall.index], "f");
-            if (__classPrivateFieldGet2(this, _AssistantStream_currentToolCall, "f"))
-              this._emit("toolCallCreated", __classPrivateFieldGet2(this, _AssistantStream_currentToolCall, "f"));
-          }
-        }
-      }
-      this._emit("runStepDelta", event.data.delta, accumulatedRunStep);
-      break;
-    case "thread.run.step.completed":
-    case "thread.run.step.failed":
-    case "thread.run.step.cancelled":
-    case "thread.run.step.expired":
-      __classPrivateFieldSet2(this, _AssistantStream_currentRunStepSnapshot, void 0, "f");
-      const details = event.data.step_details;
-      if (details.type == "tool_calls") {
-        if (__classPrivateFieldGet2(this, _AssistantStream_currentToolCall, "f")) {
-          this._emit("toolCallDone", __classPrivateFieldGet2(this, _AssistantStream_currentToolCall, "f"));
-          __classPrivateFieldSet2(this, _AssistantStream_currentToolCall, void 0, "f");
-        }
-      }
-      this._emit("runStepDone", event.data, accumulatedRunStep);
-      break;
-    case "thread.run.step.in_progress":
-      break;
-  }
-}, _AssistantStream_handleEvent = function _AssistantStream_handleEvent2(event) {
-  __classPrivateFieldGet2(this, _AssistantStream_events, "f").push(event);
-  this._emit("event", event);
-}, _AssistantStream_accumulateRunStep = function _AssistantStream_accumulateRunStep2(event) {
-  switch (event.event) {
-    case "thread.run.step.created":
-      __classPrivateFieldGet2(this, _AssistantStream_runStepSnapshots, "f")[event.data.id] = event.data;
-      return event.data;
-    case "thread.run.step.delta":
-      let snapshot = __classPrivateFieldGet2(this, _AssistantStream_runStepSnapshots, "f")[event.data.id];
-      if (!snapshot) {
-        throw Error("Received a RunStepDelta before creation of a snapshot");
-      }
-      let data = event.data;
-      if (data.delta) {
-        const accumulated = _a.accumulateDelta(snapshot, data.delta);
-        __classPrivateFieldGet2(this, _AssistantStream_runStepSnapshots, "f")[event.data.id] = accumulated;
-      }
-      return __classPrivateFieldGet2(this, _AssistantStream_runStepSnapshots, "f")[event.data.id];
-    case "thread.run.step.completed":
-    case "thread.run.step.failed":
-    case "thread.run.step.cancelled":
-    case "thread.run.step.expired":
-    case "thread.run.step.in_progress":
-      __classPrivateFieldGet2(this, _AssistantStream_runStepSnapshots, "f")[event.data.id] = event.data;
-      break;
-  }
-  if (__classPrivateFieldGet2(this, _AssistantStream_runStepSnapshots, "f")[event.data.id])
-    return __classPrivateFieldGet2(this, _AssistantStream_runStepSnapshots, "f")[event.data.id];
-  throw new Error("No snapshot available");
-}, _AssistantStream_accumulateMessage = function _AssistantStream_accumulateMessage2(event, snapshot) {
-  let newContent = [];
-  switch (event.event) {
-    case "thread.message.created":
-      return [event.data, newContent];
-    case "thread.message.delta":
-      if (!snapshot) {
-        throw Error("Received a delta with no existing snapshot (there should be one from message creation)");
-      }
-      let data = event.data;
-      if (data.delta.content) {
-        for (const contentElement of data.delta.content) {
-          if (contentElement.index in snapshot.content) {
-            let currentContent = snapshot.content[contentElement.index];
-            snapshot.content[contentElement.index] = __classPrivateFieldGet2(this, _AssistantStream_instances, "m", _AssistantStream_accumulateContent).call(this, contentElement, currentContent);
-          } else {
-            snapshot.content[contentElement.index] = contentElement;
-            newContent.push(contentElement);
-          }
-        }
-      }
-      return [snapshot, newContent];
-    case "thread.message.in_progress":
-    case "thread.message.completed":
-    case "thread.message.incomplete":
-      if (snapshot) {
-        return [snapshot, newContent];
-      } else {
-        throw Error("Received thread message event with no existing snapshot");
-      }
-  }
-  throw Error("Tried to accumulate a non-message event");
-}, _AssistantStream_accumulateContent = function _AssistantStream_accumulateContent2(contentElement, currentContent) {
-  return _a.accumulateDelta(currentContent, contentElement);
-}, _AssistantStream_handleRun = function _AssistantStream_handleRun2(event) {
-  __classPrivateFieldSet2(this, _AssistantStream_currentRunSnapshot, event.data, "f");
-  switch (event.event) {
-    case "thread.run.created":
-      break;
-    case "thread.run.queued":
-      break;
-    case "thread.run.in_progress":
-      break;
-    case "thread.run.requires_action":
-    case "thread.run.cancelled":
-    case "thread.run.failed":
-    case "thread.run.completed":
-    case "thread.run.expired":
-    case "thread.run.incomplete":
-      __classPrivateFieldSet2(this, _AssistantStream_finalRun, event.data, "f");
-      if (__classPrivateFieldGet2(this, _AssistantStream_currentToolCall, "f")) {
-        this._emit("toolCallDone", __classPrivateFieldGet2(this, _AssistantStream_currentToolCall, "f"));
-        __classPrivateFieldSet2(this, _AssistantStream_currentToolCall, void 0, "f");
-      }
-      break;
-    case "thread.run.cancelling":
-      break;
-  }
-};
-function assertNever3(_x) {
-}
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/beta/threads/runs/runs.mjs
-var Runs = class extends APIResource {
-  constructor() {
-    super(...arguments);
-    this.steps = new Steps(this._client);
-  }
-  create(threadID, params, options) {
-    const { include, ...body } = params;
-    return this._client.post(path`/threads/${threadID}/runs`, {
-      query: { include },
-      body,
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      stream: params.stream ?? false,
-      __synthesizeEventData: true,
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Retrieves a run.
-   *
-   * @deprecated The Assistants API is deprecated in favor of the Responses API
-   */
-  retrieve(runID, params, options) {
-    const { thread_id } = params;
-    return this._client.get(path`/threads/${thread_id}/runs/${runID}`, {
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Modifies a run.
-   *
-   * @deprecated The Assistants API is deprecated in favor of the Responses API
-   */
-  update(runID, params, options) {
-    const { thread_id, ...body } = params;
-    return this._client.post(path`/threads/${thread_id}/runs/${runID}`, {
-      body,
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Returns a list of runs belonging to a thread.
-   *
-   * @deprecated The Assistants API is deprecated in favor of the Responses API
-   */
-  list(threadID, query = {}, options) {
-    return this._client.getAPIList(path`/threads/${threadID}/runs`, CursorPage, {
-      query,
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Cancels a run that is `in_progress`.
-   *
-   * @deprecated The Assistants API is deprecated in favor of the Responses API
-   */
-  cancel(runID, params, options) {
-    const { thread_id } = params;
-    return this._client.post(path`/threads/${thread_id}/runs/${runID}/cancel`, {
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * A helper to create a run an poll for a terminal state. More information on Run
-   * lifecycles can be found here:
-   * https://platform.openai.com/docs/assistants/how-it-works/runs-and-run-steps
-   */
-  async createAndPoll(threadId, body, options) {
-    const run = await this.create(threadId, body, options);
-    return await this.poll(run.id, { thread_id: threadId }, options);
-  }
-  /**
-   * Create a Run stream
-   *
-   * @deprecated use `stream` instead
-   */
-  createAndStream(threadId, body, options) {
-    return AssistantStream.createAssistantStream(threadId, this._client.beta.threads.runs, body, options);
-  }
-  /**
-   * A helper to poll a run status until it reaches a terminal state. More
-   * information on Run lifecycles can be found here:
-   * https://platform.openai.com/docs/assistants/how-it-works/runs-and-run-steps
-   */
-  async poll(runId, params, options) {
-    const headers = buildHeaders([
-      options?.headers,
-      {
-        "X-Stainless-Poll-Helper": "true",
-        "X-Stainless-Custom-Poll-Interval": options?.pollIntervalMs?.toString() ?? void 0
-      }
-    ]);
-    while (true) {
-      const { data: run, response } = await this.retrieve(runId, params, {
-        ...options,
-        headers: { ...options?.headers, ...headers }
-      }).withResponse();
-      switch (run.status) {
-        //If we are in any sort of intermediate state we poll
-        case "queued":
-        case "in_progress":
-        case "cancelling":
-          let sleepInterval = 5e3;
-          if (options?.pollIntervalMs) {
-            sleepInterval = options.pollIntervalMs;
-          } else {
-            const headerInterval = response.headers.get("openai-poll-after-ms");
-            if (headerInterval) {
-              const headerIntervalMs = parseInt(headerInterval);
-              if (!isNaN(headerIntervalMs)) {
-                sleepInterval = headerIntervalMs;
-              }
-            }
-          }
-          await sleep3(sleepInterval);
-          break;
-        //We return the run in any terminal state.
-        case "requires_action":
-        case "incomplete":
-        case "cancelled":
-        case "completed":
-        case "failed":
-        case "expired":
-          return run;
-      }
-    }
-  }
-  /**
-   * Create a Run stream
-   */
-  stream(threadId, body, options) {
-    return AssistantStream.createAssistantStream(threadId, this._client.beta.threads.runs, body, options);
-  }
-  submitToolOutputs(runID, params, options) {
-    const { thread_id, ...body } = params;
-    return this._client.post(path`/threads/${thread_id}/runs/${runID}/submit_tool_outputs`, {
-      body,
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      stream: params.stream ?? false,
-      __synthesizeEventData: true,
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * A helper to submit a tool output to a run and poll for a terminal run state.
-   * More information on Run lifecycles can be found here:
-   * https://platform.openai.com/docs/assistants/how-it-works/runs-and-run-steps
-   */
-  async submitToolOutputsAndPoll(runId, params, options) {
-    const run = await this.submitToolOutputs(runId, params, options);
-    return await this.poll(run.id, params, options);
-  }
-  /**
-   * Submit the tool outputs from a previous run and stream the run to a terminal
-   * state. More information on Run lifecycles can be found here:
-   * https://platform.openai.com/docs/assistants/how-it-works/runs-and-run-steps
-   */
-  submitToolOutputsStream(runId, params, options) {
-    return AssistantStream.createToolAssistantStream(runId, this._client.beta.threads.runs, params, options);
-  }
-};
-Runs.Steps = Steps;
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/beta/threads/threads.mjs
-var Threads2 = class extends APIResource {
-  constructor() {
-    super(...arguments);
-    this.runs = new Runs(this._client);
-    this.messages = new Messages2(this._client);
-  }
-  /**
-   * Create a thread.
-   *
-   * @deprecated The Assistants API is deprecated in favor of the Responses API
-   */
-  create(body = {}, options) {
-    return this._client.post("/threads", {
-      body,
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Retrieves a thread.
-   *
-   * @deprecated The Assistants API is deprecated in favor of the Responses API
-   */
-  retrieve(threadID, options) {
-    return this._client.get(path`/threads/${threadID}`, {
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Modifies a thread.
-   *
-   * @deprecated The Assistants API is deprecated in favor of the Responses API
-   */
-  update(threadID, body, options) {
-    return this._client.post(path`/threads/${threadID}`, {
-      body,
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Delete a thread.
-   *
-   * @deprecated The Assistants API is deprecated in favor of the Responses API
-   */
-  delete(threadID, options) {
-    return this._client.delete(path`/threads/${threadID}`, {
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  createAndRun(body, options) {
-    return this._client.post("/threads/runs", {
-      body,
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      stream: body.stream ?? false,
-      __synthesizeEventData: true,
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * A helper to create a thread, start a run and then poll for a terminal state.
-   * More information on Run lifecycles can be found here:
-   * https://platform.openai.com/docs/assistants/how-it-works/runs-and-run-steps
-   */
-  async createAndRunPoll(body, options) {
-    const run = await this.createAndRun(body, options);
-    return await this.runs.poll(run.id, { thread_id: run.thread_id }, options);
-  }
-  /**
-   * Create a thread and stream the run back
-   */
-  createAndRunStream(body, options) {
-    return AssistantStream.createThreadAssistantStream(body, this._client.beta.threads, options);
-  }
-};
-Threads2.Runs = Runs;
-Threads2.Messages = Messages2;
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/beta/beta.mjs
-var Beta = class extends APIResource {
-  constructor() {
-    super(...arguments);
-    this.realtime = new Realtime(this._client);
-    this.chatkit = new ChatKit(this._client);
-    this.assistants = new Assistants(this._client);
-    this.threads = new Threads2(this._client);
-  }
-};
-Beta.Realtime = Realtime;
-Beta.ChatKit = ChatKit;
-Beta.Assistants = Assistants;
-Beta.Threads = Threads2;
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/completions.mjs
-var Completions2 = class extends APIResource {
-  create(body, options) {
-    return this._client.post("/completions", {
-      body,
-      ...options,
-      stream: body.stream ?? false,
-      __security: { bearerAuth: true }
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/containers/files/content.mjs
-var Content = class extends APIResource {
-  /**
-   * Retrieve Container File Content
-   */
-  retrieve(fileID, params, options) {
-    const { container_id } = params;
-    return this._client.get(path`/containers/${container_id}/files/${fileID}/content`, {
-      ...options,
-      headers: buildHeaders([{ Accept: "application/binary" }, options?.headers]),
-      __security: { bearerAuth: true },
-      __binaryResponse: true
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/containers/files/files.mjs
-var Files = class extends APIResource {
-  constructor() {
-    super(...arguments);
-    this.content = new Content(this._client);
-  }
-  /**
-   * Create a Container File
-   *
-   * You can send either a multipart/form-data request with the raw file content, or
-   * a JSON request with a file ID.
-   */
-  create(containerID, body, options) {
-    return this._client.post(path`/containers/${containerID}/files`, maybeMultipartFormRequestOptions({ body, ...options, __security: { bearerAuth: true } }, this._client));
-  }
-  /**
-   * Retrieve Container File
-   */
-  retrieve(fileID, params, options) {
-    const { container_id } = params;
-    return this._client.get(path`/containers/${container_id}/files/${fileID}`, {
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * List Container files
-   */
-  list(containerID, query = {}, options) {
-    return this._client.getAPIList(path`/containers/${containerID}/files`, CursorPage, {
-      query,
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Delete Container File
-   */
-  delete(fileID, params, options) {
-    const { container_id } = params;
-    return this._client.delete(path`/containers/${container_id}/files/${fileID}`, {
-      ...options,
-      headers: buildHeaders([{ Accept: "*/*" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-};
-Files.Content = Content;
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/containers/containers.mjs
-var Containers = class extends APIResource {
-  constructor() {
-    super(...arguments);
-    this.files = new Files(this._client);
-  }
-  /**
-   * Create Container
-   */
-  create(body, options) {
-    return this._client.post("/containers", { body, ...options, __security: { bearerAuth: true } });
-  }
-  /**
-   * Retrieve Container
-   */
-  retrieve(containerID, options) {
-    return this._client.get(path`/containers/${containerID}`, {
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * List Containers
-   */
-  list(query = {}, options) {
-    return this._client.getAPIList("/containers", CursorPage, {
-      query,
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Delete Container
-   */
-  delete(containerID, options) {
-    return this._client.delete(path`/containers/${containerID}`, {
-      ...options,
-      headers: buildHeaders([{ Accept: "*/*" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-};
-Containers.Files = Files;
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/conversations/items.mjs
-var Items = class extends APIResource {
-  /**
-   * Create items in a conversation with the given ID.
-   */
-  create(conversationID, params, options) {
-    const { include, ...body } = params;
-    return this._client.post(path`/conversations/${conversationID}/items`, {
-      query: { include },
-      body,
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Get a single item from a conversation with the given IDs.
-   */
-  retrieve(itemID, params, options) {
-    const { conversation_id, ...query } = params;
-    return this._client.get(path`/conversations/${conversation_id}/items/${itemID}`, {
-      query,
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * List all items for a conversation with the given ID.
-   */
-  list(conversationID, query = {}, options) {
-    return this._client.getAPIList(path`/conversations/${conversationID}/items`, ConversationCursorPage, { query, ...options, __security: { bearerAuth: true } });
-  }
-  /**
-   * Delete an item from a conversation with the given IDs.
-   */
-  delete(itemID, params, options) {
-    const { conversation_id } = params;
-    return this._client.delete(path`/conversations/${conversation_id}/items/${itemID}`, {
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/conversations/conversations.mjs
-var Conversations = class extends APIResource {
-  constructor() {
-    super(...arguments);
-    this.items = new Items(this._client);
-  }
-  /**
-   * Create a conversation.
-   */
-  create(body = {}, options) {
-    return this._client.post("/conversations", { body, ...options, __security: { bearerAuth: true } });
-  }
-  /**
-   * Get a conversation
-   */
-  retrieve(conversationID, options) {
-    return this._client.get(path`/conversations/${conversationID}`, {
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Update a conversation
-   */
-  update(conversationID, body, options) {
-    return this._client.post(path`/conversations/${conversationID}`, {
-      body,
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Delete a conversation. Items in the conversation will not be deleted.
-   */
-  delete(conversationID, options) {
-    return this._client.delete(path`/conversations/${conversationID}`, {
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-};
-Conversations.Items = Items;
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/embeddings.mjs
-var Embeddings = class extends APIResource {
-  /**
-   * Creates an embedding vector representing the input text.
-   *
-   * @example
-   * ```ts
-   * const createEmbeddingResponse =
-   *   await client.embeddings.create({
-   *     input: 'The quick brown fox jumped over the lazy dog',
-   *     model: 'text-embedding-3-small',
-   *   });
-   * ```
-   */
-  create(body, options) {
-    const hasUserProvidedEncodingFormat = !!body.encoding_format;
-    let encoding_format = hasUserProvidedEncodingFormat ? body.encoding_format : "base64";
-    if (hasUserProvidedEncodingFormat) {
-      loggerFor(this._client).debug("embeddings/user defined encoding_format:", body.encoding_format);
-    }
-    const response = this._client.post("/embeddings", {
-      body: {
-        ...body,
-        encoding_format
-      },
-      ...options,
-      __security: { bearerAuth: true }
-    });
-    if (hasUserProvidedEncodingFormat) {
-      return response;
-    }
-    loggerFor(this._client).debug("embeddings/decoding base64 embeddings from base64");
-    return response._thenUnwrap((response2) => {
-      if (response2 && response2.data) {
-        response2.data.forEach((embeddingBase64Obj) => {
-          const embeddingBase64Str = embeddingBase64Obj.embedding;
-          embeddingBase64Obj.embedding = toFloat32Array(embeddingBase64Str);
-        });
-      }
-      return response2;
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/evals/runs/output-items.mjs
-var OutputItems = class extends APIResource {
-  /**
-   * Get an evaluation run output item by ID.
-   */
-  retrieve(outputItemID, params, options) {
-    const { eval_id, run_id } = params;
-    return this._client.get(path`/evals/${eval_id}/runs/${run_id}/output_items/${outputItemID}`, {
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Get a list of output items for an evaluation run.
-   */
-  list(runID, params, options) {
-    const { eval_id, ...query } = params;
-    return this._client.getAPIList(path`/evals/${eval_id}/runs/${runID}/output_items`, CursorPage, { query, ...options, __security: { bearerAuth: true } });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/evals/runs/runs.mjs
-var Runs2 = class extends APIResource {
-  constructor() {
-    super(...arguments);
-    this.outputItems = new OutputItems(this._client);
-  }
-  /**
-   * Kicks off a new run for a given evaluation, specifying the data source, and what
-   * model configuration to use to test. The datasource will be validated against the
-   * schema specified in the config of the evaluation.
-   */
-  create(evalID, body, options) {
-    return this._client.post(path`/evals/${evalID}/runs`, {
-      body,
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Get an evaluation run by ID.
-   */
-  retrieve(runID, params, options) {
-    const { eval_id } = params;
-    return this._client.get(path`/evals/${eval_id}/runs/${runID}`, {
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Get a list of runs for an evaluation.
-   */
-  list(evalID, query = {}, options) {
-    return this._client.getAPIList(path`/evals/${evalID}/runs`, CursorPage, {
-      query,
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Delete an eval run.
-   */
-  delete(runID, params, options) {
-    const { eval_id } = params;
-    return this._client.delete(path`/evals/${eval_id}/runs/${runID}`, {
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Cancel an ongoing evaluation run.
-   */
-  cancel(runID, params, options) {
-    const { eval_id } = params;
-    return this._client.post(path`/evals/${eval_id}/runs/${runID}`, {
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-};
-Runs2.OutputItems = OutputItems;
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/evals/evals.mjs
-var Evals = class extends APIResource {
-  constructor() {
-    super(...arguments);
-    this.runs = new Runs2(this._client);
-  }
-  /**
-   * Create the structure of an evaluation that can be used to test a model's
-   * performance. An evaluation is a set of testing criteria and the config for a
-   * data source, which dictates the schema of the data used in the evaluation. After
-   * creating an evaluation, you can run it on different models and model parameters.
-   * We support several types of graders and datasources. For more information, see
-   * the [Evals guide](https://platform.openai.com/docs/guides/evals).
-   */
-  create(body, options) {
-    return this._client.post("/evals", { body, ...options, __security: { bearerAuth: true } });
-  }
-  /**
-   * Get an evaluation by ID.
-   */
-  retrieve(evalID, options) {
-    return this._client.get(path`/evals/${evalID}`, { ...options, __security: { bearerAuth: true } });
-  }
-  /**
-   * Update certain properties of an evaluation.
-   */
-  update(evalID, body, options) {
-    return this._client.post(path`/evals/${evalID}`, { body, ...options, __security: { bearerAuth: true } });
-  }
-  /**
-   * List evaluations for a project.
-   */
-  list(query = {}, options) {
-    return this._client.getAPIList("/evals", CursorPage, {
-      query,
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Delete an evaluation.
-   */
-  delete(evalID, options) {
-    return this._client.delete(path`/evals/${evalID}`, { ...options, __security: { bearerAuth: true } });
-  }
-};
-Evals.Runs = Runs2;
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/files.mjs
-var Files2 = class extends APIResource {
-  /**
-   * Upload a file that can be used across various endpoints. Individual files can be
-   * up to 512 MB, and each project can store up to 2.5 TB of files in total. There
-   * is no organization-wide storage limit. Uploads to this endpoint are rate-limited
-   * to 1,000 requests per minute per authenticated user.
-   *
-   * - The Assistants API supports files up to 2 million tokens and of specific file
-   *   types. See the
-   *   [Assistants Tools guide](https://platform.openai.com/docs/assistants/tools)
-   *   for details.
-   * - The Fine-tuning API only supports `.jsonl` files. The input also has certain
-   *   required formats for fine-tuning
-   *   [chat](https://platform.openai.com/docs/api-reference/fine-tuning/chat-input)
-   *   or
-   *   [completions](https://platform.openai.com/docs/api-reference/fine-tuning/completions-input)
-   *   models.
-   * - The Batch API only supports `.jsonl` files up to 200 MB in size. The input
-   *   also has a specific required
-   *   [format](https://platform.openai.com/docs/api-reference/batch/request-input).
-   * - For Retrieval or `file_search` ingestion, upload files here first. If you need
-   *   to attach multiple uploaded files to the same vector store, use
-   *   [`/vector_stores/{vector_store_id}/file_batches`](https://platform.openai.com/docs/api-reference/vector-stores-file-batches/createBatch)
-   *   instead of attaching them one by one. Vector store attachment has separate
-   *   limits from file upload, including 2,000 attached files per minute per
-   *   organization.
-   *
-   * Please [contact us](https://help.openai.com/) if you need to increase these
-   * storage limits.
-   */
-  create(body, options) {
-    return this._client.post("/files", multipartFormRequestOptions({ body, ...options, __security: { bearerAuth: true } }, this._client));
-  }
-  /**
-   * Returns information about a specific file.
-   */
-  retrieve(fileID, options) {
-    return this._client.get(path`/files/${fileID}`, { ...options, __security: { bearerAuth: true } });
-  }
-  /**
-   * Returns a list of files.
-   */
-  list(query = {}, options) {
-    return this._client.getAPIList("/files", CursorPage, {
-      query,
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Delete a file and remove it from all vector stores.
-   */
-  delete(fileID, options) {
-    return this._client.delete(path`/files/${fileID}`, { ...options, __security: { bearerAuth: true } });
-  }
-  /**
-   * Returns the contents of the specified file.
-   */
-  content(fileID, options) {
-    return this._client.get(path`/files/${fileID}/content`, {
-      ...options,
-      headers: buildHeaders([{ Accept: "application/binary" }, options?.headers]),
-      __security: { bearerAuth: true },
-      __binaryResponse: true
-    });
-  }
-  /**
-   * Waits for the given file to be processed, default timeout is 30 mins.
-   */
-  async waitForProcessing(id, { pollInterval = 5e3, maxWait = 30 * 60 * 1e3 } = {}) {
-    const TERMINAL_STATES = /* @__PURE__ */ new Set(["processed", "error", "deleted"]);
-    const start = Date.now();
-    let file2 = await this.retrieve(id);
-    while (!file2.status || !TERMINAL_STATES.has(file2.status)) {
-      await sleep3(pollInterval);
-      file2 = await this.retrieve(id);
-      if (Date.now() - start > maxWait) {
-        throw new APIConnectionTimeoutError({
-          message: `Giving up on waiting for file ${id} to finish processing after ${maxWait} milliseconds.`
-        });
-      }
-    }
-    return file2;
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/fine-tuning/methods.mjs
-var Methods = class extends APIResource {
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/fine-tuning/alpha/graders.mjs
-var Graders = class extends APIResource {
-  /**
-   * Run a grader.
-   *
-   * @example
-   * ```ts
-   * const response = await client.fineTuning.alpha.graders.run({
-   *   grader: {
-   *     input: 'input',
-   *     name: 'name',
-   *     operation: 'eq',
-   *     reference: 'reference',
-   *     type: 'string_check',
-   *   },
-   *   model_sample: 'model_sample',
-   * });
-   * ```
-   */
-  run(body, options) {
-    return this._client.post("/fine_tuning/alpha/graders/run", {
-      body,
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Validate a grader.
-   *
-   * @example
-   * ```ts
-   * const response =
-   *   await client.fineTuning.alpha.graders.validate({
-   *     grader: {
-   *       input: 'input',
-   *       name: 'name',
-   *       operation: 'eq',
-   *       reference: 'reference',
-   *       type: 'string_check',
-   *     },
-   *   });
-   * ```
-   */
-  validate(body, options) {
-    return this._client.post("/fine_tuning/alpha/graders/validate", {
-      body,
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/fine-tuning/alpha/alpha.mjs
-var Alpha = class extends APIResource {
-  constructor() {
-    super(...arguments);
-    this.graders = new Graders(this._client);
-  }
-};
-Alpha.Graders = Graders;
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/fine-tuning/checkpoints/permissions.mjs
-var Permissions = class extends APIResource {
-  /**
-   * **NOTE:** Calling this endpoint requires an [admin API key](../admin-api-keys).
-   *
-   * This enables organization owners to share fine-tuned models with other projects
-   * in their organization.
-   *
-   * @example
-   * ```ts
-   * // Automatically fetches more pages as needed.
-   * for await (const permissionCreateResponse of client.fineTuning.checkpoints.permissions.create(
-   *   'ft:gpt-4o-mini-2024-07-18:org:weather:B7R9VjQd',
-   *   { project_ids: ['string'] },
-   * )) {
-   *   // ...
-   * }
-   * ```
-   */
-  create(fineTunedModelCheckpoint, body, options) {
-    return this._client.getAPIList(path`/fine_tuning/checkpoints/${fineTunedModelCheckpoint}/permissions`, Page, { body, method: "post", ...options, __security: { adminAPIKeyAuth: true } });
-  }
-  /**
-   * **NOTE:** This endpoint requires an [admin API key](../admin-api-keys).
-   *
-   * Organization owners can use this endpoint to view all permissions for a
-   * fine-tuned model checkpoint.
-   *
-   * @deprecated Retrieve is deprecated. Please swap to the paginated list method instead.
-   */
-  retrieve(fineTunedModelCheckpoint, query = {}, options) {
-    return this._client.get(path`/fine_tuning/checkpoints/${fineTunedModelCheckpoint}/permissions`, {
-      query,
-      ...options,
-      __security: { adminAPIKeyAuth: true }
-    });
-  }
-  /**
-   * **NOTE:** This endpoint requires an [admin API key](../admin-api-keys).
-   *
-   * Organization owners can use this endpoint to view all permissions for a
-   * fine-tuned model checkpoint.
-   *
-   * @example
-   * ```ts
-   * // Automatically fetches more pages as needed.
-   * for await (const permissionListResponse of client.fineTuning.checkpoints.permissions.list(
-   *   'ft-AF1WoRqd3aJAHsqc9NY7iL8F',
-   * )) {
-   *   // ...
-   * }
-   * ```
-   */
-  list(fineTunedModelCheckpoint, query = {}, options) {
-    return this._client.getAPIList(path`/fine_tuning/checkpoints/${fineTunedModelCheckpoint}/permissions`, ConversationCursorPage, { query, ...options, __security: { adminAPIKeyAuth: true } });
-  }
-  /**
-   * **NOTE:** This endpoint requires an [admin API key](../admin-api-keys).
-   *
-   * Organization owners can use this endpoint to delete a permission for a
-   * fine-tuned model checkpoint.
-   *
-   * @example
-   * ```ts
-   * const permission =
-   *   await client.fineTuning.checkpoints.permissions.delete(
-   *     'cp_zc4Q7MP6XxulcVzj4MZdwsAB',
-   *     {
-   *       fine_tuned_model_checkpoint:
-   *         'ft:gpt-4o-mini-2024-07-18:org:weather:B7R9VjQd',
-   *     },
-   *   );
-   * ```
-   */
-  delete(permissionID, params, options) {
-    const { fine_tuned_model_checkpoint } = params;
-    return this._client.delete(path`/fine_tuning/checkpoints/${fine_tuned_model_checkpoint}/permissions/${permissionID}`, { ...options, __security: { adminAPIKeyAuth: true } });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/fine-tuning/checkpoints/checkpoints.mjs
-var Checkpoints = class extends APIResource {
-  constructor() {
-    super(...arguments);
-    this.permissions = new Permissions(this._client);
-  }
-};
-Checkpoints.Permissions = Permissions;
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/fine-tuning/jobs/checkpoints.mjs
-var Checkpoints2 = class extends APIResource {
-  /**
-   * List checkpoints for a fine-tuning job.
-   *
-   * @example
-   * ```ts
-   * // Automatically fetches more pages as needed.
-   * for await (const fineTuningJobCheckpoint of client.fineTuning.jobs.checkpoints.list(
-   *   'ft-AF1WoRqd3aJAHsqc9NY7iL8F',
-   * )) {
-   *   // ...
-   * }
-   * ```
-   */
-  list(fineTuningJobID, query = {}, options) {
-    return this._client.getAPIList(path`/fine_tuning/jobs/${fineTuningJobID}/checkpoints`, CursorPage, { query, ...options, __security: { bearerAuth: true } });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/fine-tuning/jobs/jobs.mjs
-var Jobs = class extends APIResource {
-  constructor() {
-    super(...arguments);
-    this.checkpoints = new Checkpoints2(this._client);
-  }
-  /**
-   * Creates a fine-tuning job which begins the process of creating a new model from
-   * a given dataset.
-   *
-   * Response includes details of the enqueued job including job status and the name
-   * of the fine-tuned models once complete.
-   *
-   * [Learn more about fine-tuning](https://platform.openai.com/docs/guides/model-optimization)
-   *
-   * @example
-   * ```ts
-   * const fineTuningJob = await client.fineTuning.jobs.create({
-   *   model: 'gpt-4o-mini',
-   *   training_file: 'file-abc123',
-   * });
-   * ```
-   */
-  create(body, options) {
-    return this._client.post("/fine_tuning/jobs", { body, ...options, __security: { bearerAuth: true } });
-  }
-  /**
-   * Get info about a fine-tuning job.
-   *
-   * [Learn more about fine-tuning](https://platform.openai.com/docs/guides/model-optimization)
-   *
-   * @example
-   * ```ts
-   * const fineTuningJob = await client.fineTuning.jobs.retrieve(
-   *   'ft-AF1WoRqd3aJAHsqc9NY7iL8F',
-   * );
-   * ```
-   */
-  retrieve(fineTuningJobID, options) {
-    return this._client.get(path`/fine_tuning/jobs/${fineTuningJobID}`, {
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * List your organization's fine-tuning jobs
-   *
-   * @example
-   * ```ts
-   * // Automatically fetches more pages as needed.
-   * for await (const fineTuningJob of client.fineTuning.jobs.list()) {
-   *   // ...
-   * }
-   * ```
-   */
-  list(query = {}, options) {
-    return this._client.getAPIList("/fine_tuning/jobs", CursorPage, {
-      query,
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Immediately cancel a fine-tune job.
-   *
-   * @example
-   * ```ts
-   * const fineTuningJob = await client.fineTuning.jobs.cancel(
-   *   'ft-AF1WoRqd3aJAHsqc9NY7iL8F',
-   * );
-   * ```
-   */
-  cancel(fineTuningJobID, options) {
-    return this._client.post(path`/fine_tuning/jobs/${fineTuningJobID}/cancel`, {
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Get status updates for a fine-tuning job.
-   *
-   * @example
-   * ```ts
-   * // Automatically fetches more pages as needed.
-   * for await (const fineTuningJobEvent of client.fineTuning.jobs.listEvents(
-   *   'ft-AF1WoRqd3aJAHsqc9NY7iL8F',
-   * )) {
-   *   // ...
-   * }
-   * ```
-   */
-  listEvents(fineTuningJobID, query = {}, options) {
-    return this._client.getAPIList(path`/fine_tuning/jobs/${fineTuningJobID}/events`, CursorPage, { query, ...options, __security: { bearerAuth: true } });
-  }
-  /**
-   * Pause a fine-tune job.
-   *
-   * @example
-   * ```ts
-   * const fineTuningJob = await client.fineTuning.jobs.pause(
-   *   'ft-AF1WoRqd3aJAHsqc9NY7iL8F',
-   * );
-   * ```
-   */
-  pause(fineTuningJobID, options) {
-    return this._client.post(path`/fine_tuning/jobs/${fineTuningJobID}/pause`, {
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Resume a fine-tune job.
-   *
-   * @example
-   * ```ts
-   * const fineTuningJob = await client.fineTuning.jobs.resume(
-   *   'ft-AF1WoRqd3aJAHsqc9NY7iL8F',
-   * );
-   * ```
-   */
-  resume(fineTuningJobID, options) {
-    return this._client.post(path`/fine_tuning/jobs/${fineTuningJobID}/resume`, {
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-};
-Jobs.Checkpoints = Checkpoints2;
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/fine-tuning/fine-tuning.mjs
-var FineTuning = class extends APIResource {
-  constructor() {
-    super(...arguments);
-    this.methods = new Methods(this._client);
-    this.jobs = new Jobs(this._client);
-    this.checkpoints = new Checkpoints(this._client);
-    this.alpha = new Alpha(this._client);
-  }
-};
-FineTuning.Methods = Methods;
-FineTuning.Jobs = Jobs;
-FineTuning.Checkpoints = Checkpoints;
-FineTuning.Alpha = Alpha;
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/graders/grader-models.mjs
-var GraderModels = class extends APIResource {
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/graders/graders.mjs
-var Graders2 = class extends APIResource {
-  constructor() {
-    super(...arguments);
-    this.graderModels = new GraderModels(this._client);
-  }
-};
-Graders2.GraderModels = GraderModels;
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/images.mjs
-var Images = class extends APIResource {
-  /**
-   * Creates a variation of a given image. This endpoint only supports `dall-e-2`.
-   *
-   * @example
-   * ```ts
-   * const imagesResponse = await client.images.createVariation({
-   *   image: fs.createReadStream('otter.png'),
-   * });
-   * ```
-   */
-  createVariation(body, options) {
-    return this._client.post("/images/variations", multipartFormRequestOptions({ body, ...options, __security: { bearerAuth: true } }, this._client));
-  }
-  edit(body, options) {
-    return this._client.post("/images/edits", multipartFormRequestOptions({ body, ...options, stream: body.stream ?? false, __security: { bearerAuth: true } }, this._client));
-  }
-  generate(body, options) {
-    return this._client.post("/images/generations", {
-      body,
-      ...options,
-      stream: body.stream ?? false,
-      __security: { bearerAuth: true }
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/models.mjs
-var Models = class extends APIResource {
-  /**
-   * Retrieves a model instance, providing basic information about the model such as
-   * the owner and permissioning.
-   */
-  retrieve(model, options) {
-    return this._client.get(path`/models/${model}`, { ...options, __security: { bearerAuth: true } });
-  }
-  /**
-   * Lists the currently available models, and provides basic information about each
-   * one such as the owner and availability.
-   */
-  list(options) {
-    return this._client.getAPIList("/models", Page, { ...options, __security: { bearerAuth: true } });
-  }
-  /**
-   * Delete a fine-tuned model. You must have the Owner role in your organization to
-   * delete a model.
-   */
-  delete(model, options) {
-    return this._client.delete(path`/models/${model}`, { ...options, __security: { bearerAuth: true } });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/moderations.mjs
-var Moderations = class extends APIResource {
-  /**
-   * Classifies if text and/or image inputs are potentially harmful. Learn more in
-   * the [moderation guide](https://platform.openai.com/docs/guides/moderation).
-   */
-  create(body, options) {
-    return this._client.post("/moderations", { body, ...options, __security: { bearerAuth: true } });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/realtime/calls.mjs
-var Calls = class extends APIResource {
-  /**
-   * Accept an incoming SIP call and configure the realtime session that will handle
-   * it.
-   *
-   * @example
-   * ```ts
-   * await client.realtime.calls.accept('call_id', {
-   *   type: 'realtime',
-   * });
-   * ```
-   */
-  accept(callID, body, options) {
-    return this._client.post(path`/realtime/calls/${callID}/accept`, {
-      body,
-      ...options,
-      headers: buildHeaders([{ Accept: "*/*" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * End an active Realtime API call, whether it was initiated over SIP or WebRTC.
-   *
-   * @example
-   * ```ts
-   * await client.realtime.calls.hangup('call_id');
-   * ```
-   */
-  hangup(callID, options) {
-    return this._client.post(path`/realtime/calls/${callID}/hangup`, {
-      ...options,
-      headers: buildHeaders([{ Accept: "*/*" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Transfer an active SIP call to a new destination using the SIP REFER verb.
-   *
-   * @example
-   * ```ts
-   * await client.realtime.calls.refer('call_id', {
-   *   target_uri: 'tel:+14155550123',
-   * });
-   * ```
-   */
-  refer(callID, body, options) {
-    return this._client.post(path`/realtime/calls/${callID}/refer`, {
-      body,
-      ...options,
-      headers: buildHeaders([{ Accept: "*/*" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Decline an incoming SIP call by returning a SIP status code to the caller.
-   *
-   * @example
-   * ```ts
-   * await client.realtime.calls.reject('call_id');
-   * ```
-   */
-  reject(callID, body = {}, options) {
-    return this._client.post(path`/realtime/calls/${callID}/reject`, {
-      body,
-      ...options,
-      headers: buildHeaders([{ Accept: "*/*" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/realtime/client-secrets.mjs
-var ClientSecrets = class extends APIResource {
-  /**
-   * Create a Realtime client secret with an associated session configuration.
-   *
-   * Client secrets are short-lived tokens that can be passed to a client app, such
-   * as a web frontend or mobile client, which grants access to the Realtime API
-   * without leaking your main API key. You can configure a custom TTL for each
-   * client secret.
-   *
-   * You can also attach session configuration options to the client secret, which
-   * will be applied to any sessions created using that client secret, but these can
-   * also be overridden by the client connection.
-   *
-   * [Learn more about authentication with client secrets over WebRTC](https://platform.openai.com/docs/guides/realtime-webrtc).
-   *
-   * Returns the created client secret and the effective session object. The client
-   * secret is a string that looks like `ek_1234`.
-   *
-   * @example
-   * ```ts
-   * const clientSecret =
-   *   await client.realtime.clientSecrets.create();
-   * ```
-   */
-  create(body, options) {
-    return this._client.post("/realtime/client_secrets", {
-      body,
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/realtime/realtime.mjs
-var Realtime2 = class extends APIResource {
-  constructor() {
-    super(...arguments);
-    this.clientSecrets = new ClientSecrets(this._client);
-    this.calls = new Calls(this._client);
-  }
-};
-Realtime2.ClientSecrets = ClientSecrets;
-Realtime2.Calls = Calls;
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/lib/ResponsesParser.mjs
-function maybeParseResponse(response, params) {
-  if (!params || !hasAutoParseableInput2(params)) {
-    return {
-      ...response,
-      output_parsed: null,
-      output: response.output.map((item) => {
-        if (item.type === "function_call") {
-          return {
-            ...item,
-            parsed_arguments: null
-          };
-        }
-        if (item.type === "message") {
-          return {
-            ...item,
-            content: item.content.map((content) => ({
-              ...content,
-              parsed: null
-            }))
-          };
-        } else {
-          return item;
-        }
-      })
-    };
-  }
-  return parseResponse(response, params);
-}
-function parseResponse(response, params) {
-  const output = response.output.map((item) => {
-    if (item.type === "function_call") {
-      return {
-        ...item,
-        parsed_arguments: parseToolCall2(params, item)
-      };
-    }
-    if (item.type === "message") {
-      const content = item.content.map((content2) => {
-        if (content2.type === "output_text") {
-          return {
-            ...content2,
-            parsed: parseTextFormat(params, content2.text)
-          };
-        }
-        return content2;
-      });
-      return {
-        ...item,
-        content
-      };
-    }
-    return item;
-  });
-  const parsed = Object.assign({}, response, { output });
-  if (!Object.getOwnPropertyDescriptor(response, "output_text")) {
-    addOutputText(parsed);
-  }
-  Object.defineProperty(parsed, "output_parsed", {
-    enumerable: true,
-    get() {
-      for (const output2 of parsed.output) {
-        if (output2.type !== "message") {
-          continue;
-        }
-        for (const content of output2.content) {
-          if (content.type === "output_text" && content.parsed !== null) {
-            return content.parsed;
-          }
-        }
-      }
-      return null;
-    }
-  });
-  return parsed;
-}
-function parseTextFormat(params, content) {
-  if (params.text?.format?.type !== "json_schema") {
-    return null;
-  }
-  if ("$parseRaw" in params.text?.format) {
-    const text_format = params.text?.format;
-    return text_format.$parseRaw(content);
-  }
-  return JSON.parse(content);
-}
-function hasAutoParseableInput2(params) {
-  if (isAutoParsableResponseFormat(params.text?.format)) {
-    return true;
-  }
-  return false;
-}
-function isAutoParsableTool2(tool) {
-  return tool?.["$brand"] === "auto-parseable-tool";
-}
-function getInputToolByName(input_tools, name) {
-  return input_tools.find((tool) => tool.type === "function" && tool.name === name);
-}
-function parseToolCall2(params, toolCall) {
-  const inputTool = getInputToolByName(params.tools ?? [], toolCall.name);
-  return {
-    ...toolCall,
-    ...toolCall,
-    parsed_arguments: isAutoParsableTool2(inputTool) ? inputTool.$parseRaw(toolCall.arguments) : inputTool?.strict ? JSON.parse(toolCall.arguments) : null
-  };
-}
-function addOutputText(rsp) {
-  const texts = [];
-  for (const output of rsp.output) {
-    if (output.type !== "message") {
-      continue;
-    }
-    for (const content of output.content) {
-      if (content.type === "output_text") {
-        texts.push(content.text);
-      }
-    }
-  }
-  rsp.output_text = texts.join("");
-}
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/lib/responses/ResponseStream.mjs
-var _ResponseStream_instances;
-var _ResponseStream_params;
-var _ResponseStream_currentResponseSnapshot;
-var _ResponseStream_finalResponse;
-var _ResponseStream_beginRequest;
-var _ResponseStream_addEvent;
-var _ResponseStream_endRequest;
-var _ResponseStream_accumulateResponse;
-var ResponseStream = class _ResponseStream extends EventStream {
-  constructor(params) {
-    super();
-    _ResponseStream_instances.add(this);
-    _ResponseStream_params.set(this, void 0);
-    _ResponseStream_currentResponseSnapshot.set(this, void 0);
-    _ResponseStream_finalResponse.set(this, void 0);
-    __classPrivateFieldSet2(this, _ResponseStream_params, params, "f");
-  }
-  static createResponse(client, params, options) {
-    const runner = new _ResponseStream(params);
-    runner._run(() => runner._createOrRetrieveResponse(client, params, {
-      ...options,
-      headers: { ...options?.headers, "X-Stainless-Helper-Method": "stream" }
-    }));
-    return runner;
-  }
-  async _createOrRetrieveResponse(client, params, options) {
-    const signal = options?.signal;
-    if (signal) {
-      if (signal.aborted)
-        this.controller.abort();
-      signal.addEventListener("abort", () => this.controller.abort());
-    }
-    __classPrivateFieldGet2(this, _ResponseStream_instances, "m", _ResponseStream_beginRequest).call(this);
-    let stream;
-    let starting_after = null;
-    if ("response_id" in params) {
-      stream = await client.responses.retrieve(params.response_id, { stream: true }, { ...options, signal: this.controller.signal, stream: true });
-      starting_after = params.starting_after ?? null;
-    } else {
-      stream = await client.responses.create({ ...params, stream: true }, { ...options, signal: this.controller.signal });
-    }
-    this._connected();
-    for await (const event of stream) {
-      __classPrivateFieldGet2(this, _ResponseStream_instances, "m", _ResponseStream_addEvent).call(this, event, starting_after);
-    }
-    if (stream.controller.signal?.aborted) {
-      throw new APIUserAbortError();
-    }
-    return __classPrivateFieldGet2(this, _ResponseStream_instances, "m", _ResponseStream_endRequest).call(this);
-  }
-  [(_ResponseStream_params = /* @__PURE__ */ new WeakMap(), _ResponseStream_currentResponseSnapshot = /* @__PURE__ */ new WeakMap(), _ResponseStream_finalResponse = /* @__PURE__ */ new WeakMap(), _ResponseStream_instances = /* @__PURE__ */ new WeakSet(), _ResponseStream_beginRequest = function _ResponseStream_beginRequest2() {
-    if (this.ended)
-      return;
-    __classPrivateFieldSet2(this, _ResponseStream_currentResponseSnapshot, void 0, "f");
-  }, _ResponseStream_addEvent = function _ResponseStream_addEvent2(event, starting_after) {
-    if (this.ended)
-      return;
-    const maybeEmit = (name, event2) => {
-      if (starting_after == null || event2.sequence_number > starting_after) {
-        this._emit(name, event2);
-      }
-    };
-    const response = __classPrivateFieldGet2(this, _ResponseStream_instances, "m", _ResponseStream_accumulateResponse).call(this, event);
-    maybeEmit("event", event);
-    switch (event.type) {
-      case "response.output_text.delta": {
-        const output = response.output[event.output_index];
-        if (!output) {
-          throw new OpenAIError(`missing output at index ${event.output_index}`);
-        }
-        if (output.type === "message") {
-          const content = output.content[event.content_index];
-          if (!content) {
-            throw new OpenAIError(`missing content at index ${event.content_index}`);
-          }
-          if (content.type !== "output_text") {
-            throw new OpenAIError(`expected content to be 'output_text', got ${content.type}`);
-          }
-          maybeEmit("response.output_text.delta", {
-            ...event,
-            snapshot: content.text
-          });
-        }
-        break;
-      }
-      case "response.function_call_arguments.delta": {
-        const output = response.output[event.output_index];
-        if (!output) {
-          throw new OpenAIError(`missing output at index ${event.output_index}`);
-        }
-        if (output.type === "function_call") {
-          maybeEmit("response.function_call_arguments.delta", {
-            ...event,
-            snapshot: output.arguments
-          });
-        }
-        break;
-      }
-      default:
-        maybeEmit(event.type, event);
-        break;
-    }
-  }, _ResponseStream_endRequest = function _ResponseStream_endRequest2() {
-    if (this.ended) {
-      throw new OpenAIError(`stream has ended, this shouldn't happen`);
-    }
-    const snapshot = __classPrivateFieldGet2(this, _ResponseStream_currentResponseSnapshot, "f");
-    if (!snapshot) {
-      throw new OpenAIError(`request ended without sending any events`);
-    }
-    __classPrivateFieldSet2(this, _ResponseStream_currentResponseSnapshot, void 0, "f");
-    const parsedResponse = finalizeResponse(snapshot, __classPrivateFieldGet2(this, _ResponseStream_params, "f"));
-    __classPrivateFieldSet2(this, _ResponseStream_finalResponse, parsedResponse, "f");
-    return parsedResponse;
-  }, _ResponseStream_accumulateResponse = function _ResponseStream_accumulateResponse2(event) {
-    let snapshot = __classPrivateFieldGet2(this, _ResponseStream_currentResponseSnapshot, "f");
-    if (!snapshot) {
-      if (event.type !== "response.created") {
-        throw new OpenAIError(`When snapshot hasn't been set yet, expected 'response.created' event, got ${event.type}`);
-      }
-      snapshot = __classPrivateFieldSet2(this, _ResponseStream_currentResponseSnapshot, event.response, "f");
-      return snapshot;
-    }
-    switch (event.type) {
-      case "response.output_item.added": {
-        snapshot.output.push(event.item);
-        break;
-      }
-      case "response.content_part.added": {
-        const output = snapshot.output[event.output_index];
-        if (!output) {
-          throw new OpenAIError(`missing output at index ${event.output_index}`);
-        }
-        const type = output.type;
-        const part = event.part;
-        if (type === "message" && part.type !== "reasoning_text") {
-          output.content.push(part);
-        } else if (type === "reasoning" && part.type === "reasoning_text") {
-          if (!output.content) {
-            output.content = [];
-          }
-          output.content.push(part);
-        }
-        break;
-      }
-      case "response.output_text.delta": {
-        const output = snapshot.output[event.output_index];
-        if (!output) {
-          throw new OpenAIError(`missing output at index ${event.output_index}`);
-        }
-        if (output.type === "message") {
-          const content = output.content[event.content_index];
-          if (!content) {
-            throw new OpenAIError(`missing content at index ${event.content_index}`);
-          }
-          if (content.type !== "output_text") {
-            throw new OpenAIError(`expected content to be 'output_text', got ${content.type}`);
-          }
-          content.text += event.delta;
-        }
-        break;
-      }
-      case "response.function_call_arguments.delta": {
-        const output = snapshot.output[event.output_index];
-        if (!output) {
-          throw new OpenAIError(`missing output at index ${event.output_index}`);
-        }
-        if (output.type === "function_call") {
-          output.arguments += event.delta;
-        }
-        break;
-      }
-      case "response.reasoning_text.delta": {
-        const output = snapshot.output[event.output_index];
-        if (!output) {
-          throw new OpenAIError(`missing output at index ${event.output_index}`);
-        }
-        if (output.type === "reasoning") {
-          const content = output.content?.[event.content_index];
-          if (!content) {
-            throw new OpenAIError(`missing content at index ${event.content_index}`);
-          }
-          if (content.type !== "reasoning_text") {
-            throw new OpenAIError(`expected content to be 'reasoning_text', got ${content.type}`);
-          }
-          content.text += event.delta;
-        }
-        break;
-      }
-      case "response.completed": {
-        __classPrivateFieldSet2(this, _ResponseStream_currentResponseSnapshot, event.response, "f");
-        break;
-      }
-    }
-    return snapshot;
-  }, Symbol.asyncIterator)]() {
-    const pushQueue = [];
-    const readQueue = [];
-    let done = false;
-    this.on("event", (event) => {
-      const reader = readQueue.shift();
-      if (reader) {
-        reader.resolve(event);
-      } else {
-        pushQueue.push(event);
-      }
-    });
-    this.on("end", () => {
-      done = true;
-      for (const reader of readQueue) {
-        reader.resolve(void 0);
-      }
-      readQueue.length = 0;
-    });
-    this.on("abort", (err) => {
-      done = true;
-      for (const reader of readQueue) {
-        reader.reject(err);
-      }
-      readQueue.length = 0;
-    });
-    this.on("error", (err) => {
-      done = true;
-      for (const reader of readQueue) {
-        reader.reject(err);
-      }
-      readQueue.length = 0;
-    });
-    return {
-      next: async () => {
-        if (!pushQueue.length) {
-          if (done) {
-            return { value: void 0, done: true };
-          }
-          return new Promise((resolve, reject) => readQueue.push({ resolve, reject })).then((event2) => event2 ? { value: event2, done: false } : { value: void 0, done: true });
-        }
-        const event = pushQueue.shift();
-        return { value: event, done: false };
-      },
-      return: async () => {
-        this.abort();
-        return { value: void 0, done: true };
-      }
-    };
-  }
-  /**
-   * @returns a promise that resolves with the final Response, or rejects
-   * if an error occurred or the stream ended prematurely without producing a REsponse.
-   */
-  async finalResponse() {
-    await this.done();
-    const response = __classPrivateFieldGet2(this, _ResponseStream_finalResponse, "f");
-    if (!response)
-      throw new OpenAIError("stream ended without producing a ChatCompletion");
-    return response;
-  }
-};
-function finalizeResponse(snapshot, params) {
-  return maybeParseResponse(snapshot, params);
-}
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/responses/input-items.mjs
-var InputItems = class extends APIResource {
-  /**
-   * Returns a list of input items for a given response.
-   *
-   * @example
-   * ```ts
-   * // Automatically fetches more pages as needed.
-   * for await (const responseItem of client.responses.inputItems.list(
-   *   'response_id',
-   * )) {
-   *   // ...
-   * }
-   * ```
-   */
-  list(responseID, query = {}, options) {
-    return this._client.getAPIList(path`/responses/${responseID}/input_items`, CursorPage, { query, ...options, __security: { bearerAuth: true } });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/responses/input-tokens.mjs
-var InputTokens = class extends APIResource {
-  /**
-   * Returns input token counts of the request.
-   *
-   * Returns an object with `object` set to `response.input_tokens` and an
-   * `input_tokens` count.
-   *
-   * @example
-   * ```ts
-   * const response = await client.responses.inputTokens.count();
-   * ```
-   */
-  count(body = {}, options) {
-    return this._client.post("/responses/input_tokens", {
-      body,
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/responses/responses.mjs
-var Responses = class extends APIResource {
-  constructor() {
-    super(...arguments);
-    this.inputItems = new InputItems(this._client);
-    this.inputTokens = new InputTokens(this._client);
-  }
-  create(body, options) {
-    return this._client.post("/responses", {
-      body,
-      ...options,
-      stream: body.stream ?? false,
-      __security: { bearerAuth: true }
-    })._thenUnwrap((rsp) => {
-      if ("object" in rsp && rsp.object === "response") {
-        addOutputText(rsp);
-      }
-      return rsp;
-    });
-  }
-  retrieve(responseID, query = {}, options) {
-    return this._client.get(path`/responses/${responseID}`, {
-      query,
-      ...options,
-      stream: query?.stream ?? false,
-      __security: { bearerAuth: true }
-    })._thenUnwrap((rsp) => {
-      if ("object" in rsp && rsp.object === "response") {
-        addOutputText(rsp);
-      }
-      return rsp;
-    });
-  }
-  /**
-   * Deletes a model response with the given ID.
-   *
-   * @example
-   * ```ts
-   * await client.responses.delete(
-   *   'resp_677efb5139a88190b512bc3fef8e535d',
-   * );
-   * ```
-   */
-  delete(responseID, options) {
-    return this._client.delete(path`/responses/${responseID}`, {
-      ...options,
-      headers: buildHeaders([{ Accept: "*/*" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  parse(body, options) {
-    return this._client.responses.create(body, options)._thenUnwrap((response) => parseResponse(response, body));
-  }
-  /**
-   * Creates a model response stream
-   */
-  stream(body, options) {
-    return ResponseStream.createResponse(this._client, body, options);
-  }
-  /**
-   * Cancels a model response with the given ID. Only responses created with the
-   * `background` parameter set to `true` can be cancelled.
-   * [Learn more](https://platform.openai.com/docs/guides/background).
-   *
-   * @example
-   * ```ts
-   * const response = await client.responses.cancel(
-   *   'resp_677efb5139a88190b512bc3fef8e535d',
-   * );
-   * ```
-   */
-  cancel(responseID, options) {
-    return this._client.post(path`/responses/${responseID}/cancel`, {
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Compact a conversation. Returns a compacted response object.
-   *
-   * Learn when and how to compact long-running conversations in the
-   * [conversation state guide](https://platform.openai.com/docs/guides/conversation-state#managing-the-context-window).
-   * For ZDR-compatible compaction details, see
-   * [Compaction (advanced)](https://platform.openai.com/docs/guides/conversation-state#compaction-advanced).
-   *
-   * @example
-   * ```ts
-   * const compactedResponse = await client.responses.compact({
-   *   model: 'gpt-5.4',
-   * });
-   * ```
-   */
-  compact(body, options) {
-    return this._client.post("/responses/compact", { body, ...options, __security: { bearerAuth: true } });
-  }
-};
-Responses.InputItems = InputItems;
-Responses.InputTokens = InputTokens;
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/skills/content.mjs
-var Content2 = class extends APIResource {
-  /**
-   * Download a skill zip bundle by its ID.
-   */
-  retrieve(skillID, options) {
-    return this._client.get(path`/skills/${skillID}/content`, {
-      ...options,
-      headers: buildHeaders([{ Accept: "application/binary" }, options?.headers]),
-      __security: { bearerAuth: true },
-      __binaryResponse: true
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/skills/versions/content.mjs
-var Content3 = class extends APIResource {
-  /**
-   * Download a skill version zip bundle.
-   */
-  retrieve(version5, params, options) {
-    const { skill_id } = params;
-    return this._client.get(path`/skills/${skill_id}/versions/${version5}/content`, {
-      ...options,
-      headers: buildHeaders([{ Accept: "application/binary" }, options?.headers]),
-      __security: { bearerAuth: true },
-      __binaryResponse: true
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/skills/versions/versions.mjs
-var Versions = class extends APIResource {
-  constructor() {
-    super(...arguments);
-    this.content = new Content3(this._client);
-  }
-  /**
-   * Create a new immutable skill version.
-   */
-  create(skillID, body = {}, options) {
-    return this._client.post(path`/skills/${skillID}/versions`, maybeMultipartFormRequestOptions({ body, ...options, __security: { bearerAuth: true } }, this._client));
-  }
-  /**
-   * Get a specific skill version.
-   */
-  retrieve(version5, params, options) {
-    const { skill_id } = params;
-    return this._client.get(path`/skills/${skill_id}/versions/${version5}`, {
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * List skill versions for a skill.
-   */
-  list(skillID, query = {}, options) {
-    return this._client.getAPIList(path`/skills/${skillID}/versions`, CursorPage, {
-      query,
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Delete a skill version.
-   */
-  delete(version5, params, options) {
-    const { skill_id } = params;
-    return this._client.delete(path`/skills/${skill_id}/versions/${version5}`, {
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-};
-Versions.Content = Content3;
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/skills/skills.mjs
-var Skills = class extends APIResource {
-  constructor() {
-    super(...arguments);
-    this.content = new Content2(this._client);
-    this.versions = new Versions(this._client);
-  }
-  /**
-   * Create a new skill.
-   */
-  create(body = {}, options) {
-    return this._client.post("/skills", maybeMultipartFormRequestOptions({ body, ...options, __security: { bearerAuth: true } }, this._client));
-  }
-  /**
-   * Get a skill by its ID.
-   */
-  retrieve(skillID, options) {
-    return this._client.get(path`/skills/${skillID}`, { ...options, __security: { bearerAuth: true } });
-  }
-  /**
-   * Update the default version pointer for a skill.
-   */
-  update(skillID, body, options) {
-    return this._client.post(path`/skills/${skillID}`, {
-      body,
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * List all skills for the current project.
-   */
-  list(query = {}, options) {
-    return this._client.getAPIList("/skills", CursorPage, {
-      query,
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Delete a skill by its ID.
-   */
-  delete(skillID, options) {
-    return this._client.delete(path`/skills/${skillID}`, { ...options, __security: { bearerAuth: true } });
-  }
-};
-Skills.Content = Content2;
-Skills.Versions = Versions;
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/uploads/parts.mjs
-var Parts = class extends APIResource {
-  /**
-   * Adds a
-   * [Part](https://platform.openai.com/docs/api-reference/uploads/part-object) to an
-   * [Upload](https://platform.openai.com/docs/api-reference/uploads/object) object.
-   * A Part represents a chunk of bytes from the file you are trying to upload.
-   *
-   * Each Part can be at most 64 MB, and you can add Parts until you hit the Upload
-   * maximum of 8 GB.
-   *
-   * It is possible to add multiple Parts in parallel. You can decide the intended
-   * order of the Parts when you
-   * [complete the Upload](https://platform.openai.com/docs/api-reference/uploads/complete).
-   */
-  create(uploadID, body, options) {
-    return this._client.post(path`/uploads/${uploadID}/parts`, multipartFormRequestOptions({ body, ...options, __security: { bearerAuth: true } }, this._client));
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/uploads/uploads.mjs
-var Uploads = class extends APIResource {
-  constructor() {
-    super(...arguments);
-    this.parts = new Parts(this._client);
-  }
-  /**
-   * Creates an intermediate
-   * [Upload](https://platform.openai.com/docs/api-reference/uploads/object) object
-   * that you can add
-   * [Parts](https://platform.openai.com/docs/api-reference/uploads/part-object) to.
-   * Currently, an Upload can accept at most 8 GB in total and expires after an hour
-   * after you create it.
-   *
-   * Once you complete the Upload, we will create a
-   * [File](https://platform.openai.com/docs/api-reference/files/object) object that
-   * contains all the parts you uploaded. This File is usable in the rest of our
-   * platform as a regular File object.
-   *
-   * For certain `purpose` values, the correct `mime_type` must be specified. Please
-   * refer to documentation for the
-   * [supported MIME types for your use case](https://platform.openai.com/docs/assistants/tools/file-search#supported-files).
-   *
-   * For guidance on the proper filename extensions for each purpose, please follow
-   * the documentation on
-   * [creating a File](https://platform.openai.com/docs/api-reference/files/create).
-   *
-   * Returns the Upload object with status `pending`.
-   */
-  create(body, options) {
-    return this._client.post("/uploads", { body, ...options, __security: { bearerAuth: true } });
-  }
-  /**
-   * Cancels the Upload. No Parts may be added after an Upload is cancelled.
-   *
-   * Returns the Upload object with status `cancelled`.
-   */
-  cancel(uploadID, options) {
-    return this._client.post(path`/uploads/${uploadID}/cancel`, {
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Completes the
-   * [Upload](https://platform.openai.com/docs/api-reference/uploads/object).
-   *
-   * Within the returned Upload object, there is a nested
-   * [File](https://platform.openai.com/docs/api-reference/files/object) object that
-   * is ready to use in the rest of the platform.
-   *
-   * You can specify the order of the Parts by passing in an ordered list of the Part
-   * IDs.
-   *
-   * The number of bytes uploaded upon completion must match the number of bytes
-   * initially specified when creating the Upload object. No Parts may be added after
-   * an Upload is completed. Returns the Upload object with status `completed`,
-   * including an additional `file` property containing the created usable File
-   * object.
-   */
-  complete(uploadID, body, options) {
-    return this._client.post(path`/uploads/${uploadID}/complete`, {
-      body,
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-};
-Uploads.Parts = Parts;
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/lib/Util.mjs
-var allSettledWithThrow = async (promises) => {
-  const results = await Promise.allSettled(promises);
-  const rejected = results.filter((result) => result.status === "rejected");
-  if (rejected.length) {
-    for (const result of rejected) {
-      console.error(result.reason);
-    }
-    throw new Error(`${rejected.length} promise(s) failed - see the above errors`);
-  }
-  const values = [];
-  for (const result of results) {
-    if (result.status === "fulfilled") {
-      values.push(result.value);
-    }
-  }
-  return values;
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/vector-stores/file-batches.mjs
-var FileBatches = class extends APIResource {
-  /**
-   * Create a vector store file batch.
-   */
-  create(vectorStoreID, body, options) {
-    return this._client.post(path`/vector_stores/${vectorStoreID}/file_batches`, {
-      body,
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Retrieves a vector store file batch.
-   */
-  retrieve(batchID, params, options) {
-    const { vector_store_id } = params;
-    return this._client.get(path`/vector_stores/${vector_store_id}/file_batches/${batchID}`, {
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Cancel a vector store file batch. This attempts to cancel the processing of
-   * files in this batch as soon as possible.
-   */
-  cancel(batchID, params, options) {
-    const { vector_store_id } = params;
-    return this._client.post(path`/vector_stores/${vector_store_id}/file_batches/${batchID}/cancel`, {
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Create a vector store batch and poll until all files have been processed.
-   */
-  async createAndPoll(vectorStoreId, body, options) {
-    const batch = await this.create(vectorStoreId, body);
-    return await this.poll(vectorStoreId, batch.id, options);
-  }
-  /**
-   * Returns a list of vector store files in a batch.
-   */
-  listFiles(batchID, params, options) {
-    const { vector_store_id, ...query } = params;
-    return this._client.getAPIList(path`/vector_stores/${vector_store_id}/file_batches/${batchID}/files`, CursorPage, {
-      query,
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Wait for the given file batch to be processed.
-   *
-   * Note: this will return even if one of the files failed to process, you need to
-   * check batch.file_counts.failed_count to handle this case.
-   */
-  async poll(vectorStoreID, batchID, options) {
-    const headers = buildHeaders([
-      options?.headers,
-      {
-        "X-Stainless-Poll-Helper": "true",
-        "X-Stainless-Custom-Poll-Interval": options?.pollIntervalMs?.toString() ?? void 0
-      }
-    ]);
-    while (true) {
-      const { data: batch, response } = await this.retrieve(batchID, { vector_store_id: vectorStoreID }, {
-        ...options,
-        headers
-      }).withResponse();
-      switch (batch.status) {
-        case "in_progress":
-          let sleepInterval = 5e3;
-          if (options?.pollIntervalMs) {
-            sleepInterval = options.pollIntervalMs;
-          } else {
-            const headerInterval = response.headers.get("openai-poll-after-ms");
-            if (headerInterval) {
-              const headerIntervalMs = parseInt(headerInterval);
-              if (!isNaN(headerIntervalMs)) {
-                sleepInterval = headerIntervalMs;
-              }
-            }
-          }
-          await sleep3(sleepInterval);
-          break;
-        case "failed":
-        case "cancelled":
-        case "completed":
-          return batch;
-      }
-    }
-  }
-  /**
-   * Uploads the given files concurrently and then creates a vector store file batch.
-   *
-   * The concurrency limit is configurable using the `maxConcurrency` parameter.
-   */
-  async uploadAndPoll(vectorStoreId, { files, fileIds = [] }, options) {
-    if (files == null || files.length == 0) {
-      throw new Error(`No \`files\` provided to process. If you've already uploaded files you should use \`.createAndPoll()\` instead`);
-    }
-    const configuredConcurrency = options?.maxConcurrency ?? 5;
-    const concurrencyLimit = Math.min(configuredConcurrency, files.length);
-    const client = this._client;
-    const fileIterator = files.values();
-    const allFileIds = [...fileIds];
-    async function processFiles(iterator) {
-      for (let item of iterator) {
-        const fileObj = await client.files.create({ file: item, purpose: "assistants" }, options);
-        allFileIds.push(fileObj.id);
-      }
-    }
-    const workers = Array(concurrencyLimit).fill(fileIterator).map(processFiles);
-    await allSettledWithThrow(workers);
-    return await this.createAndPoll(vectorStoreId, {
-      file_ids: allFileIds
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/vector-stores/files.mjs
-var Files3 = class extends APIResource {
-  /**
-   * Create a vector store file by attaching a
-   * [File](https://platform.openai.com/docs/api-reference/files) to a
-   * [vector store](https://platform.openai.com/docs/api-reference/vector-stores/object).
-   */
-  create(vectorStoreID, body, options) {
-    return this._client.post(path`/vector_stores/${vectorStoreID}/files`, {
-      body,
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Retrieves a vector store file.
-   */
-  retrieve(fileID, params, options) {
-    const { vector_store_id } = params;
-    return this._client.get(path`/vector_stores/${vector_store_id}/files/${fileID}`, {
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Update attributes on a vector store file.
-   */
-  update(fileID, params, options) {
-    const { vector_store_id, ...body } = params;
-    return this._client.post(path`/vector_stores/${vector_store_id}/files/${fileID}`, {
-      body,
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Returns a list of vector store files.
-   */
-  list(vectorStoreID, query = {}, options) {
-    return this._client.getAPIList(path`/vector_stores/${vectorStoreID}/files`, CursorPage, {
-      query,
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Delete a vector store file. This will remove the file from the vector store but
-   * the file itself will not be deleted. To delete the file, use the
-   * [delete file](https://platform.openai.com/docs/api-reference/files/delete)
-   * endpoint.
-   */
-  delete(fileID, params, options) {
-    const { vector_store_id } = params;
-    return this._client.delete(path`/vector_stores/${vector_store_id}/files/${fileID}`, {
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Attach a file to the given vector store and wait for it to be processed.
-   */
-  async createAndPoll(vectorStoreId, body, options) {
-    const file2 = await this.create(vectorStoreId, body, options);
-    return await this.poll(vectorStoreId, file2.id, options);
-  }
-  /**
-   * Wait for the vector store file to finish processing.
-   *
-   * Note: this will return even if the file failed to process, you need to check
-   * file.last_error and file.status to handle these cases
-   */
-  async poll(vectorStoreID, fileID, options) {
-    const headers = buildHeaders([
-      options?.headers,
-      {
-        "X-Stainless-Poll-Helper": "true",
-        "X-Stainless-Custom-Poll-Interval": options?.pollIntervalMs?.toString() ?? void 0
-      }
-    ]);
-    while (true) {
-      const fileResponse = await this.retrieve(fileID, {
-        vector_store_id: vectorStoreID
-      }, { ...options, headers }).withResponse();
-      const file2 = fileResponse.data;
-      switch (file2.status) {
-        case "in_progress":
-          let sleepInterval = 5e3;
-          if (options?.pollIntervalMs) {
-            sleepInterval = options.pollIntervalMs;
-          } else {
-            const headerInterval = fileResponse.response.headers.get("openai-poll-after-ms");
-            if (headerInterval) {
-              const headerIntervalMs = parseInt(headerInterval);
-              if (!isNaN(headerIntervalMs)) {
-                sleepInterval = headerIntervalMs;
-              }
-            }
-          }
-          await sleep3(sleepInterval);
-          break;
-        case "failed":
-        case "completed":
-          return file2;
-      }
-    }
-  }
-  /**
-   * Upload a file to the `files` API and then attach it to the given vector store.
-   *
-   * Note the file will be asynchronously processed (you can use the alternative
-   * polling helper method to wait for processing to complete).
-   */
-  async upload(vectorStoreId, file2, options) {
-    const fileInfo = await this._client.files.create({ file: file2, purpose: "assistants" }, options);
-    return this.create(vectorStoreId, { file_id: fileInfo.id }, options);
-  }
-  /**
-   * Add a file to a vector store and poll until processing is complete.
-   */
-  async uploadAndPoll(vectorStoreId, file2, options) {
-    const fileInfo = await this.upload(vectorStoreId, file2, options);
-    return await this.poll(vectorStoreId, fileInfo.id, options);
-  }
-  /**
-   * Retrieve the parsed contents of a vector store file.
-   */
-  content(fileID, params, options) {
-    const { vector_store_id } = params;
-    return this._client.getAPIList(path`/vector_stores/${vector_store_id}/files/${fileID}/content`, Page, {
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/vector-stores/vector-stores.mjs
-var VectorStores = class extends APIResource {
-  constructor() {
-    super(...arguments);
-    this.files = new Files3(this._client);
-    this.fileBatches = new FileBatches(this._client);
-  }
-  /**
-   * Create a vector store.
-   */
-  create(body, options) {
-    return this._client.post("/vector_stores", {
-      body,
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Retrieves a vector store.
-   */
-  retrieve(vectorStoreID, options) {
-    return this._client.get(path`/vector_stores/${vectorStoreID}`, {
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Modifies a vector store.
-   */
-  update(vectorStoreID, body, options) {
-    return this._client.post(path`/vector_stores/${vectorStoreID}`, {
-      body,
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Returns a list of vector stores.
-   */
-  list(query = {}, options) {
-    return this._client.getAPIList("/vector_stores", CursorPage, {
-      query,
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Delete a vector store.
-   */
-  delete(vectorStoreID, options) {
-    return this._client.delete(path`/vector_stores/${vectorStoreID}`, {
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Search a vector store for relevant chunks based on a query and file attributes
-   * filter.
-   */
-  search(vectorStoreID, body, options) {
-    return this._client.getAPIList(path`/vector_stores/${vectorStoreID}/search`, Page, {
-      body,
-      method: "post",
-      ...options,
-      headers: buildHeaders([{ "OpenAI-Beta": "assistants=v2" }, options?.headers]),
-      __security: { bearerAuth: true }
-    });
-  }
-};
-VectorStores.Files = Files3;
-VectorStores.FileBatches = FileBatches;
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/videos.mjs
-var Videos = class extends APIResource {
-  /**
-   * Create a new video generation job from a prompt and optional reference assets.
-   */
-  create(body, options) {
-    return this._client.post("/videos", multipartFormRequestOptions({ body, ...options, __security: { bearerAuth: true } }, this._client));
-  }
-  /**
-   * Fetch the latest metadata for a generated video.
-   */
-  retrieve(videoID, options) {
-    return this._client.get(path`/videos/${videoID}`, { ...options, __security: { bearerAuth: true } });
-  }
-  /**
-   * List recently generated videos for the current project.
-   */
-  list(query = {}, options) {
-    return this._client.getAPIList("/videos", ConversationCursorPage, {
-      query,
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Permanently delete a completed or failed video and its stored assets.
-   */
-  delete(videoID, options) {
-    return this._client.delete(path`/videos/${videoID}`, { ...options, __security: { bearerAuth: true } });
-  }
-  /**
-   * Create a character from an uploaded video.
-   */
-  createCharacter(body, options) {
-    return this._client.post("/videos/characters", multipartFormRequestOptions({ body, ...options, __security: { bearerAuth: true } }, this._client));
-  }
-  /**
-   * Download the generated video bytes or a derived preview asset.
-   *
-   * Streams the rendered video content for the specified video job.
-   */
-  downloadContent(videoID, query = {}, options) {
-    return this._client.get(path`/videos/${videoID}/content`, {
-      query,
-      ...options,
-      headers: buildHeaders([{ Accept: "application/binary" }, options?.headers]),
-      __security: { bearerAuth: true },
-      __binaryResponse: true
-    });
-  }
-  /**
-   * Create a new video generation job by editing a source video or existing
-   * generated video.
-   */
-  edit(body, options) {
-    return this._client.post("/videos/edits", multipartFormRequestOptions({ body, ...options, __security: { bearerAuth: true } }, this._client));
-  }
-  /**
-   * Create an extension of a completed video.
-   */
-  extend(body, options) {
-    return this._client.post("/videos/extensions", multipartFormRequestOptions({ body, ...options, __security: { bearerAuth: true } }, this._client));
-  }
-  /**
-   * Fetch a character.
-   */
-  getCharacter(characterID, options) {
-    return this._client.get(path`/videos/characters/${characterID}`, {
-      ...options,
-      __security: { bearerAuth: true }
-    });
-  }
-  /**
-   * Create a remix of a completed video using a refreshed prompt.
-   */
-  remix(videoID, body, options) {
-    return this._client.post(path`/videos/${videoID}/remix`, maybeMultipartFormRequestOptions({ body, ...options, __security: { bearerAuth: true } }, this._client));
-  }
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/resources/webhooks/webhooks.mjs
-var _Webhooks_instances;
-var _Webhooks_validateSecret;
-var _Webhooks_getRequiredHeader;
-var Webhooks = class extends APIResource {
-  constructor() {
-    super(...arguments);
-    _Webhooks_instances.add(this);
-  }
-  /**
-   * Validates that the given payload was sent by OpenAI and parses the payload.
-   */
-  async unwrap(payload, headers, secret = this._client.webhookSecret, tolerance = 300) {
-    await this.verifySignature(payload, headers, secret, tolerance);
-    return JSON.parse(payload);
-  }
-  /**
-   * Validates whether or not the webhook payload was sent by OpenAI.
-   *
-   * An error will be raised if the webhook payload was not sent by OpenAI.
-   *
-   * @param payload - The webhook payload
-   * @param headers - The webhook headers
-   * @param secret - The webhook secret (optional, will use client secret if not provided)
-   * @param tolerance - Maximum age of the webhook in seconds (default: 300 = 5 minutes)
-   */
-  async verifySignature(payload, headers, secret = this._client.webhookSecret, tolerance = 300) {
-    if (typeof crypto === "undefined" || typeof crypto.subtle.importKey !== "function" || typeof crypto.subtle.verify !== "function") {
-      throw new Error("Webhook signature verification is only supported when the `crypto` global is defined");
-    }
-    __classPrivateFieldGet2(this, _Webhooks_instances, "m", _Webhooks_validateSecret).call(this, secret);
-    const headersObj = buildHeaders([headers]).values;
-    const signatureHeader = __classPrivateFieldGet2(this, _Webhooks_instances, "m", _Webhooks_getRequiredHeader).call(this, headersObj, "webhook-signature");
-    const timestamp2 = __classPrivateFieldGet2(this, _Webhooks_instances, "m", _Webhooks_getRequiredHeader).call(this, headersObj, "webhook-timestamp");
-    const webhookId = __classPrivateFieldGet2(this, _Webhooks_instances, "m", _Webhooks_getRequiredHeader).call(this, headersObj, "webhook-id");
-    const timestampSeconds = parseInt(timestamp2, 10);
-    if (isNaN(timestampSeconds)) {
-      throw new InvalidWebhookSignatureError("Invalid webhook timestamp format");
-    }
-    const nowSeconds = Math.floor(Date.now() / 1e3);
-    if (nowSeconds - timestampSeconds > tolerance) {
-      throw new InvalidWebhookSignatureError("Webhook timestamp is too old");
-    }
-    if (timestampSeconds > nowSeconds + tolerance) {
-      throw new InvalidWebhookSignatureError("Webhook timestamp is too new");
-    }
-    const signatures = signatureHeader.split(" ").map((part) => part.startsWith("v1,") ? part.substring(3) : part);
-    const decodedSecret = secret.startsWith("whsec_") ? Buffer.from(secret.replace("whsec_", ""), "base64") : Buffer.from(secret, "utf-8");
-    const signedPayload = webhookId ? `${webhookId}.${timestamp2}.${payload}` : `${timestamp2}.${payload}`;
-    const key = await crypto.subtle.importKey("raw", decodedSecret, { name: "HMAC", hash: "SHA-256" }, false, ["verify"]);
-    for (const signature of signatures) {
-      try {
-        const signatureBytes = Buffer.from(signature, "base64");
-        const isValid2 = await crypto.subtle.verify("HMAC", key, signatureBytes, new TextEncoder().encode(signedPayload));
-        if (isValid2) {
-          return;
-        }
-      } catch {
-        continue;
-      }
-    }
-    throw new InvalidWebhookSignatureError("The given webhook signature does not match the expected signature");
-  }
-};
-_Webhooks_instances = /* @__PURE__ */ new WeakSet(), _Webhooks_validateSecret = function _Webhooks_validateSecret2(secret) {
-  if (typeof secret !== "string" || secret.length === 0) {
-    throw new Error(`The webhook secret must either be set using the env var, OPENAI_WEBHOOK_SECRET, on the client class, OpenAI({ webhookSecret: '123' }), or passed to this function`);
-  }
-}, _Webhooks_getRequiredHeader = function _Webhooks_getRequiredHeader2(headers, name) {
-  if (!headers) {
-    throw new Error(`Headers are required`);
-  }
-  const value = headers.get(name);
-  if (value === null || value === void 0) {
-    throw new Error(`Missing required header: ${name}`);
-  }
-  return value;
-};
-
-// ../../node_modules/.pnpm/openai@6.42.0_zod@3.25.76/node_modules/openai/client.mjs
-var _OpenAI_instances;
-var _a2;
-var _OpenAI_encoder;
-var _OpenAI_baseURLOverridden;
-var WORKLOAD_IDENTITY_API_KEY_PLACEHOLDER = "workload-identity-auth";
-var OpenAI = class {
-  /**
-   * API Client for interfacing with the OpenAI API.
-   *
-   * @param {string | null | undefined} [opts.apiKey=process.env['OPENAI_API_KEY'] ?? null]
-   * @param {string | null | undefined} [opts.adminAPIKey=process.env['OPENAI_ADMIN_KEY'] ?? null]
-   * @param {string | null | undefined} [opts.organization=process.env['OPENAI_ORG_ID'] ?? null]
-   * @param {string | null | undefined} [opts.project=process.env['OPENAI_PROJECT_ID'] ?? null]
-   * @param {string | null | undefined} [opts.webhookSecret=process.env['OPENAI_WEBHOOK_SECRET'] ?? null]
-   * @param {string} [opts.baseURL=process.env['OPENAI_BASE_URL'] ?? https://api.openai.com/v1] - Override the default base URL for the API.
-   * @param {number} [opts.timeout=10 minutes] - The maximum amount of time (in milliseconds) the client will wait for a response before timing out.
-   * @param {MergedRequestInit} [opts.fetchOptions] - Additional `RequestInit` options to be passed to `fetch` calls.
-   * @param {Fetch} [opts.fetch] - Specify a custom `fetch` function implementation.
-   * @param {number} [opts.maxRetries=2] - The maximum number of times the client will retry a request.
-   * @param {HeadersLike} opts.defaultHeaders - Default headers to include with every request to the API.
-   * @param {Record<string, string | undefined>} opts.defaultQuery - Default query parameters to include with every request to the API.
-   * @param {boolean} [opts.dangerouslyAllowBrowser=false] - By default, client-side use of this library is not allowed, as it risks exposing your secret API credentials to attackers.
-   */
-  constructor({ baseURL = readEnv("OPENAI_BASE_URL"), apiKey = readEnv("OPENAI_API_KEY") ?? null, adminAPIKey = readEnv("OPENAI_ADMIN_KEY") ?? null, organization = readEnv("OPENAI_ORG_ID") ?? null, project = readEnv("OPENAI_PROJECT_ID") ?? null, webhookSecret = readEnv("OPENAI_WEBHOOK_SECRET") ?? null, workloadIdentity, ...opts } = {}) {
-    _OpenAI_instances.add(this);
-    _OpenAI_encoder.set(this, void 0);
-    this.completions = new Completions2(this);
-    this.chat = new Chat(this);
-    this.embeddings = new Embeddings(this);
-    this.files = new Files2(this);
-    this.images = new Images(this);
-    this.audio = new Audio(this);
-    this.moderations = new Moderations(this);
-    this.models = new Models(this);
-    this.fineTuning = new FineTuning(this);
-    this.graders = new Graders2(this);
-    this.vectorStores = new VectorStores(this);
-    this.webhooks = new Webhooks(this);
-    this.beta = new Beta(this);
-    this.batches = new Batches(this);
-    this.uploads = new Uploads(this);
-    this.admin = new Admin(this);
-    this.responses = new Responses(this);
-    this.realtime = new Realtime2(this);
-    this.conversations = new Conversations(this);
-    this.evals = new Evals(this);
-    this.containers = new Containers(this);
-    this.skills = new Skills(this);
-    this.videos = new Videos(this);
-    const options = {
-      apiKey,
-      adminAPIKey,
-      organization,
-      project,
-      webhookSecret,
-      workloadIdentity,
-      ...opts,
-      baseURL: baseURL || `https://api.openai.com/v1`
-    };
-    if (apiKey && workloadIdentity) {
-      throw new OpenAIError("The `apiKey` and `workloadIdentity` options are mutually exclusive");
-    }
-    if (!apiKey && !adminAPIKey && !workloadIdentity) {
-      throw new OpenAIError("Missing credentials. Please pass an `apiKey`, `workloadIdentity`, `adminAPIKey`, or set the `OPENAI_API_KEY` or `OPENAI_ADMIN_KEY` environment variable.");
-    }
-    if (!options.dangerouslyAllowBrowser && isRunningInBrowser()) {
-      throw new OpenAIError("It looks like you're running in a browser-like environment.\n\nThis is disabled by default, as it risks exposing your secret API credentials to attackers.\nIf you understand the risks and have appropriate mitigations in place,\nyou can set the `dangerouslyAllowBrowser` option to `true`, e.g.,\n\nnew OpenAI({ apiKey, dangerouslyAllowBrowser: true });\n\nhttps://help.openai.com/en/articles/5112595-best-practices-for-api-key-safety\n");
-    }
-    this.baseURL = options.baseURL;
-    this.timeout = options.timeout ?? _a2.DEFAULT_TIMEOUT;
-    this.logger = options.logger ?? console;
-    const defaultLogLevel = "warn";
-    this.logLevel = defaultLogLevel;
-    this.logLevel = parseLogLevel(options.logLevel, "ClientOptions.logLevel", this) ?? parseLogLevel(readEnv("OPENAI_LOG"), "process.env['OPENAI_LOG']", this) ?? defaultLogLevel;
-    this.fetchOptions = options.fetchOptions;
-    this.maxRetries = options.maxRetries ?? 2;
-    this.fetch = options.fetch ?? getDefaultFetch();
-    __classPrivateFieldSet2(this, _OpenAI_encoder, FallbackEncoder, "f");
-    const customHeadersEnv = readEnv("OPENAI_CUSTOM_HEADERS");
-    if (customHeadersEnv) {
-      const parsed = {};
-      for (const line2 of customHeadersEnv.split("\n")) {
-        const colon = line2.indexOf(":");
-        if (colon >= 0) {
-          parsed[line2.substring(0, colon).trim()] = line2.substring(colon + 1).trim();
-        }
-      }
-      options.defaultHeaders = buildHeaders([parsed, options.defaultHeaders]);
-    }
-    this._options = options;
-    if (workloadIdentity) {
-      this._workloadIdentityAuth = new WorkloadIdentityAuth(workloadIdentity, this.fetch);
-    }
-    this.apiKey = typeof apiKey === "string" ? apiKey : null;
-    this.adminAPIKey = adminAPIKey;
-    this.organization = organization;
-    this.project = project;
-    this.webhookSecret = webhookSecret;
-  }
-  /**
-   * Create a new client instance re-using the same options given to the current client with optional overriding.
-   */
-  withOptions(options) {
-    const client = new this.constructor({
-      ...this._options,
-      baseURL: this.baseURL,
-      maxRetries: this.maxRetries,
-      timeout: this.timeout,
-      logger: this.logger,
-      logLevel: this.logLevel,
-      fetch: this.fetch,
-      fetchOptions: this.fetchOptions,
-      apiKey: this._options.apiKey,
-      adminAPIKey: this.adminAPIKey,
-      workloadIdentity: this._options.workloadIdentity,
-      organization: this.organization,
-      project: this.project,
-      webhookSecret: this.webhookSecret,
-      ...options
-    });
-    return client;
-  }
-  defaultQuery() {
-    return this._options.defaultQuery;
-  }
-  validateHeaders({ values, nulls }, schemes = {
-    bearerAuth: true,
-    adminAPIKeyAuth: true
-  }) {
-    if (values.get("authorization") || values.get("api-key")) {
-      return;
-    }
-    if (nulls.has("authorization") || nulls.has("api-key")) {
-      return;
-    }
-    if (this._workloadIdentityAuth && schemes.bearerAuth) {
-      return;
-    }
-    throw new Error('Could not resolve authentication method. Expected either apiKey or adminAPIKey to be set. Or for one of the "Authorization" or "api-key" headers to be explicitly omitted');
-  }
-  async authHeaders(opts, schemes = {
-    bearerAuth: true,
-    adminAPIKeyAuth: true
-  }) {
-    return buildHeaders([
-      schemes.bearerAuth ? await this.bearerAuth(opts) : null,
-      schemes.adminAPIKeyAuth ? await this.adminAPIKeyAuth(opts) : null
-    ]);
-  }
-  async bearerAuth(opts) {
-    if (this._workloadIdentityAuth) {
-      return buildHeaders([{ Authorization: `Bearer ${await this._workloadIdentityAuth.getToken()}` }]);
-    }
-    if (this.apiKey == null) {
-      return void 0;
-    }
-    return buildHeaders([{ Authorization: `Bearer ${this.apiKey}` }]);
-  }
-  async adminAPIKeyAuth(opts) {
-    if (this.adminAPIKey == null) {
-      return void 0;
-    }
-    return buildHeaders([{ Authorization: `Bearer ${this.adminAPIKey}` }]);
-  }
-  stringifyQuery(query) {
-    return stringifyQuery(query);
-  }
-  getUserAgent() {
-    return `${this.constructor.name}/JS ${VERSION}`;
-  }
-  defaultIdempotencyKey() {
-    return `stainless-node-retry-${uuid42()}`;
-  }
-  makeStatusError(status, error40, message, headers) {
-    return APIError.generate(status, error40, message, headers);
-  }
-  async _callApiKey() {
-    const apiKey = this._options.apiKey;
-    if (typeof apiKey !== "function")
-      return false;
-    let token;
-    try {
-      token = await apiKey();
-    } catch (err) {
-      if (err instanceof OpenAIError)
-        throw err;
-      throw new OpenAIError(
-        `Failed to get token from 'apiKey' function: ${err.message}`,
-        // @ts-ignore
-        { cause: err }
-      );
-    }
-    if (typeof token !== "string" || !token) {
-      throw new OpenAIError(`Expected 'apiKey' function argument to return a string but it returned ${token}`);
-    }
-    this.apiKey = token;
-    return true;
-  }
-  buildURL(path2, query, defaultBaseURL) {
-    const baseURL = !__classPrivateFieldGet2(this, _OpenAI_instances, "m", _OpenAI_baseURLOverridden).call(this) && defaultBaseURL || this.baseURL;
-    const url2 = isAbsoluteURL(path2) ? new URL(path2) : new URL(baseURL + (baseURL.endsWith("/") && path2.startsWith("/") ? path2.slice(1) : path2));
-    const defaultQuery = this.defaultQuery();
-    const pathQuery = Object.fromEntries(url2.searchParams);
-    if (!isEmptyObj(defaultQuery) || !isEmptyObj(pathQuery)) {
-      query = { ...pathQuery, ...defaultQuery, ...query };
-    }
-    if (typeof query === "object" && query && !Array.isArray(query)) {
-      url2.search = this.stringifyQuery(query);
-    }
-    return url2.toString();
-  }
-  /**
-   * Used as a callback for mutating the given `FinalRequestOptions` object.
-   */
-  async prepareOptions(options) {
-    const security = options.__security ?? { bearerAuth: true };
-    if (security.bearerAuth) {
-      await this._callApiKey();
-    }
-  }
-  /**
-   * Used as a callback for mutating the given `RequestInit` object.
-   *
-   * This is useful for cases where you want to add certain headers based off of
-   * the request properties, e.g. `method` or `url`.
-   */
-  async prepareRequest(request, { url: url2, options }) {
-  }
-  get(path2, opts) {
-    return this.methodRequest("get", path2, opts);
-  }
-  post(path2, opts) {
-    return this.methodRequest("post", path2, opts);
-  }
-  patch(path2, opts) {
-    return this.methodRequest("patch", path2, opts);
-  }
-  put(path2, opts) {
-    return this.methodRequest("put", path2, opts);
-  }
-  delete(path2, opts) {
-    return this.methodRequest("delete", path2, opts);
-  }
-  methodRequest(method, path2, opts) {
-    return this.request(Promise.resolve(opts).then((opts2) => {
-      return { method, path: path2, ...opts2 };
-    }));
-  }
-  request(options, remainingRetries = null) {
-    return new APIPromise(this, this.makeRequest(options, remainingRetries, void 0));
-  }
-  async makeRequest(optionsInput, retriesRemaining, retryOfRequestLogID) {
-    const options = await optionsInput;
-    const maxRetries = options.maxRetries ?? this.maxRetries;
-    if (retriesRemaining == null) {
-      retriesRemaining = maxRetries;
-    }
-    await this.prepareOptions(options);
-    const { req, url: url2, timeout } = await this.buildRequest(options, {
-      retryCount: maxRetries - retriesRemaining
-    });
-    await this.prepareRequest(req, { url: url2, options });
-    const requestLogID = "log_" + (Math.random() * (1 << 24) | 0).toString(16).padStart(6, "0");
-    const retryLogStr = retryOfRequestLogID === void 0 ? "" : `, retryOf: ${retryOfRequestLogID}`;
-    const startTime = Date.now();
-    loggerFor(this).debug(`[${requestLogID}] sending request`, formatRequestDetails({
-      retryOfRequestLogID,
-      method: options.method,
-      url: url2,
-      options,
-      headers: req.headers
-    }));
-    if (options.signal?.aborted) {
-      throw new APIUserAbortError();
-    }
-    const security = options.__security ?? { bearerAuth: true };
-    const controller = new AbortController();
-    const response = await this.fetchWithAuth(url2, req, timeout, controller, security).catch(castToError);
-    const headersTime = Date.now();
-    if (response instanceof globalThis.Error) {
-      const retryMessage = `retrying, ${retriesRemaining} attempts remaining`;
-      if (options.signal?.aborted) {
-        throw new APIUserAbortError();
-      }
-      const isTimeout = isAbortError(response) || /timed? ?out/i.test(String(response) + ("cause" in response ? String(response.cause) : ""));
-      if (retriesRemaining) {
-        loggerFor(this).info(`[${requestLogID}] connection ${isTimeout ? "timed out" : "failed"} - ${retryMessage}`);
-        loggerFor(this).debug(`[${requestLogID}] connection ${isTimeout ? "timed out" : "failed"} (${retryMessage})`, formatRequestDetails({
-          retryOfRequestLogID,
-          url: url2,
-          durationMs: headersTime - startTime,
-          message: response.message
-        }));
-        return this.retryRequest(options, retriesRemaining, retryOfRequestLogID ?? requestLogID);
-      }
-      loggerFor(this).info(`[${requestLogID}] connection ${isTimeout ? "timed out" : "failed"} - error; no more retries left`);
-      loggerFor(this).debug(`[${requestLogID}] connection ${isTimeout ? "timed out" : "failed"} (error; no more retries left)`, formatRequestDetails({
-        retryOfRequestLogID,
-        url: url2,
-        durationMs: headersTime - startTime,
-        message: response.message
-      }));
-      if (response instanceof OAuthError || response instanceof SubjectTokenProviderError) {
-        throw response;
-      }
-      if (isTimeout) {
-        throw new APIConnectionTimeoutError();
-      }
-      throw new APIConnectionError({
-        message: getConnectionErrorMessage(response),
-        cause: response
-      });
-    }
-    const specialHeaders = [...response.headers.entries()].filter(([name]) => name === "x-request-id").map(([name, value]) => ", " + name + ": " + JSON.stringify(value)).join("");
-    const responseInfo = `[${requestLogID}${retryLogStr}${specialHeaders}] ${req.method} ${url2} ${response.ok ? "succeeded" : "failed"} with status ${response.status} in ${headersTime - startTime}ms`;
-    if (!response.ok) {
-      if (response.status === 401 && this._workloadIdentityAuth && security.bearerAuth && !options.__metadata?.["hasStreamingBody"] && !options.__metadata?.["workloadIdentityTokenRefreshed"]) {
-        await CancelReadableStream(response.body);
-        this._workloadIdentityAuth.invalidateToken();
-        return this.makeRequest({
-          ...options,
-          __metadata: {
-            ...options.__metadata,
-            workloadIdentityTokenRefreshed: true
-          }
-        }, retriesRemaining, retryOfRequestLogID ?? requestLogID);
-      }
-      const shouldRetry2 = await this.shouldRetry(response);
-      if (retriesRemaining && shouldRetry2) {
-        const retryMessage2 = `retrying, ${retriesRemaining} attempts remaining`;
-        await CancelReadableStream(response.body);
-        loggerFor(this).info(`${responseInfo} - ${retryMessage2}`);
-        loggerFor(this).debug(`[${requestLogID}] response error (${retryMessage2})`, formatRequestDetails({
-          retryOfRequestLogID,
-          url: response.url,
-          status: response.status,
-          headers: response.headers,
-          durationMs: headersTime - startTime
-        }));
-        return this.retryRequest(options, retriesRemaining, retryOfRequestLogID ?? requestLogID, response.headers);
-      }
-      const retryMessage = shouldRetry2 ? `error; no more retries left` : `error; not retryable`;
-      loggerFor(this).info(`${responseInfo} - ${retryMessage}`);
-      const errText = await response.text().catch((err2) => castToError(err2).message);
-      const errJSON = safeJSON(errText);
-      const errMessage = errJSON ? void 0 : errText;
-      loggerFor(this).debug(`[${requestLogID}] response error (${retryMessage})`, formatRequestDetails({
-        retryOfRequestLogID,
-        url: response.url,
-        status: response.status,
-        headers: response.headers,
-        message: errMessage,
-        durationMs: Date.now() - startTime
-      }));
-      const err = this.makeStatusError(response.status, errJSON, errMessage, response.headers);
-      throw err;
-    }
-    loggerFor(this).info(responseInfo);
-    loggerFor(this).debug(`[${requestLogID}] response start`, formatRequestDetails({
-      retryOfRequestLogID,
-      url: response.url,
-      status: response.status,
-      headers: response.headers,
-      durationMs: headersTime - startTime
-    }));
-    return { response, options, controller, requestLogID, retryOfRequestLogID, startTime };
-  }
-  getAPIList(path2, Page2, opts) {
-    return this.requestAPIList(Page2, opts && "then" in opts ? opts.then((opts2) => ({ method: "get", path: path2, ...opts2 })) : { method: "get", path: path2, ...opts });
-  }
-  requestAPIList(Page2, options) {
-    const request = this.makeRequest(options, null, void 0);
-    return new PagePromise(this, request, Page2);
-  }
-  async fetchWithAuth(url2, init, timeout, controller, schemes = {
-    bearerAuth: true,
-    adminAPIKeyAuth: true
-  }) {
-    if (this._workloadIdentityAuth && schemes.bearerAuth) {
-      const headers = init.headers;
-      const authHeader = headers.get("Authorization");
-      if (!authHeader || authHeader === `Bearer ${WORKLOAD_IDENTITY_API_KEY_PLACEHOLDER}`) {
-        const token = await this._workloadIdentityAuth.getToken();
-        headers.set("Authorization", `Bearer ${token}`);
-      }
-    }
-    const response = await this.fetchWithTimeout(url2, init, timeout, controller);
-    return response;
-  }
-  async fetchWithTimeout(url2, init, ms, controller) {
-    const { signal, method, ...options } = init || {};
-    const abort = this._makeAbort(controller);
-    if (signal)
-      signal.addEventListener("abort", abort, { once: true });
-    const timeout = setTimeout(abort, ms);
-    const isReadableBody = globalThis.ReadableStream && options.body instanceof globalThis.ReadableStream || typeof options.body === "object" && options.body !== null && Symbol.asyncIterator in options.body;
-    const fetchOptions = {
-      signal: controller.signal,
-      ...isReadableBody ? { duplex: "half" } : {},
-      method: "GET",
-      ...options
-    };
-    if (method) {
-      fetchOptions.method = method.toUpperCase();
-    }
-    try {
-      return await this.fetch.call(void 0, url2, fetchOptions);
-    } finally {
-      clearTimeout(timeout);
-    }
-  }
-  async shouldRetry(response) {
-    const shouldRetryHeader = response.headers.get("x-should-retry");
-    if (shouldRetryHeader === "true")
-      return true;
-    if (shouldRetryHeader === "false")
-      return false;
-    if (response.status === 408)
-      return true;
-    if (response.status === 409)
-      return true;
-    if (response.status === 429)
-      return true;
-    if (response.status >= 500)
-      return true;
-    return false;
-  }
-  async retryRequest(options, retriesRemaining, requestLogID, responseHeaders) {
-    let timeoutMillis;
-    const retryAfterMillisHeader = responseHeaders?.get("retry-after-ms");
-    if (retryAfterMillisHeader) {
-      const timeoutMs = parseFloat(retryAfterMillisHeader);
-      if (!Number.isNaN(timeoutMs)) {
-        timeoutMillis = timeoutMs;
-      }
-    }
-    const retryAfterHeader = responseHeaders?.get("retry-after");
-    if (retryAfterHeader && !timeoutMillis) {
-      const timeoutSeconds = parseFloat(retryAfterHeader);
-      if (!Number.isNaN(timeoutSeconds)) {
-        timeoutMillis = timeoutSeconds * 1e3;
-      } else {
-        timeoutMillis = Date.parse(retryAfterHeader) - Date.now();
-      }
-    }
-    if (timeoutMillis === void 0) {
-      const maxRetries = options.maxRetries ?? this.maxRetries;
-      timeoutMillis = this.calculateDefaultRetryTimeoutMillis(retriesRemaining, maxRetries);
-    }
-    await sleep3(timeoutMillis);
-    return this.makeRequest(options, retriesRemaining - 1, requestLogID);
-  }
-  calculateDefaultRetryTimeoutMillis(retriesRemaining, maxRetries) {
-    const initialRetryDelay = 0.5;
-    const maxRetryDelay = 8;
-    const numRetries = maxRetries - retriesRemaining;
-    const sleepSeconds = Math.min(initialRetryDelay * Math.pow(2, numRetries), maxRetryDelay);
-    const jitter = 1 - Math.random() * 0.25;
-    return sleepSeconds * jitter * 1e3;
-  }
-  async buildRequest(inputOptions, { retryCount = 0 } = {}) {
-    const options = { ...inputOptions };
-    const { method, path: path2, query, defaultBaseURL } = options;
-    const url2 = this.buildURL(path2, query, defaultBaseURL);
-    if ("timeout" in options)
-      validatePositiveInteger("timeout", options.timeout);
-    options.timeout = options.timeout ?? this.timeout;
-    const { bodyHeaders, body, isStreamingBody } = this.buildBody({ options });
-    if (isStreamingBody) {
-      inputOptions.__metadata = {
-        ...inputOptions.__metadata,
-        hasStreamingBody: true
-      };
-    }
-    const reqHeaders = await this.buildHeaders({ options: inputOptions, method, bodyHeaders, retryCount });
-    const req = {
-      method,
-      headers: reqHeaders,
-      ...options.signal && { signal: options.signal },
-      ...globalThis.ReadableStream && body instanceof globalThis.ReadableStream && { duplex: "half" },
-      ...body && { body },
-      ...this.fetchOptions ?? {},
-      ...options.fetchOptions ?? {}
-    };
-    return { req, url: url2, timeout: options.timeout };
-  }
-  async buildHeaders({ options, method, bodyHeaders, retryCount }) {
-    let idempotencyHeaders = {};
-    if (this.idempotencyHeader && method !== "get") {
-      if (!options.idempotencyKey)
-        options.idempotencyKey = this.defaultIdempotencyKey();
-      idempotencyHeaders[this.idempotencyHeader] = options.idempotencyKey;
-    }
-    const headers = buildHeaders([
-      idempotencyHeaders,
-      {
-        Accept: "application/json",
-        "User-Agent": this.getUserAgent(),
-        "X-Stainless-Retry-Count": String(retryCount),
-        ...options.timeout ? { "X-Stainless-Timeout": String(Math.trunc(options.timeout / 1e3)) } : {},
-        ...getPlatformHeaders(),
-        "OpenAI-Organization": this.organization,
-        "OpenAI-Project": this.project
-      },
-      await this.authHeaders(options, options.__security ?? { bearerAuth: true }),
-      this._options.defaultHeaders,
-      bodyHeaders,
-      options.headers
-    ]);
-    this.validateHeaders(headers, options.__security ?? { bearerAuth: true });
-    return headers.values;
-  }
-  _makeAbort(controller) {
-    return () => controller.abort();
-  }
-  buildBody({ options: { body, headers: rawHeaders } }) {
-    if (!body) {
-      return { bodyHeaders: void 0, body: void 0, isStreamingBody: false };
-    }
-    const headers = buildHeaders([rawHeaders]);
-    const isReadableStream = typeof globalThis.ReadableStream !== "undefined" && body instanceof globalThis.ReadableStream;
-    const isRetryableBody = !isReadableStream && (typeof body === "string" || body instanceof ArrayBuffer || ArrayBuffer.isView(body) || typeof globalThis.Blob !== "undefined" && body instanceof globalThis.Blob || body instanceof URLSearchParams || body instanceof FormData);
-    if (
-      // Pass raw type verbatim
-      ArrayBuffer.isView(body) || body instanceof ArrayBuffer || body instanceof DataView || typeof body === "string" && // Preserve legacy string encoding behavior for now
-      headers.values.has("content-type") || // `Blob` is superset of `File`
-      globalThis.Blob && body instanceof globalThis.Blob || // `FormData` -> `multipart/form-data`
-      body instanceof FormData || // `URLSearchParams` -> `application/x-www-form-urlencoded`
-      body instanceof URLSearchParams || // Send chunked stream (each chunk has own `length`)
-      isReadableStream
-    ) {
-      return { bodyHeaders: void 0, body, isStreamingBody: !isRetryableBody };
-    } else if (typeof body === "object" && (Symbol.asyncIterator in body || Symbol.iterator in body && "next" in body && typeof body.next === "function")) {
-      return {
-        bodyHeaders: void 0,
-        body: ReadableStreamFrom(body),
-        isStreamingBody: true
-      };
-    } else if (typeof body === "object" && headers.values.get("content-type") === "application/x-www-form-urlencoded") {
-      return {
-        bodyHeaders: { "content-type": "application/x-www-form-urlencoded" },
-        body: this.stringifyQuery(body),
-        isStreamingBody: false
-      };
-    } else {
-      return { ...__classPrivateFieldGet2(this, _OpenAI_encoder, "f").call(this, { body, headers }), isStreamingBody: false };
-    }
-  }
-};
-_a2 = OpenAI, _OpenAI_encoder = /* @__PURE__ */ new WeakMap(), _OpenAI_instances = /* @__PURE__ */ new WeakSet(), _OpenAI_baseURLOverridden = function _OpenAI_baseURLOverridden2() {
-  return this.baseURL !== "https://api.openai.com/v1";
-};
-OpenAI.OpenAI = _a2;
-OpenAI.DEFAULT_TIMEOUT = 6e5;
-OpenAI.OpenAIError = OpenAIError;
-OpenAI.APIError = APIError;
-OpenAI.APIConnectionError = APIConnectionError;
-OpenAI.APIConnectionTimeoutError = APIConnectionTimeoutError;
-OpenAI.APIUserAbortError = APIUserAbortError;
-OpenAI.NotFoundError = NotFoundError;
-OpenAI.ConflictError = ConflictError;
-OpenAI.RateLimitError = RateLimitError;
-OpenAI.BadRequestError = BadRequestError;
-OpenAI.AuthenticationError = AuthenticationError;
-OpenAI.InternalServerError = InternalServerError;
-OpenAI.PermissionDeniedError = PermissionDeniedError;
-OpenAI.UnprocessableEntityError = UnprocessableEntityError;
-OpenAI.InvalidWebhookSignatureError = InvalidWebhookSignatureError;
-OpenAI.toFile = toFile;
-OpenAI.Completions = Completions2;
-OpenAI.Chat = Chat;
-OpenAI.Embeddings = Embeddings;
-OpenAI.Files = Files2;
-OpenAI.Images = Images;
-OpenAI.Audio = Audio;
-OpenAI.Moderations = Moderations;
-OpenAI.Models = Models;
-OpenAI.FineTuning = FineTuning;
-OpenAI.Graders = Graders2;
-OpenAI.VectorStores = VectorStores;
-OpenAI.Webhooks = Webhooks;
-OpenAI.Beta = Beta;
-OpenAI.Batches = Batches;
-OpenAI.Uploads = Uploads;
-OpenAI.Admin = Admin;
-OpenAI.Responses = Responses;
-OpenAI.Realtime = Realtime2;
-OpenAI.Conversations = Conversations;
-OpenAI.Evals = Evals;
-OpenAI.Containers = Containers;
-OpenAI.Skills = Skills;
-OpenAI.Videos = Videos;
-function getConnectionErrorMessage(error40) {
-  if (isUndiciDispatcherVersionMismatchError(error40)) {
-    return `Connection error. This may be caused by passing an undici dispatcher, such as ProxyAgent, that is incompatible with the fetch implementation. If you are using undici's ProxyAgent, pass the fetch implementation from the same undici package: import { fetch, ProxyAgent } from 'undici'; new OpenAI({ fetch, fetchOptions: { dispatcher: new ProxyAgent(...) } });`;
-  }
-  return void 0;
-}
-function isUndiciDispatcherVersionMismatchError(error40) {
-  let current = error40;
-  for (let i = 0; i < 8 && current && typeof current === "object"; i++) {
-    const err = current;
-    if (err.code === "UND_ERR_INVALID_ARG" && typeof err.message === "string" && err.message.includes("invalid onRequestStart method")) {
-      return true;
-    }
-    current = err.cause;
-  }
-  return false;
-}
-
-// src/routes/analyze-food.ts
-var router6 = (0, import_express6.Router)();
-var openai = new OpenAI({
-  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
-  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY
-});
-router6.post("/analyze-food-image", async (req, res) => {
-  const parsed = AnalyzeFoodImageBody.safeParse(req.body);
-  if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
-    return;
-  }
-  const { imageBase64, mimeType } = parsed.data;
-  const dataUrl = `data:${mimeType};base64,${imageBase64}`;
-  const response = await openai.chat.completions.create({
-    model: "gpt-5.2",
-    max_completion_tokens: 1024,
-    messages: [
-      {
-        role: "system",
-        content: `You are a nutrition expert. When given a food photo, analyze it and estimate the nutritional content. Always respond with a valid JSON object and nothing else. The JSON must match exactly this structure:
-{
-  "foodName": "string (name of the food or dish)",
-  "servingSize": "string (estimated serving size, e.g. '1 plate ~350g')",
-  "calories": number,
-  "protein": number (grams),
-  "carbs": number (grams),
-  "fat": number (grams),
-  "confidence": "high" | "medium" | "low",
-  "notes": "string (brief note about the estimate, e.g. ingredients identified, assumptions made)"
-}
-Be conservative with estimates. If the image is not food, set confidence to "low" and estimate 0 for all nutrients with a note explaining.`
-      },
-      {
-        role: "user",
-        content: [
-          {
-            type: "image_url",
-            image_url: { url: dataUrl }
-          },
-          {
-            type: "text",
-            text: "Please analyze this food and provide nutritional estimates per serving shown in the image."
-          }
-        ]
-      }
-    ]
-  });
-  const content = response.choices[0]?.message?.content;
-  if (!content) {
-    res.status(400).json({ error: "No response from AI" });
-    return;
-  }
-  let parsed2;
-  try {
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    parsed2 = JSON.parse(jsonMatch ? jsonMatch[0] : content);
-  } catch {
-    res.status(400).json({ error: "Failed to parse AI response" });
-    return;
-  }
-  const validated = AnalyzeFoodImageResponse.safeParse(parsed2);
-  if (!validated.success) {
-    res.status(400).json({ error: "Invalid analysis result from AI" });
-    return;
-  }
-  res.json(validated.data);
-});
-var analyze_food_default = router6;
-
-// src/routes/analyze-posture.ts
-var import_express7 = __toESM(require_express2(), 1);
-var router7 = (0, import_express7.Router)();
-var openai2 = new OpenAI({
-  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
-  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY
-});
-router7.post("/analyze-posture", async (req, res) => {
-  const body = req.body;
-  let photos = [];
-  if (Array.isArray(body.images) && body.images.length > 0) {
-    photos = body.images.filter((p) => p.imageBase64 && p.mimeType);
-  } else if (body.imageBase64 && body.mimeType) {
-    photos = [{ imageBase64: body.imageBase64, mimeType: body.mimeType, angle: body.angle ?? "\u0444\u043E\u0442\u043E" }];
-  }
-  if (photos.length === 0) {
-    res.status(400).json({ error: "\u041D\u0435\u043E\u0431\u0445\u043E\u0434\u0438\u043C\u043E \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044C \u0445\u043E\u0442\u044F \u0431\u044B \u043E\u0434\u043D\u043E \u0444\u043E\u0442\u043E" });
-    return;
-  }
-  const photoDescriptions = photos.map((p) => `\xAB${p.angle}\xBB`).join(", ");
-  const multiView = photos.length > 1;
-  const imageContents = photos.flatMap((p) => [
-    {
-      type: "image_url",
-      image_url: { url: `data:${p.mimeType};base64,${p.imageBase64}` }
-    },
-    {
-      type: "text",
-      text: `\u2191 \u0412\u0438\u0434: ${p.angle}`
-    }
-  ]);
-  const response = await openai2.chat.completions.create({
-    model: "gpt-5.2",
-    max_completion_tokens: 1500,
-    messages: [
-      {
-        role: "system",
-        content: `\u0422\u044B \u0444\u0438\u0437\u0438\u043E\u0442\u0435\u0440\u0430\u043F\u0435\u0432\u0442 \u0438 \u044D\u043A\u0441\u043F\u0435\u0440\u0442 \u043F\u043E \u043E\u0441\u0430\u043D\u043A\u0435. ${multiView ? `\u0422\u0435\u0431\u0435 \u043F\u0440\u0435\u0434\u043E\u0441\u0442\u0430\u0432\u043B\u0435\u043D\u044B ${photos.length} \u0444\u043E\u0442\u043E\u0433\u0440\u0430\u0444\u0438\u0439 \u0441 \u0440\u0430\u0437\u043D\u044B\u0445 \u0440\u0430\u043A\u0443\u0440\u0441\u043E\u0432 (${photoDescriptions}). \u0418\u0441\u043F\u043E\u043B\u044C\u0437\u0443\u0439 \u0432\u0441\u0435 \u0444\u043E\u0442\u043E \u0434\u043B\u044F \u043A\u043E\u043C\u043F\u043B\u0435\u043A\u0441\u043D\u043E\u0433\u043E \u0430\u043D\u0430\u043B\u0438\u0437\u0430 \u043E\u0441\u0430\u043D\u043A\u0438.` : "\u0422\u0435\u0431\u0435 \u043F\u0440\u0435\u0434\u043E\u0441\u0442\u0430\u0432\u043B\u0435\u043D\u043E \u043E\u0434\u043D\u043E \u0444\u043E\u0442\u043E."} \u0424\u043E\u043A\u0443\u0441\u0438\u0440\u0443\u0439\u0441\u044F \u0422\u041E\u041B\u042C\u041A\u041E \u043D\u0430 \u0432\u0438\u0434\u0438\u043C\u043E\u043C \u043F\u043E\u043B\u043E\u0436\u0435\u043D\u0438\u0438 \u0442\u0435\u043B\u0430 \u2014 \u043D\u0435 \u0438\u0434\u0435\u043D\u0442\u0438\u0444\u0438\u0446\u0438\u0440\u0443\u0439 \u043B\u0438\u0447\u043D\u043E\u0441\u0442\u044C. \u041E\u0442\u0432\u0435\u0447\u0430\u0439 \u0441\u0442\u0440\u043E\u0433\u043E \u0432\u0430\u043B\u0438\u0434\u043D\u044B\u043C JSON-\u043E\u0431\u044A\u0435\u043A\u0442\u043E\u043C, \u0442\u043E\u0447\u043D\u043E \u0441\u043E\u043E\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0443\u044E\u0449\u0438\u043C \u0441\u0442\u0440\u0443\u043A\u0442\u0443\u0440\u0435 \u043D\u0438\u0436\u0435. \u0412\u0441\u0435 \u0442\u0435\u043A\u0441\u0442\u043E\u0432\u044B\u0435 \u043F\u043E\u043B\u044F (defects, note, recommendations, notes) \u043F\u0438\u0448\u0438 \u041D\u0410 \u0420\u0423\u0421\u0421\u041A\u041E\u041C \u042F\u0417\u042B\u041A\u0415:
-{
-  "overallScore": <\u0446\u0435\u043B\u043E\u0435 \u0447\u0438\u0441\u043B\u043E 1-10>,
-  "grade": <"Excellent"|"Good"|"Fair"|"Poor">,
-  "defects": "<\u043F\u043E\u0434\u0440\u043E\u0431\u043D\u043E\u0435 \u0441\u0432\u044F\u0437\u043D\u043E\u0435 \u043E\u043F\u0438\u0441\u0430\u043D\u0438\u0435 \u0432\u0441\u0435\u0445 \u0432\u0438\u0434\u0438\u043C\u044B\u0445 \u0434\u0435\u0444\u0435\u043A\u0442\u043E\u0432 \u043E\u0441\u0430\u043D\u043A\u0438: \u0447\u0442\u043E \u0438\u043C\u0435\u043D\u043D\u043E \u043E\u0442\u043A\u043B\u043E\u043D\u0435\u043D\u043E \u043E\u0442 \u043D\u043E\u0440\u043C\u044B, \u0432 \u043A\u0430\u043A\u0443\u044E \u0441\u0442\u043E\u0440\u043E\u043D\u0443, \u043D\u0430\u0441\u043A\u043E\u043B\u044C\u043A\u043E \u0432\u044B\u0440\u0430\u0436\u0435\u043D\u043E. \u0415\u0441\u043B\u0438 \u0434\u0435\u0444\u0435\u043A\u0442\u043E\u0432 \u043D\u0435\u0442 \u2014 \u043D\u0430\u043F\u0438\u0441\u0430\u0442\u044C '\u0412\u0438\u0434\u0438\u043C\u044B\u0445 \u0434\u0435\u0444\u0435\u043A\u0442\u043E\u0432 \u043D\u0435 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u043E'. 3-6 \u043F\u0440\u0435\u0434\u043B\u043E\u0436\u0435\u043D\u0438\u0439 \u043D\u0430 \u0440\u0443\u0441\u0441\u043A\u043E\u043C \u044F\u0437\u044B\u043A\u0435.>",
-  "areas": [
-    { "name": "\u0413\u043E\u043B\u043E\u0432\u0430 \u0438 \u0448\u0435\u044F", "score": <1-10>, "status": <"good"|"ok"|"warning">, "note": "<\u043A\u043E\u043D\u043A\u0440\u0435\u0442\u043D\u043E\u0435 \u043D\u0430\u0431\u043B\u044E\u0434\u0435\u043D\u0438\u0435 \u043F\u043E \u0437\u043E\u043D\u0435, 1-2 \u043F\u0440\u0435\u0434\u043B\u043E\u0436\u0435\u043D\u0438\u044F>" },
-    { "name": "\u041F\u043B\u0435\u0447\u0438", "score": <1-10>, "status": <"good"|"ok"|"warning">, "note": "<\u043A\u043E\u043D\u043A\u0440\u0435\u0442\u043D\u043E\u0435 \u043D\u0430\u0431\u043B\u044E\u0434\u0435\u043D\u0438\u0435 \u043F\u043E \u0437\u043E\u043D\u0435, 1-2 \u043F\u0440\u0435\u0434\u043B\u043E\u0436\u0435\u043D\u0438\u044F>" },
-    { "name": "\u041F\u043E\u0437\u0432\u043E\u043D\u043E\u0447\u043D\u0438\u043A", "score": <1-10>, "status": <"good"|"ok"|"warning">, "note": "<\u043A\u043E\u043D\u043A\u0440\u0435\u0442\u043D\u043E\u0435 \u043D\u0430\u0431\u043B\u044E\u0434\u0435\u043D\u0438\u0435 \u043F\u043E \u0437\u043E\u043D\u0435, 1-2 \u043F\u0440\u0435\u0434\u043B\u043E\u0436\u0435\u043D\u0438\u044F>" },
-    { "name": "\u0422\u0430\u0437 \u0438 \u0431\u0451\u0434\u0440\u0430", "score": <1-10>, "status": <"good"|"ok"|"warning">, "note": "<\u043A\u043E\u043D\u043A\u0440\u0435\u0442\u043D\u043E\u0435 \u043D\u0430\u0431\u043B\u044E\u0434\u0435\u043D\u0438\u0435 \u043F\u043E \u0437\u043E\u043D\u0435, 1-2 \u043F\u0440\u0435\u0434\u043B\u043E\u0436\u0435\u043D\u0438\u044F>" }
-  ],
-  "recommendations": [<3-5 \u043A\u043E\u043D\u043A\u0440\u0435\u0442\u043D\u044B\u0445, \u0432\u044B\u043F\u043E\u043B\u043D\u0438\u043C\u044B\u0445 \u0440\u0435\u043A\u043E\u043C\u0435\u043D\u0434\u0430\u0446\u0438\u0439 \u043D\u0430 \u0440\u0443\u0441\u0441\u043A\u043E\u043C \u044F\u0437\u044B\u043A\u0435>],
-  "confidence": <"high"|"medium"|"low">,
-  "notes": "<\u043E\u0431\u0449\u0438\u0439 \u0438\u0442\u043E\u0433\u043E\u0432\u044B\u0439 \u043A\u043E\u043C\u043C\u0435\u043D\u0442\u0430\u0440\u0438\u0439 \u043D\u0430 \u0440\u0443\u0441\u0441\u043A\u043E\u043C \u044F\u0437\u044B\u043A\u0435${multiView ? ", \u0441 \u0443\u0447\u0451\u0442\u043E\u043C \u0432\u0441\u0435\u0445 \u0440\u0430\u043A\u0443\u0440\u0441\u043E\u0432" : ""}>"
-}
-\u041F\u043E\u043B\u044F grade, status \u0438 confidence \u043E\u0441\u0442\u0430\u0432\u043B\u044F\u0439 \u043D\u0430 \u0430\u043D\u0433\u043B\u0438\u0439\u0441\u043A\u043E\u043C (\u0442\u0435\u0445\u043D\u0438\u0447\u0435\u0441\u043A\u0438\u0435 \u043A\u043B\u044E\u0447\u0438). \u0415\u0441\u043B\u0438 \u043D\u0430 \u0444\u043E\u0442\u043E \u043D\u0435\u0442 \u0447\u0451\u0442\u043A\u043E\u0433\u043E \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u044F \u043E\u0441\u0430\u043D\u043A\u0438, \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u0438 confidence: "low", overallScore: 0, grade: "Poor" \u0438 \u043E\u0431\u044A\u044F\u0441\u043D\u0438 \u0432 defects \u0438 notes. \u041D\u0438\u043A\u043E\u0433\u0434\u0430 \u043D\u0435 \u0438\u0434\u0435\u043D\u0442\u0438\u0444\u0438\u0446\u0438\u0440\u0443\u0439 \u043B\u044E\u0434\u0435\u0439.`
-      },
-      {
-        role: "user",
-        content: [
-          ...imageContents,
-          {
-            type: "text",
-            text: multiView ? `\u041F\u0440\u043E\u0430\u043D\u0430\u043B\u0438\u0437\u0438\u0440\u0443\u0439 \u043E\u0441\u0430\u043D\u043A\u0443 \u043F\u043E ${photos.length} \u0444\u043E\u0442\u043E\u0433\u0440\u0430\u0444\u0438\u044F\u043C \u0441 \u0440\u0430\u0437\u043D\u044B\u0445 \u0440\u0430\u043A\u0443\u0440\u0441\u043E\u0432 (${photoDescriptions}) \u0438 \u0434\u0430\u0439 \u043A\u043E\u043C\u043F\u043B\u0435\u043A\u0441\u043D\u0443\u044E \u043E\u0446\u0435\u043D\u043A\u0443 \u043D\u0430 \u0440\u0443\u0441\u0441\u043A\u043E\u043C \u044F\u0437\u044B\u043A\u0435.` : "\u041F\u0440\u043E\u0430\u043D\u0430\u043B\u0438\u0437\u0438\u0440\u0443\u0439 \u043E\u0441\u0430\u043D\u043A\u0443 \u043D\u0430 \u044D\u0442\u043E\u043C \u0444\u043E\u0442\u043E \u0438 \u0434\u0430\u0439 \u0441\u0442\u0440\u0443\u043A\u0442\u0443\u0440\u0438\u0440\u043E\u0432\u0430\u043D\u043D\u0443\u044E \u043E\u0446\u0435\u043D\u043A\u0443 \u043D\u0430 \u0440\u0443\u0441\u0441\u043A\u043E\u043C \u044F\u0437\u044B\u043A\u0435."
-          }
-        ]
-      }
-    ]
-  });
-  const content = response.choices[0]?.message?.content;
-  if (!content) {
-    res.status(400).json({ error: "\u041D\u0435\u0442 \u043E\u0442\u0432\u0435\u0442\u0430 \u043E\u0442 \u0418\u0418" });
-    return;
-  }
-  let result;
-  try {
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    result = JSON.parse(jsonMatch ? jsonMatch[0] : content);
-  } catch {
-    res.status(400).json({ error: "\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0440\u0430\u0437\u043E\u0431\u0440\u0430\u0442\u044C \u043E\u0442\u0432\u0435\u0442 \u0418\u0418" });
-    return;
-  }
-  if (typeof result.overallScore !== "number" || !result.areas || !result.recommendations) {
-    res.status(400).json({ error: "\u041D\u0435\u043A\u043E\u0440\u0440\u0435\u043A\u0442\u043D\u044B\u0439 \u0440\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442 \u0430\u043D\u0430\u043B\u0438\u0437\u0430" });
-    return;
-  }
-  res.json(result);
-});
-var analyze_posture_default = router7;
-
-// src/routes/analyze-tracker-screenshot.ts
-var import_express8 = __toESM(require_express2(), 1);
-var router8 = (0, import_express8.Router)();
-var openai3 = new OpenAI({
-  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
-  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY
-});
-router8.post("/analyze-tracker-screenshot", async (req, res) => {
-  const { imageBase64, mimeType } = req.body;
-  if (!imageBase64 || !mimeType) {
-    res.status(400).json({ error: "\u041D\u0435\u043E\u0431\u0445\u043E\u0434\u0438\u043C\u043E \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044C \u0441\u043A\u0440\u0438\u043D\u0448\u043E\u0442" });
-    return;
-  }
-  try {
-    const response = await openai3.chat.completions.create({
-      model: "gpt-5.2",
-      max_completion_tokens: 800,
-      messages: [
-        {
-          role: "system",
-          content: `\u0422\u044B \u0430\u0441\u0441\u0438\u0441\u0442\u0435\u043D\u0442 \u043F\u043E \u0430\u043D\u0430\u043B\u0438\u0437\u0443 \u0441\u043A\u0440\u0438\u043D\u0448\u043E\u0442\u043E\u0432 \u0444\u0438\u0442\u043D\u0435\u0441-\u0442\u0440\u0435\u043A\u0435\u0440\u043E\u0432 (Apple Health, Google Fit, Samsung Health, Garmin, Zepp/Mi Fit, Fitbit, Polar \u0438 \u0434\u0440\u0443\u0433\u0438\u0445).
-\u0418\u0437\u0432\u043B\u0435\u043A\u0438 \u0438\u0437 \u0441\u043A\u0440\u0438\u043D\u0448\u043E\u0442\u0430 \u0432\u0441\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u043D\u044B\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u043E \u0437\u0434\u043E\u0440\u043E\u0432\u044C\u0435 \u0438 \u0432\u0435\u0440\u043D\u0438 \u0441\u0442\u0440\u043E\u0433\u043E \u0432\u0430\u043B\u0438\u0434\u043D\u044B\u0439 JSON (\u0431\u0435\u0437 markdown-\u043E\u0431\u0451\u0440\u0442\u043A\u0438).
-\u041F\u0440\u0430\u0432\u0438\u043B\u0430:
-- trackerApp: \u043D\u0430\u0437\u0432\u0430\u043D\u0438\u0435 \u043F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u044F/\u0443\u0441\u0442\u0440\u043E\u0439\u0441\u0442\u0432\u0430 (\u043D\u0430\u043F\u0440\u0438\u043C\u0435\u0440 "Apple Health", "Samsung Health"). \u0415\u0441\u043B\u0438 \u043D\u0435 \u043E\u043F\u0440\u0435\u0434\u0435\u043B\u044F\u0435\u0442\u0441\u044F \u2014 "\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u043E\u0435 \u043F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u0435".
-- caloriesBurned: \u0430\u043A\u0442\u0438\u0432\u043D\u044B\u0435 \u043A\u0430\u043B\u043E\u0440\u0438\u0438 (\u043A\u043A\u0430\u043B) \u0438\u043B\u0438 \u043E\u0431\u0449\u0435\u0435 \u043F\u043E\u0442\u0440\u0435\u0431\u043B\u0435\u043D\u0438\u0435 \u043A\u0430\u043B\u043E\u0440\u0438\u0439 \u2014 \u0442\u043E\u043B\u044C\u043A\u043E \u0446\u0435\u043B\u043E\u0435 \u0447\u0438\u0441\u043B\u043E \u0438\u043B\u0438 null.
-- steps: \u043A\u043E\u043B\u0438\u0447\u0435\u0441\u0442\u0432\u043E \u0448\u0430\u0433\u043E\u0432 \u2014 \u0442\u043E\u043B\u044C\u043A\u043E \u0446\u0435\u043B\u043E\u0435 \u0447\u0438\u0441\u043B\u043E \u0438\u043B\u0438 null.
-- heartRate: \u043F\u0443\u043B\u044C\u0441 \u043F\u043E\u043A\u043E\u044F \u0438\u043B\u0438 \u0441\u0440\u0435\u0434\u043D\u0438\u0439 \u043F\u0443\u043B\u044C\u0441 \u0437\u0430 \u0434\u0435\u043D\u044C (\u0443\u0434/\u043C\u0438\u043D) \u2014 \u0442\u043E\u043B\u044C\u043A\u043E \u0446\u0435\u043B\u043E\u0435 \u0447\u0438\u0441\u043B\u043E \u0438\u043B\u0438 null.
-- stressLevel: \u0443\u0440\u043E\u0432\u0435\u043D\u044C \u0441\u0442\u0440\u0435\u0441\u0441\u0430 \u043D\u043E\u0440\u043C\u0430\u043B\u0438\u0437\u043E\u0432\u0430\u043D\u043D\u044B\u0439 \u043E\u0442 1 \u0434\u043E 10. \u0415\u0441\u043B\u0438 \u0442\u0440\u0435\u043A\u0435\u0440 \u0434\u0430\u0451\u0442 % \u0438\u043B\u0438 \u0443\u0440\u043E\u0432\u0435\u043D\u044C (Low/Medium/High) \u2014 \u043F\u0435\u0440\u0435\u0441\u0447\u0438\u0442\u0430\u0439: Low\u21922, Medium\u21925, High\u21928. \u0415\u0441\u043B\u0438 \u043D\u0435\u0442 \u2014 null.
-- bedtime: \u0432\u0440\u0435\u043C\u044F \u043E\u0442\u0445\u043E\u0434\u0430 \u043A\u043E \u0441\u043D\u0443 \u0432 \u0444\u043E\u0440\u043C\u0430\u0442\u0435 HH:MM (24-\u0447\u0430\u0441\u043E\u0432\u043E\u0439) \u0438\u043B\u0438 null.
-- wakeTime: \u0432\u0440\u0435\u043C\u044F \u043F\u0440\u043E\u0431\u0443\u0436\u0434\u0435\u043D\u0438\u044F \u0432 \u0444\u043E\u0440\u043C\u0430\u0442\u0435 HH:MM (24-\u0447\u0430\u0441\u043E\u0432\u043E\u0439) \u0438\u043B\u0438 null.
-- sleepDuration: \u043F\u0440\u043E\u0434\u043E\u043B\u0436\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0441\u0442\u044C \u0441\u043D\u0430 \u0432 \u0447\u0430\u0441\u0430\u0445 (\u0434\u0440\u043E\u0431\u043D\u043E\u0435 \u0447\u0438\u0441\u043B\u043E) \u0438\u043B\u0438 null.
-- notes: \u043A\u0440\u0430\u0442\u043A\u0438\u0439 \u043A\u043E\u043C\u043C\u0435\u043D\u0442\u0430\u0440\u0438\u0439 \u043D\u0430 \u0440\u0443\u0441\u0441\u043A\u043E\u043C \u044F\u0437\u044B\u043A\u0435 \u043E \u0442\u043E\u043C, \u043A\u0430\u043A\u0438\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0438\u0437\u0432\u043B\u0435\u0447\u044C \u0438 \u043A\u0430\u043A\u0438\u0435 \u043D\u0435\u0442.
-- confidence: "high" \u2014 \u0435\u0441\u043B\u0438 \u0434\u0430\u043D\u043D\u044B\u0435 \u0447\u0451\u0442\u043A\u043E \u0447\u0438\u0442\u0430\u044E\u0442\u0441\u044F, "medium" \u2014 \u0435\u0441\u043B\u0438 \u0447\u0430\u0441\u0442\u0438\u0447\u043D\u043E, "low" \u2014 \u0435\u0441\u043B\u0438 \u0441\u043A\u0440\u0438\u043D\u0448\u043E\u0442 \u043D\u0435\u0447\u0451\u0442\u043A\u0438\u0439 \u0438\u043B\u0438 \u043D\u0435\u0442 \u0434\u0430\u043D\u043D\u044B\u0445 \u0442\u0440\u0435\u043A\u0435\u0440\u0430.
-
-\u0424\u043E\u0440\u043C\u0430\u0442:
-{
-  "trackerApp": "...",
-  "caloriesBurned": \u0447\u0438\u0441\u043B\u043E \u0438\u043B\u0438 null,
-  "steps": \u0447\u0438\u0441\u043B\u043E \u0438\u043B\u0438 null,
-  "heartRate": \u0447\u0438\u0441\u043B\u043E \u0438\u043B\u0438 null,
-  "stressLevel": \u0447\u0438\u0441\u043B\u043E 1-10 \u0438\u043B\u0438 null,
-  "bedtime": "HH:MM" \u0438\u043B\u0438 null,
-  "wakeTime": "HH:MM" \u0438\u043B\u0438 null,
-  "sleepDuration": \u0447\u0438\u0441\u043B\u043E \u0438\u043B\u0438 null,
-  "notes": "...",
-  "confidence": "high"|"medium"|"low"
-}`
-        },
-        {
-          role: "user",
-          content: [
-            {
-              type: "image_url",
-              image_url: { url: `data:${mimeType};base64,${imageBase64}` }
-            },
-            {
-              type: "text",
-              text: "\u0418\u0437\u0432\u043B\u0435\u043A\u0438 \u0434\u0430\u043D\u043D\u044B\u0435 \u043E \u0437\u0434\u043E\u0440\u043E\u0432\u044C\u0435 \u0438\u0437 \u044D\u0442\u043E\u0433\u043E \u0441\u043A\u0440\u0438\u043D\u0448\u043E\u0442\u0430 \u0444\u0438\u0442\u043D\u0435\u0441-\u0442\u0440\u0435\u043A\u0435\u0440\u0430."
-            }
-          ]
-        }
-      ]
-    });
-    const content = response.choices[0]?.message?.content;
-    if (!content) {
-      res.status(400).json({ error: "\u041D\u0435\u0442 \u043E\u0442\u0432\u0435\u0442\u0430 \u043E\u0442 \u0418\u0418" });
-      return;
-    }
-    let data;
-    try {
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-      data = JSON.parse(jsonMatch ? jsonMatch[0] : content);
-    } catch {
-      res.status(400).json({ error: "\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0440\u0430\u0437\u043E\u0431\u0440\u0430\u0442\u044C \u043E\u0442\u0432\u0435\u0442 \u0418\u0418" });
-      return;
-    }
-    res.json(data);
-  } catch (err) {
-    console.error("analyze-tracker-screenshot error:", err);
-    res.status(500).json({ error: "\u041E\u0448\u0438\u0431\u043A\u0430 \u0430\u043D\u0430\u043B\u0438\u0437\u0430 \u0441\u043A\u0440\u0438\u043D\u0448\u043E\u0442\u0430" });
-  }
-});
-var analyze_tracker_screenshot_default = router8;
-
-// src/routes/sheets.ts
-var import_express9 = __toESM(require_express2(), 1);
-var openai4 = new OpenAI({
-  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
-  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY
-});
-var router9 = (0, import_express9.Router)();
-router9.post("/sheets/export-log", async (req, res) => {
-  const date6 = req.body?.date;
-  if (!date6 || typeof date6 !== "string") {
-    res.status(400).json({ error: "date is required (YYYY-MM-DD)" });
-    return;
-  }
-  try {
-    const rows = await db.select({
-      foodName: foodsTable.name,
-      mealType: mealsTable.mealType,
-      servings: mealsTable.servings,
-      calories: foodsTable.calories,
-      protein: foodsTable.protein,
-      carbs: foodsTable.carbs,
-      fat: foodsTable.fat,
-      servingSize: foodsTable.servingSize,
-      userId: mealsTable.userId
-    }).from(mealsTable).innerJoin(foodsTable, eq(mealsTable.foodId, foodsTable.id)).where(eq(mealsTable.date, date6)).orderBy(mealsTable.createdAt);
-    const userRows = rows.filter((r) => r.userId === req.userId);
-    const meals = userRows.map((r) => ({
-      ...r,
-      calories: Math.round(r.calories * r.servings),
-      protein: Math.round(r.protein * r.servings * 10) / 10,
-      carbs: Math.round(r.carbs * r.servings * 10) / 10,
-      fat: Math.round(r.fat * r.servings * 10) / 10
-    }));
-    const totals = meals.reduce(
-      (acc, m) => ({ calories: acc.calories + m.calories, protein: acc.protein + m.protein, carbs: acc.carbs + m.carbs, fat: acc.fat + m.fat }),
-      { calories: 0, protein: 0, carbs: 0, fat: 0 }
-    );
-    const MEAL_TYPE_RU2 = { breakfast: "\u0417\u0430\u0432\u0442\u0440\u0430\u043A", lunch: "\u041E\u0431\u0435\u0434", dinner: "\u0423\u0436\u0438\u043D", snack: "\u041F\u0435\u0440\u0435\u043A\u0443\u0441" };
-    const spreadsheetId = await createSpreadsheet(`\u0414\u043D\u0435\u0432\u043D\u0438\u043A \u043F\u0438\u0442\u0430\u043D\u0438\u044F ${date6}`);
-    const header = ["\u041F\u0440\u043E\u0434\u0443\u043A\u0442", "\u041F\u0440\u0438\u0451\u043C \u043F\u0438\u0449\u0438", "\u041F\u043E\u0440\u0446\u0438\u0439", "\u0420\u0430\u0437\u043C\u0435\u0440 \u043F\u043E\u0440\u0446\u0438\u0438", "\u041A\u0430\u043B\u043E\u0440\u0438\u0438", "\u0411\u0435\u043B\u043A\u0438 (\u0433)", "\u0423\u0433\u043B\u0435\u0432\u043E\u0434\u044B (\u0433)", "\u0416\u0438\u0440\u044B (\u0433)"];
-    const dataRows = meals.map((m) => [m.foodName, MEAL_TYPE_RU2[m.mealType] ?? m.mealType, m.servings, m.servingSize, m.calories, m.protein, m.carbs, m.fat]);
-    const totalRow = ["\u0418\u0422\u041E\u0413\u041E", "", "", "", Math.round(totals.calories), Math.round(totals.protein * 10) / 10, Math.round(totals.carbs * 10) / 10, Math.round(totals.fat * 10) / 10];
-    await writeRows(spreadsheetId, "A1", [header, ...dataRows, [], totalRow]);
-    await formatHeader(spreadsheetId, 0);
-    res.json({ url: spreadsheetUrl(spreadsheetId), spreadsheetId });
-  } catch (err) {
-    console.error("export-log error:", err);
-    res.status(500).json({ error: "Failed to export to Google Sheets" });
-  }
-});
-router9.post("/sheets/export-foods", async (_req, res) => {
-  try {
-    const foods = await db.select().from(foodsTable).orderBy(foodsTable.name);
-    const spreadsheetId = await createSpreadsheet("\u0411\u0438\u0431\u043B\u0438\u043E\u0442\u0435\u043A\u0430 \u043F\u0440\u043E\u0434\u0443\u043A\u0442\u043E\u0432 \u2014 \u0422\u0440\u0435\u043A\u0435\u0440 \u0437\u0434\u043E\u0440\u043E\u0432\u044C\u044F 360");
-    const header = ["\u041F\u0440\u043E\u0434\u0443\u043A\u0442", "\u0420\u0430\u0437\u043C\u0435\u0440 \u043F\u043E\u0440\u0446\u0438\u0438", "\u041A\u0430\u043B\u043E\u0440\u0438\u0438", "\u0411\u0435\u043B\u043A\u0438 (\u0433)", "\u0423\u0433\u043B\u0435\u0432\u043E\u0434\u044B (\u0433)", "\u0416\u0438\u0440\u044B (\u0433)"];
-    const dataRows = foods.map((f) => [f.name, f.servingSize, f.calories, f.protein, f.carbs, f.fat]);
-    await writeRows(spreadsheetId, "A1", [header, ...dataRows]);
-    await formatHeader(spreadsheetId, 0);
-    res.json({ url: spreadsheetUrl(spreadsheetId), spreadsheetId });
-  } catch (err) {
-    console.error("export-foods error:", err);
-    res.status(500).json({ error: "Failed to export to Google Sheets" });
-  }
-});
-router9.get("/sheets/auto-sync/status", async (req, res) => {
-  try {
-    const spreadsheetId = await getAutoSyncSpreadsheetId(req.userId);
-    if (!spreadsheetId) {
-      res.json({ enabled: false });
-      return;
-    }
-    res.json({ enabled: true, spreadsheetId, url: spreadsheetUrl(spreadsheetId) });
-  } catch (err) {
-    console.error("auto-sync status error:", err);
-    res.status(500).json({ error: "Failed to get auto-sync status" });
-  }
-});
-router9.post("/sheets/auto-sync/enable", async (req, res) => {
-  try {
-    const existing = await getAutoSyncSpreadsheetId(req.userId);
-    const spreadsheetId = existing ?? await createSpreadsheet("\u{1F4CA} \u0422\u0440\u0435\u043A\u0435\u0440 \u0437\u0434\u043E\u0440\u043E\u0432\u044C\u044F 360 \u2014 \u0414\u043D\u0435\u0432\u043D\u0438\u043A \u043F\u0438\u0442\u0430\u043D\u0438\u044F");
-    await setAutoSyncSpreadsheetId(req.userId, spreadsheetId);
-    const today = req.body?.date ?? (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
-    await syncDayToSheets(spreadsheetId, today, req.userId);
-    res.json({ enabled: true, spreadsheetId, url: spreadsheetUrl(spreadsheetId) });
-  } catch (err) {
-    console.error("auto-sync enable error:", err);
-    res.status(500).json({ error: "Failed to enable auto-sync" });
-  }
-});
-router9.delete("/sheets/auto-sync/disable", async (req, res) => {
-  try {
-    await clearAutoSyncSpreadsheetId(req.userId);
-    res.json({ enabled: false });
-  } catch (err) {
-    console.error("auto-sync disable error:", err);
-    res.status(500).json({ error: "Failed to disable auto-sync" });
-  }
-});
-router9.post("/sheets/auto-sync/sync-now", async (req, res) => {
-  const date6 = req.body?.date ?? (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
-  try {
-    const spreadsheetId = await getAutoSyncSpreadsheetId(req.userId);
-    if (!spreadsheetId) {
-      res.status(400).json({ error: "Auto-sync is not enabled" });
-      return;
-    }
-    await syncDayToSheets(spreadsheetId, date6, req.userId);
-    res.json({ ok: true, url: spreadsheetUrl(spreadsheetId) });
-  } catch (err) {
-    console.error("sync-now error:", err);
-    res.status(500).json({ error: "Failed to sync" });
-  }
-});
-router9.post("/sheets/import-foods", async (req, res) => {
-  const rawUrl = req.body?.spreadsheetUrl;
-  if (!rawUrl || typeof rawUrl !== "string") {
-    res.status(400).json({ error: "spreadsheetUrl is required" });
-    return;
-  }
-  const spreadsheetId = parseSpreadsheetId(rawUrl);
-  if (!spreadsheetId) {
-    res.status(400).json({ error: "Invalid Google Sheets URL or ID" });
-    return;
-  }
-  try {
-    const rows = await readRows(spreadsheetId, "A1:F1000");
-    if (rows.length < 2) {
-      res.json({ imported: 0, skipped: 0 });
-      return;
-    }
-    const dataRows = rows.slice(1).filter((r) => r.length >= 3);
-    let imported = 0;
-    let skipped = 0;
-    for (const row of dataRows) {
-      const name = row[0]?.trim();
-      const servingSize = row[1]?.trim() || "100\u0433";
-      const calories = parseFloat(row[2]);
-      const protein = parseFloat(row[3] ?? "0");
-      const carbs = parseFloat(row[4] ?? "0");
-      const fat = parseFloat(row[5] ?? "0");
-      if (!name || isNaN(calories)) {
-        skipped++;
-        continue;
-      }
-      if (name.toUpperCase().includes("\u0418\u0422\u041E\u0413\u041E") || name.toUpperCase().includes("TOTAL")) {
-        skipped++;
-        continue;
-      }
-      await db.insert(foodsTable).values({
-        name,
-        servingSize,
-        calories: Math.round(calories),
-        protein: isNaN(protein) ? 0 : protein,
-        carbs: isNaN(carbs) ? 0 : carbs,
-        fat: isNaN(fat) ? 0 : fat
-      });
-      imported++;
-    }
-    res.json({ imported, skipped });
-  } catch (err) {
-    console.error("import-foods error:", err);
-    res.status(500).json({ error: "Failed to read Google Sheets. Make sure the sheet is shared or your account has access." });
-  }
-});
-router9.post("/sheets/export-posture", async (req, res) => {
-  try {
-    const { result, angles } = req.body;
-    if (!result || typeof result.overallScore !== "number") {
-      res.status(400).json({ error: "result is required" });
-      return;
-    }
-    const { url: url2, cycleReset } = await appendPostureToSheets(req.userId, result, angles ?? []);
-    res.json({ url: url2, cycleReset });
-  } catch (err) {
-    console.error("export-posture error:", err);
-    res.status(500).json({ error: "\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0441\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u044C \u0432 Google Sheets" });
-  }
-});
-function toCSV(rows) {
-  return rows.map(
-    (row) => row.map((cell) => {
-      const s2 = String(cell ?? "");
-      if (s2.includes(",") || s2.includes('"') || s2.includes("\n")) {
-        return `"${s2.replace(/"/g, '""')}"`;
-      }
-      return s2;
-    }).join(",")
-  ).join("\n");
-}
-router9.get("/sheets/download-posture", async (req, res) => {
-  try {
-    const spreadsheetId = await getPostureSheetId(req.userId);
-    if (!spreadsheetId) {
-      res.status(404).json({ error: "\u0422\u0430\u0431\u043B\u0438\u0446\u0430 \u0435\u0449\u0451 \u043D\u0435 \u0441\u043E\u0437\u0434\u0430\u043D\u0430. \u0421\u043D\u0430\u0447\u0430\u043B\u0430 \u0441\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u0435 \u0445\u043E\u0442\u044F \u0431\u044B \u043E\u0434\u0438\u043D \u0430\u043D\u0430\u043B\u0438\u0437." });
-      return;
-    }
-    const rows = await readRows(spreadsheetId, "A:P");
-    if (!rows || rows.length === 0) {
-      res.status(404).json({ error: "\u0422\u0430\u0431\u043B\u0438\u0446\u0430 \u043F\u0443\u0441\u0442\u0430" });
-      return;
-    }
-    const csv = toCSV(rows);
-    const filename = `osanka_${(/* @__PURE__ */ new Date()).toISOString().slice(0, 10)}.csv`;
-    res.setHeader("Content-Type", "text/csv; charset=utf-8");
-    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
-    res.send("\uFEFF" + csv);
-  } catch (err) {
-    console.error("download-posture error:", err);
-    res.status(500).json({ error: "\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0441\u043A\u0430\u0447\u0430\u0442\u044C \u0442\u0430\u0431\u043B\u0438\u0446\u0443" });
-  }
-});
-router9.get("/sheets/posture-cycle-status", async (req, res) => {
-  try {
-    const status = await getPostureCycleStatus(req.userId);
-    res.json(status);
-  } catch (err) {
-    console.error("posture-cycle-status error:", err);
-    res.status(500).json({ error: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u044F \u0441\u0442\u0430\u0442\u0443\u0441\u0430 \u0446\u0438\u043A\u043B\u0430" });
-  }
-});
-router9.post("/sheets/posture-reset", async (req, res) => {
-  try {
-    await resetPostureSheet(req.userId);
-    res.json({ ok: true });
-  } catch (err) {
-    console.error("posture-reset error:", err);
-    res.status(500).json({ error: "\u041E\u0448\u0438\u0431\u043A\u0430 \u0441\u0431\u0440\u043E\u0441\u0430 \u0446\u0438\u043A\u043B\u0430" });
-  }
-});
-router9.post("/sheets/analyze-posture-data", async (req, res) => {
-  try {
-    const spreadsheetId = await getPostureSheetId(req.userId);
-    if (!spreadsheetId) {
-      res.status(404).json({ error: "\u0422\u0430\u0431\u043B\u0438\u0446\u0430 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u0430. \u0421\u043D\u0430\u0447\u0430\u043B\u0430 \u0441\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u0435 \u0430\u043D\u0430\u043B\u0438\u0437 \u043E\u0441\u0430\u043D\u043A\u0438." });
-      return;
-    }
-    const rows = await readRows(spreadsheetId, "A:P");
-    if (!rows || rows.length < 2) {
-      res.status(404).json({ error: "\u041D\u0435\u0434\u043E\u0441\u0442\u0430\u0442\u043E\u0447\u043D\u043E \u0434\u0430\u043D\u043D\u044B\u0445 \u0434\u043B\u044F \u0430\u043D\u0430\u043B\u0438\u0437\u0430 (\u043D\u0443\u0436\u043D\u043E \u0445\u043E\u0442\u044F \u0431\u044B 2 \u0437\u0430\u043F\u0438\u0441\u0438)" });
-      return;
-    }
-    const header = rows[0];
-    const dataRows = rows.slice(1);
-    const tableText = dataRows.map((row, i) => {
-      const cells = header.map((h, j) => `${h}: ${row[j] ?? "\u2014"}`).join(", ");
-      return `\u0417\u0430\u043F\u0438\u0441\u044C ${i + 1}: ${cells}`;
-    }).join("\n");
-    const response = await openai4.chat.completions.create({
-      model: "gpt-5.2",
-      max_completion_tokens: 1200,
-      messages: [
-        {
-          role: "system",
-          content: `\u0422\u044B \u0444\u0438\u0437\u0438\u043E\u0442\u0435\u0440\u0430\u043F\u0435\u0432\u0442, \u0430\u043D\u0430\u043B\u0438\u0437\u0438\u0440\u0443\u044E\u0449\u0438\u0439 \u0434\u0438\u043D\u0430\u043C\u0438\u043A\u0443 \u043E\u0441\u0430\u043D\u043A\u0438 \u043F\u0430\u0446\u0438\u0435\u043D\u0442\u0430 \u0437\u0430 30-\u0434\u043D\u0435\u0432\u043D\u044B\u0439 \u0446\u0438\u043A\u043B.
-\u0422\u0435\u0431\u0435 \u043F\u0440\u0435\u0434\u043E\u0441\u0442\u0430\u0432\u043B\u0435\u043D\u044B \u0434\u0430\u043D\u043D\u044B\u0435 \u0438\u0437 Google Sheets \u0441 \u0440\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u0430\u043C\u0438 AI-\u0430\u043D\u0430\u043B\u0438\u0437\u0430 \u043E\u0441\u0430\u043D\u043A\u0438 \u0437\u0430 \u043D\u0435\u0441\u043A\u043E\u043B\u044C\u043A\u043E \u0441\u0435\u0441\u0441\u0438\u0439.
-\u0414\u0430\u0439 \u0440\u0430\u0437\u0432\u0451\u0440\u043D\u0443\u0442\u044B\u0439 \u0430\u043D\u0430\u043B\u0438\u0437 \u043D\u0430 \u0440\u0443\u0441\u0441\u043A\u043E\u043C \u044F\u0437\u044B\u043A\u0435 \u0432 \u0444\u043E\u0440\u043C\u0430\u0442\u0435 JSON:
-{
-  "trend": "<\u043E\u0431\u0449\u0430\u044F \u0442\u0435\u043D\u0434\u0435\u043D\u0446\u0438\u044F: \u0443\u043B\u0443\u0447\u0448\u0435\u043D\u0438\u0435, \u0443\u0445\u0443\u0434\u0448\u0435\u043D\u0438\u0435 \u0438\u043B\u0438 \u0441\u0442\u0430\u0431\u0438\u043B\u044C\u043D\u043E\u0441\u0442\u044C>",
-  "trendScore": <\u0447\u0438\u0441\u043B\u043E \u043E\u0442 -5 \u0434\u043E 5, \u0433\u0434\u0435 5=\u0437\u043D\u0430\u0447\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0435 \u0443\u043B\u0443\u0447\u0448\u0435\u043D\u0438\u0435, -5=\u0437\u043D\u0430\u0447\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0435 \u0443\u0445\u0443\u0434\u0448\u0435\u043D\u0438\u0435, 0=\u0441\u0442\u0430\u0431\u0438\u043B\u044C\u043D\u043E>,
-  "summary": "<\u043A\u0440\u0430\u0442\u043A\u043E\u0435 \u0440\u0435\u0437\u044E\u043C\u0435 \u043F\u0440\u043E\u0433\u0440\u0435\u0441\u0441\u0430 \u0437\u0430 \u043F\u0435\u0440\u0438\u043E\u0434, 2-3 \u043F\u0440\u0435\u0434\u043B\u043E\u0436\u0435\u043D\u0438\u044F>",
-  "achievements": ["<\u0434\u043E\u0441\u0442\u0438\u0436\u0435\u043D\u0438\u0435 1>", "<\u0434\u043E\u0441\u0442\u0438\u0436\u0435\u043D\u0438\u0435 2>"],
-  "problemZones": ["<\u0437\u043E\u043D\u0430 \u0441 \u043F\u0440\u043E\u0431\u043B\u0435\u043C\u043E\u0439>"],
-  "nextCycleGoals": ["<\u0446\u0435\u043B\u044C \u043D\u0430 \u0441\u043B\u0435\u0434\u0443\u044E\u0449\u0438\u0439 \u0446\u0438\u043A\u043B>", "<\u0446\u0435\u043B\u044C 2>", "<\u0446\u0435\u043B\u044C 3>"],
-  "recommendations": ["<\u0440\u0435\u043A\u043E\u043C\u0435\u043D\u0434\u0430\u0446\u0438\u044F 1>", "<\u0440\u0435\u043A\u043E\u043C\u0435\u043D\u0434\u0430\u0446\u0438\u044F 2>"]
-}`
-        },
-        {
-          role: "user",
-          content: `\u0414\u0430\u043D\u043D\u044B\u0435 \u0437\u0430 \u0446\u0438\u043A\u043B (${dataRows.length} \u0441\u0435\u0441\u0441\u0438\u0439 \u0430\u043D\u0430\u043B\u0438\u0437\u0430 \u043E\u0441\u0430\u043D\u043A\u0438):
-
-${tableText}
-
-\u0414\u0430\u0439 \u0440\u0430\u0437\u0432\u0451\u0440\u043D\u0443\u0442\u044B\u0439 \u0430\u043D\u0430\u043B\u0438\u0437 \u043F\u0440\u043E\u0433\u0440\u0435\u0441\u0441\u0430.`
-        }
-      ]
-    });
-    const content = response.choices[0]?.message?.content;
-    if (!content) {
-      res.status(500).json({ error: "\u041D\u0435\u0442 \u043E\u0442\u0432\u0435\u0442\u0430 \u043E\u0442 \u0418\u0418" });
-      return;
-    }
-    let analysis;
-    try {
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-      analysis = JSON.parse(jsonMatch ? jsonMatch[0] : content);
-    } catch {
-      res.status(500).json({ error: "\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0440\u0430\u0437\u043E\u0431\u0440\u0430\u0442\u044C \u043E\u0442\u0432\u0435\u0442 \u0418\u0418" });
-      return;
-    }
-    res.json({ analysis, sessionCount: dataRows.length });
-  } catch (err) {
-    console.error("analyze-posture-data error:", err);
-    res.status(500).json({ error: "\u041E\u0448\u0438\u0431\u043A\u0430 \u0430\u043D\u0430\u043B\u0438\u0437\u0430 \u0434\u0430\u043D\u043D\u044B\u0445" });
-  }
-});
-router9.get("/sheets/wellness-sync/status", async (req, res) => {
-  try {
-    const spreadsheetId = await getWellnessSyncSpreadsheetId(req.userId);
-    if (!spreadsheetId) {
-      res.json({ enabled: false });
-      return;
-    }
-    res.json({ enabled: true, spreadsheetId, url: spreadsheetUrl(spreadsheetId) });
-  } catch (err) {
-    console.error("wellness-sync status error:", err);
-    res.status(500).json({ error: "Failed to get wellness sync status" });
-  }
-});
-router9.post("/sheets/wellness-sync/enable", async (req, res) => {
-  try {
-    const existing = await getWellnessSyncSpreadsheetId(req.userId);
-    const spreadsheetId = existing ?? await createSpreadsheet("\u{1F33F} \u0414\u043D\u0435\u0432\u043D\u0438\u043A \u0441\u0430\u043C\u043E\u0447\u0443\u0432\u0441\u0442\u0432\u0438\u044F \u2014 \u0422\u0440\u0435\u043A\u0435\u0440 \u0437\u0434\u043E\u0440\u043E\u0432\u044C\u044F 360");
-    await setWellnessSyncSpreadsheetId(req.userId, spreadsheetId);
-    await syncWellnessToSheets(spreadsheetId, req.userId);
-    res.json({ enabled: true, spreadsheetId, url: spreadsheetUrl(spreadsheetId) });
-  } catch (err) {
-    console.error("wellness-sync enable error:", err);
-    res.status(500).json({ error: "Failed to enable wellness sync" });
-  }
-});
-router9.delete("/sheets/wellness-sync/disable", async (req, res) => {
-  try {
-    await clearWellnessSyncSpreadsheetId(req.userId);
-    res.json({ enabled: false });
-  } catch (err) {
-    console.error("wellness-sync disable error:", err);
-    res.status(500).json({ error: "Failed to disable wellness sync" });
-  }
-});
-router9.post("/sheets/wellness-sync/sync-now", async (req, res) => {
-  try {
-    const spreadsheetId = await getWellnessSyncSpreadsheetId(req.userId);
-    if (!spreadsheetId) {
-      res.status(400).json({ error: "Wellness sync is not enabled" });
-      return;
-    }
-    await syncWellnessToSheets(spreadsheetId, req.userId);
-    res.json({ ok: true, url: spreadsheetUrl(spreadsheetId) });
-  } catch (err) {
-    console.error("wellness sync-now error:", err);
-    res.status(500).json({ error: "Failed to sync wellness data" });
-  }
-});
-var sheets_default = router9;
-
-// src/routes/wellness.ts
-var import_express10 = __toESM(require_express2(), 1);
-var router10 = (0, import_express10.Router)();
-router10.get("/wellness", async (req, res) => {
-  const userId = req.userId;
-  const { date: date6 } = req.query;
-  if (!date6) {
-    res.status(400).json({ error: "date is required" });
-    return;
-  }
-  const [entry] = await db.select().from(wellnessLogTable).where(and(eq(wellnessLogTable.userId, userId), eq(wellnessLogTable.date, date6))).limit(1);
-  if (!entry) {
-    res.status(404).json({ error: "No entry for this date" });
-    return;
-  }
-  res.json(entry);
-});
-router10.put("/wellness", async (req, res) => {
-  const userId = req.userId;
-  const body = req.body;
-  if (!body.date) {
-    res.status(400).json({ error: "date is required" });
-    return;
-  }
-  const values = {
-    userId,
-    date: body.date,
-    caloriesBurned: body.caloriesBurned ?? null,
-    mood: body.mood ?? null,
-    stressLevel: body.stressLevel ?? null,
-    bedtime: body.bedtime ?? null,
-    wakeTime: body.wakeTime ?? null,
-    supplements: body.supplements ?? null,
-    medications: body.medications ?? null,
-    updatedAt: /* @__PURE__ */ new Date()
-  };
-  const [existing] = await db.select({ id: wellnessLogTable.id }).from(wellnessLogTable).where(and(eq(wellnessLogTable.userId, userId), eq(wellnessLogTable.date, body.date))).limit(1);
-  let entry;
-  if (existing) {
-    [entry] = await db.update(wellnessLogTable).set(values).where(eq(wellnessLogTable.id, existing.id)).returning();
-  } else {
-    [entry] = await db.insert(wellnessLogTable).values(values).returning();
-  }
-  triggerWellnessSync(userId);
-  res.json(entry);
-});
-router10.get("/wellness/history", async (req, res) => {
-  const userId = req.userId;
-  const { from, to } = req.query;
-  if (!from || !to) {
-    res.status(400).json({ error: "from and to are required" });
-    return;
-  }
-  const entries = await db.select().from(wellnessLogTable).where(
-    and(
-      eq(wellnessLogTable.userId, userId),
-      gte(wellnessLogTable.date, from),
-      lte(wellnessLogTable.date, to)
-    )
-  ).orderBy(wellnessLogTable.date);
-  res.json(entries);
-});
-var wellness_default = router10;
-
-// src/routes/tokens.ts
-var import_express11 = __toESM(require_express2(), 1);
-import { randomUUID } from "crypto";
-var router11 = (0, import_express11.Router)();
-var PRO_DAYS = 32;
-function adminGuard(req, res, next) {
-  const secret = process.env["ADMIN_SECRET"];
-  if (!secret) {
-    res.status(500).json({ error: "ADMIN_SECRET not configured" });
-    return;
-  }
-  const provided = req.headers["x-admin-secret"];
-  if (provided !== secret) {
-    res.status(403).json({ error: "Forbidden" });
-    return;
-  }
-  next();
-}
-router11.get("/tokens/:token/validate", async (req, res) => {
-  const { token } = req.params;
-  if (!token || token.length < 8) {
-    res.json({ valid: false, reason: "invalid_token" });
-    return;
-  }
-  try {
-    const [row] = await db.select().from(proAccessTokens).where(eq(proAccessTokens.token, token)).limit(1);
-    if (!row) {
-      res.json({ valid: false, reason: "not_found" });
-      return;
-    }
-    if (row.isRevoked) {
-      res.json({ valid: false, reason: "revoked" });
-      return;
-    }
-    const now = /* @__PURE__ */ new Date();
-    const expiresAt = new Date(row.expiresAt);
-    const isExpired = now > expiresAt;
-    const msLeft = expiresAt.getTime() - now.getTime();
-    const daysLeft = Math.max(0, Math.ceil(msLeft / (1e3 * 60 * 60 * 24)));
-    res.json({
-      valid: !isExpired,
-      reason: isExpired ? "expired" : "ok",
-      expiresAt: row.expiresAt,
-      daysLeft,
-      label: row.label
-    });
-  } catch (err) {
-    res.status(500).json({ valid: false, reason: "error" });
-  }
-});
-router11.post("/admin/tokens", adminGuard, async (req, res) => {
-  const { label = "", days = PRO_DAYS } = req.body ?? {};
-  const token = randomUUID();
-  const expiresAt = new Date(Date.now() + Number(days) * 24 * 60 * 60 * 1e3);
-  try {
-    const [row] = await db.insert(proAccessTokens).values({ token, label: String(label), expiresAt }).returning();
-    const baseUrl = process.env["REPLIT_DOMAINS"] ? `https://${process.env["REPLIT_DOMAINS"].split(",")[0]}` : `http://localhost:${process.env["PORT"] ?? 3e3}`;
-    res.json({
-      id: row.id,
-      token: row.token,
-      label: row.label,
-      expiresAt: row.expiresAt,
-      url: `${baseUrl}?token=${row.token}`
-    });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-router11.get("/admin/tokens", adminGuard, async (_req, res) => {
-  try {
-    const rows = await db.select().from(proAccessTokens).orderBy(desc(proAccessTokens.createdAt));
-    const now = /* @__PURE__ */ new Date();
-    const enriched = rows.map((r) => ({
-      ...r,
-      isExpired: now > new Date(r.expiresAt),
-      daysLeft: Math.max(0, Math.ceil((new Date(r.expiresAt).getTime() - now.getTime()) / 864e5))
-    }));
-    res.json({ data: enriched });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-router11.patch("/admin/tokens/:id/revoke", adminGuard, async (req, res) => {
-  const id = Number(req.params.id);
-  try {
-    await db.update(proAccessTokens).set({ isRevoked: true }).where(eq(proAccessTokens.id, id));
-    res.json({ ok: true });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-var tokens_default = router11;
-
-// src/routes/index.ts
-var router12 = (0, import_express12.Router)();
-router12.use(health_default);
-router12.use(foods_default);
-router12.use(meals_default);
-router12.use(goals_default);
-router12.use(dashboard_default);
-router12.use(analyze_food_default);
-router12.use(analyze_posture_default);
-router12.use(analyze_tracker_screenshot_default);
-router12.use(sheets_default);
-router12.use(wellness_default);
-router12.use(tokens_default);
-var routes_default = router12;
-
-// src/lib/logger.ts
-var import_pino = __toESM(require_pino(), 1);
-var isProduction = process.env.NODE_ENV === "production";
-var logger2 = (0, import_pino.default)({
-  level: process.env.LOG_LEVEL ?? "info",
-  redact: [
-    "req.headers.authorization",
-    "req.headers.cookie",
-    "res.headers['set-cookie']"
-  ],
-  ...isProduction ? {} : {
-    transport: {
-      target: "pino-pretty",
-      options: { colorize: true }
-    }
-  }
-});
-
-// src/app.ts
-var app = (0, import_express13.default)();
-app.use(
-  (0, import_pino_http.default)({
-    logger: logger2,
-    serializers: {
-      req(req) {
-        return { id: req.id, method: req.method, url: req.url?.split("?")[0] };
-      },
-      res(res) {
-        return { statusCode: res.statusCode };
-      }
-    }
-  })
-);
-app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
-app.use((0, import_cors.default)({ credentials: true, origin: true }));
-app.use(import_express13.default.json({ limit: "20mb" }));
-app.use(import_express13.default.urlencoded({ extended: true, limit: "20mb" }));
-app.use(clerkMiddleware());
-app.use((req, res, next) => {
-  const auth = getAuth(req);
-  const userId = auth?.sessionClaims?.userId || auth?.userId;
-  if (userId) {
-    req.userId = userId;
-  }
-  next();
-});
-app.use("/api", routes_default);
-var app_default = app;
 
 // src/lib/seed.ts
 var SEED_FOODS = [
@@ -104241,7 +88540,7 @@ app_default.get("/health", (req, res) => {
     uptime: process.uptime()
   });
 });
-app_default.post("/api/webhooks/clerk", import_express16.default.raw({ type: "application/json" }), async (req, res) => {
+app_default.post("/api/webhooks/clerk", import_express4.default.raw({ type: "application/json" }), async (req, res) => {
   try {
     const payload = req.body;
     const eventType = payload.type;
@@ -104457,11 +88756,11 @@ app_default.get("/api/weekly-stats", async (req, res) => {
 app_default.get("/api/recent-meals", async (req, res) => {
   try {
     const userId = req.userId;
-    const limit2 = parseInt(req.query.limit) || 5;
+    const limit = parseInt(req.query.limit) || 5;
     if (!userId) {
       return res.status(401).json({ error: "Unauthorized" });
     }
-    const { data, error: error40 } = await supabase.from("meals").select("id, date, meal_type, foods").eq("user_id", userId).order("date", { ascending: false }).limit(limit2);
+    const { data, error: error40 } = await supabase.from("meals").select("id, date, meal_type, foods").eq("user_id", userId).order("date", { ascending: false }).limit(limit);
     if (error40) {
       console.error("Supabase error:", error40);
       return res.status(500).json({ error: "Database error" });
@@ -104485,7 +88784,7 @@ app_default.get("/api/recent-meals", async (req, res) => {
         });
       }
     }
-    res.json(result.slice(0, limit2));
+    res.json(result.slice(0, limit));
   } catch (err) {
     console.error("API error:", err);
     res.status(500).json({ error: "Server error" });

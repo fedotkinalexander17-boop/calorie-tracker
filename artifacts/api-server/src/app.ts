@@ -40,6 +40,6 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use("/api", router);
+// app.use("/api", router); // временно отключаем, чтобы использовать эндпоинты из index.ts
 
 export default app;
