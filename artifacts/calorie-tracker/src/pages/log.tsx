@@ -94,12 +94,37 @@ export default function Log() {
     enabled: searchQuery.length > 1,
   });
 
+  // Логируем результат useQuery
+  console.log("📊 useQuery result:", { 
+    foods, 
+    isLoading: foodsLoading, 
+    error: foodsError, 
+    searchQuery 
+  });
+
   // Добавляем лог для отслеживания изменения foods
   useEffect(() => {
     console.log("📦 foods state updated:", foods);
     console.log("📦 foods is array?", Array.isArray(foods));
     console.log("📦 foods length:", foods?.length);
   }, [foods]);
+
+  // Временный тестовый запрос
+  useEffect(() => {
+    const testFetch = async () => {
+      try {
+        const res = await fetch('/api/foods?search=яб', {
+          credentials: "include",
+        });
+        const data = await res.json();
+        console.log('🧪 TEST FETCH directly from browser:', data);
+        console.log('🧪 Is array?', Array.isArray(data));
+      } catch (err) {
+        console.error('🧪 TEST FETCH error:', err);
+      }
+    };
+    testFetch();
+  }, []);
 
   // Получение существующего приёма пищи за день
   const { data: existingMeal, isLoading: mealLoading } = useQuery({
