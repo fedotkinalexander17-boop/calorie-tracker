@@ -33,7 +33,7 @@ app.use(clerkMiddleware());
 app.use((req, res, next) => {
   const auth = getAuth(req);
   const userId = auth?.sessionClaims?.userId as string | undefined || auth?.userId;
-  
+
   if (userId) {
     (req as any).userId = userId;
   }
@@ -43,40 +43,40 @@ app.use((req, res, next) => {
 // app.use("/api", router); // временно отключаем
 
 // ============================================
-// API FOODS (временно в app.ts)
+// API FOODS
 // ============================================
 app.get('/api/foods', async (req, res) => {
   try {
     const search = req.query.search as string || '';
     console.log("🔥 /api/foods called with search:", search);
-    
+
     const supabaseUrl = process.env.SUPABASE_URL;
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    
+
     if (!supabaseUrl || !supabaseKey) {
       console.error("Missing Supabase credentials");
       return res.status(500).json({ error: 'Supabase not configured' });
     }
-    
+
     const { createClient } = await import('@supabase/supabase-js');
     const supabase = createClient(supabaseUrl, supabaseKey);
-    
+
     let query = supabase
       .from('foods')
       .select('*')
       .order('name');
-    
+
     if (search && search.length > 0) {
       query = query.ilike('name', `%${search}%`);
     }
-    
+
     const { data, error } = await query.limit(20);
-    
+
     if (error) {
       console.error('Supabase error:', error);
       return res.status(500).json({ error: 'Database error' });
     }
-    
+
     console.log("✅ Foods data returned:", data?.length || 0, "items");
     res.json(data || []);
   } catch (err) {
