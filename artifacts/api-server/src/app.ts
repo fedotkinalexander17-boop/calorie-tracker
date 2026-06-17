@@ -40,6 +40,49 @@ app.use((req, res, next) => {
   next();
 });
 
-// app.use("/api", router); // временно отключаем, чтобы использовать эндпоинты из index.ts
+// app.use("/api", router); // временно отключаем
+
+// ============================================
+// API FOODS (временно в app.ts)
+// ============================================
+app.get('/api/foods', async (req, res) => {
+  try {
+    const search = req.query.search as string || '';
+    console.log("🔥 /api/foods called with search:", search);
+    
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    
+    if (!supabaseUrl || !supabaseKey) {
+      console.error("Missing Supabase credentials");
+      return res.status(500).json({ error: 'Supabase not configured' });
+    }
+    
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    
+    let query = supabase
+      .from('foods')
+      .select('*')
+      .order('name');
+    
+    if (search && search.length > 0) {
+      query = query.ilike('name', `%${search}%`);
+    }
+    
+    const { data, error } = await query.limit(20);
+    
+    if (error) {
+      console.error('Supabase error:', error);
+      return res.status(500).json({ error: 'Database error' });
+    }
+    
+    console.log("✅ Foods data returned:", data?.length || 0, "items");
+    res.json(data || []);
+  } catch (err) {
+    console.error('API error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 
 export default app;
