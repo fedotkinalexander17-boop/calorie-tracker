@@ -4,9 +4,6 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
-  css: {
-    transformer: 'postcss'
-  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -17,7 +14,7 @@ export default defineConfig({
     port: 3000,
   },
   build: {
-    sourcemap: false,  // ← ОТКЛЮЧАЕТ SOURCEMAP
+    sourcemap: false,
     outDir: 'dist/public',
     emptyOutDir: true,
   },
