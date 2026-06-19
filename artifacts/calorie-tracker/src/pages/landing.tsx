@@ -1,4 +1,4 @@
-import { Link } from "wouter";
+import { SignInButton, SignUpButton } from "@clerk/clerk-react";
 import { Apple, BarChart3, Utensils, Target, Sheet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/lib/i18n";
@@ -16,12 +16,16 @@ export default function Landing() {
           <span className="font-serif text-xl font-medium tracking-tight text-foreground">{t.appName}</span>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" asChild>
-            <Link href="/sign-in">{t.landing.signIn}</Link>
-          </Button>
-          <Button asChild>
-            <Link href="/sign-up">{t.landing.signUp}</Link>
-          </Button>
+          <SignInButton mode="modal">
+            <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
+              {t.landing.signIn}
+            </Button>
+          </SignInButton>
+          <SignUpButton mode="modal">
+            <Button>
+              {t.landing.signUp}
+            </Button>
+          </SignUpButton>
         </div>
       </header>
 
@@ -41,12 +45,16 @@ export default function Landing() {
           </p>
 
           <div className="flex gap-3 justify-center pt-2">
-            <Button size="lg" asChild>
-              <Link href="/sign-up">{t.landing.cta}</Link>
-            </Button>
-            <Button size="lg" variant="outline" asChild>
-              <Link href="/sign-in">{t.landing.signIn}</Link>
-            </Button>
+            <SignUpButton mode="modal">
+              <Button size="lg">
+                {t.landing.cta}
+              </Button>
+            </SignUpButton>
+            <SignInButton mode="modal">
+              <Button size="lg" variant="outline">
+                {t.landing.signIn}
+              </Button>
+            </SignInButton>
           </div>
         </div>
 
