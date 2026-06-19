@@ -70547,6 +70547,188 @@ app.post("/api/meals", async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+app.get("/api/daily-summary", async (req, res) => {
+  try {
+    const userId = req.userId;
+    const date6 = req.query.date;
+    console.log("\u{1F4CA} GET /api/daily-summary - userId:", userId, "date:", date6);
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    if (!date6) {
+      return res.status(400).json({ error: "Date is required" });
+    }
+    const supabaseUrl2 = process.env.SUPABASE_URL;
+    const supabaseKey2 = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!supabaseUrl2 || !supabaseKey2) {
+      return res.status(500).json({ error: "Supabase not configured" });
+    }
+    const { createClient: createClient2 } = await Promise.resolve().then(() => (init_dist4(), dist_exports));
+    const supabase2 = createClient2(supabaseUrl2, supabaseKey2);
+    const { data: meals, error: error40 } = await supabase2.from("meals").select("foods").eq("user_id", userId).eq("date", date6);
+    if (error40) {
+      console.error("Supabase error:", error40);
+      return res.status(500).json({ error: "Database error" });
+    }
+    const summary = {
+      totalCalories: 0,
+      totalProtein: 0,
+      totalCarbs: 0,
+      totalFat: 0,
+      goalCalories: 2e3,
+      goalProtein: 150,
+      goalCarbs: 250,
+      goalFat: 65
+    };
+    if (meals) {
+      for (const meal of meals) {
+        const foods = meal.foods || [];
+        for (const food of foods) {
+          summary.totalCalories += food.calories || 0;
+          summary.totalProtein += food.protein || 0;
+          summary.totalCarbs += food.carbs || 0;
+          summary.totalFat += food.fat || 0;
+        }
+      }
+    }
+    console.log("\u2705 Daily summary:", summary);
+    res.json(summary);
+  } catch (err) {
+    console.error("API error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+app.get("/api/weekly-stats", async (req, res) => {
+  try {
+    const userId = req.userId;
+    const date6 = req.query.date;
+    console.log("\u{1F4CA} GET /api/weekly-stats - userId:", userId, "date:", date6);
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    if (!date6) {
+      return res.status(400).json({ error: "Date is required" });
+    }
+    const supabaseUrl2 = process.env.SUPABASE_URL;
+    const supabaseKey2 = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!supabaseUrl2 || !supabaseKey2) {
+      return res.status(500).json({ error: "Supabase not configured" });
+    }
+    const { createClient: createClient2 } = await Promise.resolve().then(() => (init_dist4(), dist_exports));
+    const supabase2 = createClient2(supabaseUrl2, supabaseKey2);
+    const currentDate = /* @__PURE__ */ new Date(date6 + "T12:00:00");
+    const startDate = new Date(currentDate);
+    startDate.setDate(startDate.getDate() - 6);
+    const startDateStr = startDate.toISOString().split("T")[0];
+    const endDateStr = date6;
+    const { data: meals, error: error40 } = await supabase2.from("meals").select("date, foods").eq("user_id", userId).gte("date", startDateStr).lte("date", endDateStr).order("date", { ascending: true });
+    if (error40) {
+      console.error("Supabase error:", error40);
+      return res.status(500).json({ error: "Database error" });
+    }
+    const dailyData = {};
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(startDate);
+      d.setDate(d.getDate() + i);
+      const dStr = d.toISOString().split("T")[0];
+      dailyData[dStr] = { totalCalories: 0, goalCalories: 2e3 };
+    }
+    if (meals) {
+      for (const meal of meals) {
+        const mealDate = meal.date;
+        if (dailyData[mealDate]) {
+          const foods = meal.foods || [];
+          let totalCalories = 0;
+          for (const food of foods) {
+            totalCalories += food.calories || 0;
+          }
+          dailyData[mealDate].totalCalories += totalCalories;
+        }
+      }
+    }
+    const result = Object.entries(dailyData).map(([date7, data]) => ({
+      date: date7,
+      totalCalories: data.totalCalories,
+      goalCalories: data.goalCalories
+    }));
+    console.log("\u2705 Weekly stats:", result);
+    res.json(result);
+  } catch (err) {
+    console.error("API error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+app.get("/api/recent-meals", async (req, res) => {
+  try {
+    const userId = req.userId;
+    const limit = parseInt(req.query.limit) || 5;
+    console.log("\u{1F4CA} GET /api/recent-meals - userId:", userId, "limit:", limit);
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    const supabaseUrl2 = process.env.SUPABASE_URL;
+    const supabaseKey2 = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!supabaseUrl2 || !supabaseKey2) {
+      return res.status(500).json({ error: "Supabase not configured" });
+    }
+    const { createClient: createClient2 } = await Promise.resolve().then(() => (init_dist4(), dist_exports));
+    const supabase2 = createClient2(supabaseUrl2, supabaseKey2);
+    const { data: meals, error: error40 } = await supabase2.from("meals").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(limit);
+    if (error40) {
+      console.error("Supabase error:", error40);
+      return res.status(500).json({ error: "Database error" });
+    }
+    console.log("\u2705 Recent meals:", meals?.length || 0);
+    res.json(meals || []);
+  } catch (err) {
+    console.error("API error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+app.get("/api/meal-breakdown", async (req, res) => {
+  try {
+    const userId = req.userId;
+    const date6 = req.query.date;
+    console.log("\u{1F4CA} GET /api/meal-breakdown - userId:", userId, "date:", date6);
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    if (!date6) {
+      return res.status(400).json({ error: "Date is required" });
+    }
+    const supabaseUrl2 = process.env.SUPABASE_URL;
+    const supabaseKey2 = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!supabaseUrl2 || !supabaseKey2) {
+      return res.status(500).json({ error: "Supabase not configured" });
+    }
+    const { createClient: createClient2 } = await Promise.resolve().then(() => (init_dist4(), dist_exports));
+    const supabase2 = createClient2(supabaseUrl2, supabaseKey2);
+    const { data: meals, error: error40 } = await supabase2.from("meals").select("meal_type, foods").eq("user_id", userId).eq("date", date6);
+    if (error40) {
+      console.error("Supabase error:", error40);
+      return res.status(500).json({ error: "Database error" });
+    }
+    const breakdown = {};
+    if (meals) {
+      for (const meal of meals) {
+        const mealType = meal.meal_type || "unknown";
+        if (!breakdown[mealType]) {
+          breakdown[mealType] = { mealType, totalCalories: 0 };
+        }
+        const foods = meal.foods || [];
+        for (const food of foods) {
+          breakdown[mealType].totalCalories += food.calories || 0;
+        }
+      }
+    }
+    const result = Object.values(breakdown);
+    console.log("\u2705 Meal breakdown:", result);
+    res.json(result);
+  } catch (err) {
+    console.error("API error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
 var app_default = app;
 
 // ../../node_modules/.pnpm/pg@8.21.0/node_modules/pg/esm/index.mjs
