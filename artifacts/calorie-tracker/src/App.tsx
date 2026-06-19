@@ -1,4 +1,5 @@
 import { ClerkProvider, useClerk } from "@clerk/clerk-react";
+import { SignIn, SignUp } from "@clerk/clerk-react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
@@ -16,6 +17,22 @@ import Landing from "@/pages/landing";
 const clerkPubKey = 'pk_test_cGxlYXNhbnQtc25ha2UtNjUuY2xlcmsuYWNjb3VudHMuZGV2JA';
 const queryClient = new QueryClient();
 
+function SignInPage() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <SignIn routing="path" path="/sign-in" signUpUrl="/sign-up" />
+    </div>
+  );
+}
+
+function SignUpPage() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <SignUp routing="path" path="/sign-up" signInUrl="/sign-in" />
+    </div>
+  );
+}
+
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isSignedIn } = useClerk();
   
@@ -32,6 +49,8 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={!isSignedIn ? <Landing /> : <Navigate to="/dashboard" replace />} />
+      <Route path="/sign-in" element={<SignInPage />} />
+      <Route path="/sign-up" element={<SignUpPage />} />
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/log" element={<ProtectedRoute><Log /></ProtectedRoute>} />
       <Route path="/foods" element={<ProtectedRoute><Foods /></ProtectedRoute>} />
