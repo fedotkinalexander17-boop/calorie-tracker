@@ -700,7 +700,7 @@ var require_depd = __commonJS({
   "../../node_modules/.pnpm/depd@2.0.0/node_modules/depd/index.js"(exports, module) {
     var relative = __require("path").relative;
     module.exports = depd;
-    var basePath33 = process.cwd();
+    var basePath36 = process.cwd();
     function containsNamespace(str, namespace) {
       var vals = str.split(/[ ,]+/);
       var ns = String(namespace).toLowerCase();
@@ -890,7 +890,7 @@ var require_depd = __commonJS({
       return formatted;
     }
     function formatLocation(callSite) {
-      return relative(basePath33, callSite[0]) + ":" + callSite[1] + ":" + callSite[2];
+      return relative(basePath36, callSite[0]) + ":" + callSite[1] + ":" + callSite[2];
     }
     function getStack() {
       var limit = Error.stackTraceLimit;
@@ -15441,116 +15441,12 @@ var require_type_is = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/content-type@1.0.5/node_modules/content-type/index.js
-var require_content_type = __commonJS({
-  "../../node_modules/.pnpm/content-type@1.0.5/node_modules/content-type/index.js"(exports) {
-    "use strict";
-    var PARAM_REGEXP = /; *([!#$%&'*+.^_`|~0-9A-Za-z-]+) *= *("(?:[\u000b\u0020\u0021\u0023-\u005b\u005d-\u007e\u0080-\u00ff]|\\[\u000b\u0020-\u00ff])*"|[!#$%&'*+.^_`|~0-9A-Za-z-]+) */g;
-    var TEXT_REGEXP = /^[\u000b\u0020-\u007e\u0080-\u00ff]+$/;
-    var TOKEN_REGEXP = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
-    var QESC_REGEXP = /\\([\u000b\u0020-\u00ff])/g;
-    var QUOTE_REGEXP = /([\\"])/g;
-    var TYPE_REGEXP = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+\/[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
-    exports.format = format;
-    exports.parse = parse4;
-    function format(obj) {
-      if (!obj || typeof obj !== "object") {
-        throw new TypeError("argument obj is required");
-      }
-      var parameters = obj.parameters;
-      var type = obj.type;
-      if (!type || !TYPE_REGEXP.test(type)) {
-        throw new TypeError("invalid type");
-      }
-      var string4 = type;
-      if (parameters && typeof parameters === "object") {
-        var param;
-        var params = Object.keys(parameters).sort();
-        for (var i = 0; i < params.length; i++) {
-          param = params[i];
-          if (!TOKEN_REGEXP.test(param)) {
-            throw new TypeError("invalid parameter name");
-          }
-          string4 += "; " + param + "=" + qstring(parameters[param]);
-        }
-      }
-      return string4;
-    }
-    function parse4(string4) {
-      if (!string4) {
-        throw new TypeError("argument string is required");
-      }
-      var header = typeof string4 === "object" ? getcontenttype(string4) : string4;
-      if (typeof header !== "string") {
-        throw new TypeError("argument string is required to be a string");
-      }
-      var index = header.indexOf(";");
-      var type = index !== -1 ? header.slice(0, index).trim() : header.trim();
-      if (!TYPE_REGEXP.test(type)) {
-        throw new TypeError("invalid media type");
-      }
-      var obj = new ContentType(type.toLowerCase());
-      if (index !== -1) {
-        var key;
-        var match2;
-        var value;
-        PARAM_REGEXP.lastIndex = index;
-        while (match2 = PARAM_REGEXP.exec(header)) {
-          if (match2.index !== index) {
-            throw new TypeError("invalid parameter format");
-          }
-          index += match2[0].length;
-          key = match2[1].toLowerCase();
-          value = match2[2];
-          if (value.charCodeAt(0) === 34) {
-            value = value.slice(1, -1);
-            if (value.indexOf("\\") !== -1) {
-              value = value.replace(QESC_REGEXP, "$1");
-            }
-          }
-          obj.parameters[key] = value;
-        }
-        if (index !== header.length) {
-          throw new TypeError("invalid parameter format");
-        }
-      }
-      return obj;
-    }
-    function getcontenttype(obj) {
-      var header;
-      if (typeof obj.getHeader === "function") {
-        header = obj.getHeader("content-type");
-      } else if (typeof obj.headers === "object") {
-        header = obj.headers && obj.headers["content-type"];
-      }
-      if (typeof header !== "string") {
-        throw new TypeError("content-type header is missing from object");
-      }
-      return header;
-    }
-    function qstring(val) {
-      var str = String(val);
-      if (TOKEN_REGEXP.test(str)) {
-        return str;
-      }
-      if (str.length > 0 && !TEXT_REGEXP.test(str)) {
-        throw new TypeError("invalid parameter value");
-      }
-      return '"' + str.replace(QUOTE_REGEXP, "\\$1") + '"';
-    }
-    function ContentType(type) {
-      this.parameters = /* @__PURE__ */ Object.create(null);
-      this.type = type;
-    }
-  }
-});
-
-// ../../node_modules/.pnpm/body-parser@2.2.2/node_modules/body-parser/lib/utils.js
+// ../../node_modules/.pnpm/body-parser@2.3.0/node_modules/body-parser/lib/utils.js
 var require_utils = __commonJS({
-  "../../node_modules/.pnpm/body-parser@2.2.2/node_modules/body-parser/lib/utils.js"(exports, module) {
+  "../../node_modules/.pnpm/body-parser@2.3.0/node_modules/body-parser/lib/utils.js"(exports, module) {
     "use strict";
     var bytes = require_bytes();
-    var contentType = require_content_type();
+    var contentType = require_dist();
     var typeis = require_type_is();
     module.exports = {
       getCharset,
@@ -15558,11 +15454,9 @@ var require_utils = __commonJS({
       passthrough
     };
     function getCharset(req) {
-      try {
-        return (contentType.parse(req).parameters.charset || "").toLowerCase();
-      } catch {
-        return void 0;
-      }
+      const header = req.headers["content-type"];
+      if (!header) return void 0;
+      return contentType.parse(header).parameters.charset?.toLowerCase();
     }
     function typeChecker(type) {
       return function checkType(req) {
@@ -15573,15 +15467,18 @@ var require_utils = __commonJS({
       if (!defaultType) {
         throw new TypeError("defaultType must be provided");
       }
-      var inflate = options?.inflate !== false;
-      var limit = typeof options?.limit !== "number" ? bytes.parse(options?.limit || "100kb") : options?.limit;
-      var type = options?.type || defaultType;
-      var verify = options?.verify || false;
-      var defaultCharset = options?.defaultCharset || "utf-8";
+      const inflate = options?.inflate !== false;
+      const limit = typeof options?.limit === "undefined" || options?.limit === null ? 102400 : bytes.parse(options.limit);
+      const type = options?.type || defaultType;
+      const verify = options?.verify || false;
+      const defaultCharset = options?.defaultCharset || "utf-8";
+      if (limit === null) {
+        throw new TypeError(`option limit "${String(options.limit)}" is invalid`);
+      }
       if (verify !== false && typeof verify !== "function") {
         throw new TypeError("option verify must be function");
       }
-      var shouldParse = typeof type !== "function" ? typeChecker(type) : type;
+      const shouldParse = typeof type !== "function" ? typeChecker(type) : type;
       return {
         inflate,
         limit,
@@ -15596,9 +15493,9 @@ var require_utils = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/body-parser@2.2.2/node_modules/body-parser/lib/read.js
+// ../../node_modules/.pnpm/body-parser@2.3.0/node_modules/body-parser/lib/read.js
 var require_read = __commonJS({
-  "../../node_modules/.pnpm/body-parser@2.2.2/node_modules/body-parser/lib/read.js"(exports, module) {
+  "../../node_modules/.pnpm/body-parser@2.3.0/node_modules/body-parser/lib/read.js"(exports, module) {
     "use strict";
     var createError = require_http_errors();
     var getBody = require_raw_body();
@@ -15628,7 +15525,7 @@ var require_read = __commonJS({
         next();
         return;
       }
-      var encoding = null;
+      let encoding = null;
       if (options?.skipCharset !== true) {
         encoding = getCharset(req) || options.defaultCharset;
         if (!!options?.isValidCharset && !options.isValidCharset(encoding)) {
@@ -15640,10 +15537,10 @@ var require_read = __commonJS({
           return;
         }
       }
-      var length;
-      var opts = options;
-      var stream;
-      var verify = opts.verify;
+      let length;
+      const opts = options;
+      let stream;
+      const verify = opts.verify;
       try {
         stream = contentstream(req, debug, opts.inflate);
         length = stream.length;
@@ -15662,7 +15559,7 @@ var require_read = __commonJS({
       debug("read body");
       getBody(stream, opts, function(error40, body) {
         if (error40) {
-          var _error;
+          let _error;
           if (error40.type === "encoding.unsupported") {
             _error = createError(415, 'unsupported charset "' + encoding.toUpperCase() + '"', {
               charset: encoding.toLowerCase(),
@@ -15692,7 +15589,7 @@ var require_read = __commonJS({
             return;
           }
         }
-        var str = body;
+        let str = body;
         try {
           debug("parse body");
           str = typeof body !== "string" && encoding !== null ? iconv.decode(body, encoding) : body;
@@ -15708,8 +15605,8 @@ var require_read = __commonJS({
       });
     }
     function contentstream(req, debug, inflate) {
-      var encoding = (req.headers["content-encoding"] || "identity").toLowerCase();
-      var length = req.headers["content-length"];
+      const encoding = (req.headers["content-encoding"] || "identity").toLowerCase();
+      const length = req.headers["content-length"];
       debug('content-encoding "%s"', encoding);
       if (inflate === false && encoding !== "identity") {
         throw createError(415, "content encoding unsupported", {
@@ -15721,7 +15618,7 @@ var require_read = __commonJS({
         req.length = length;
         return req;
       }
-      var stream = createDecompressionStream(encoding, debug);
+      const stream = createDecompressionStream(encoding, debug);
       req.pipe(stream);
       return stream;
     }
@@ -15754,9 +15651,9 @@ var require_read = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/body-parser@2.2.2/node_modules/body-parser/lib/types/json.js
+// ../../node_modules/.pnpm/body-parser@2.3.0/node_modules/body-parser/lib/types/json.js
 var require_json = __commonJS({
-  "../../node_modules/.pnpm/body-parser@2.2.2/node_modules/body-parser/lib/types/json.js"(exports, module) {
+  "../../node_modules/.pnpm/body-parser@2.3.0/node_modules/body-parser/lib/types/json.js"(exports, module) {
     "use strict";
     var debug = require_src()("body-parser:json");
     var read = require_read();
@@ -15767,18 +15664,43 @@ var require_json = __commonJS({
     var JSON_SYNTAX_REGEXP = /#+/g;
     function json4(options) {
       const normalizedOptions = normalizeOptions(options, "application/json");
-      var reviver = options?.reviver;
-      var strict = options?.strict !== false;
-      function parse4(body) {
-        if (body.length === 0) {
-          return {};
-        }
-        if (strict) {
-          var first = firstchar(body);
+      const parse4 = createJsonParser(options);
+      const readOptions = {
+        ...normalizedOptions,
+        // assert charset per RFC 7159 sec 8.1
+        isValidCharset: (charset) => charset.slice(0, 4) === "utf-"
+      };
+      return function jsonParser(req, res, next) {
+        read(req, res, next, parse4, debug, readOptions);
+      };
+    }
+    function createJsonParser(options) {
+      const reviver = options?.reviver;
+      const strict = options?.strict !== false;
+      if (strict) {
+        return function parse4(body) {
+          if (body.length === 0) {
+            return {};
+          }
+          const first = firstchar(body);
           if (first !== "{" && first !== "[") {
             debug("strict violation");
             throw createStrictSyntaxError(body, first);
           }
+          try {
+            debug("parse json");
+            return JSON.parse(body, reviver);
+          } catch (e) {
+            throw normalizeJsonSyntaxError(e, {
+              message: e.message,
+              stack: e.stack
+            });
+          }
+        };
+      }
+      return function parse4(body) {
+        if (body.length === 0) {
+          return {};
         }
         try {
           debug("parse json");
@@ -15789,19 +15711,11 @@ var require_json = __commonJS({
             stack: e.stack
           });
         }
-      }
-      const readOptions = {
-        ...normalizedOptions,
-        // assert charset per RFC 7159 sec 8.1
-        isValidCharset: (charset) => charset.slice(0, 4) === "utf-"
-      };
-      return function jsonParser(req, res, next) {
-        read(req, res, next, parse4, debug, readOptions);
       };
     }
     function createStrictSyntaxError(str, char2) {
-      var index = str.indexOf(char2);
-      var partial2 = "";
+      const index = str.indexOf(char2);
+      let partial2 = "";
       if (index !== -1) {
         partial2 = str.substring(0, index) + JSON_SYNTAX_CHAR.repeat(str.length - index);
       }
@@ -15818,13 +15732,13 @@ var require_json = __commonJS({
       }
     }
     function firstchar(str) {
-      var match2 = FIRST_CHAR_REGEXP.exec(str);
+      const match2 = FIRST_CHAR_REGEXP.exec(str);
       return match2 ? match2[1] : void 0;
     }
     function normalizeJsonSyntaxError(error40, obj) {
-      var keys = Object.getOwnPropertyNames(error40);
-      for (var i = 0; i < keys.length; i++) {
-        var key = keys[i];
+      const keys = Object.getOwnPropertyNames(error40);
+      for (let i = 0; i < keys.length; i++) {
+        const key = keys[i];
         if (key !== "stack" && key !== "message") {
           delete error40[key];
         }
@@ -15836,9 +15750,9 @@ var require_json = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/body-parser@2.2.2/node_modules/body-parser/lib/types/raw.js
+// ../../node_modules/.pnpm/body-parser@2.3.0/node_modules/body-parser/lib/types/raw.js
 var require_raw = __commonJS({
-  "../../node_modules/.pnpm/body-parser@2.2.2/node_modules/body-parser/lib/types/raw.js"(exports, module) {
+  "../../node_modules/.pnpm/body-parser@2.3.0/node_modules/body-parser/lib/types/raw.js"(exports, module) {
     "use strict";
     var debug = require_src()("body-parser:raw");
     var read = require_read();
@@ -15858,9 +15772,9 @@ var require_raw = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/body-parser@2.2.2/node_modules/body-parser/lib/types/text.js
+// ../../node_modules/.pnpm/body-parser@2.3.0/node_modules/body-parser/lib/types/text.js
 var require_text = __commonJS({
-  "../../node_modules/.pnpm/body-parser@2.2.2/node_modules/body-parser/lib/types/text.js"(exports, module) {
+  "../../node_modules/.pnpm/body-parser@2.3.0/node_modules/body-parser/lib/types/text.js"(exports, module) {
     "use strict";
     var debug = require_src()("body-parser:text");
     var read = require_read();
@@ -18412,9 +18326,9 @@ var require_lib2 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/body-parser@2.2.2/node_modules/body-parser/lib/types/urlencoded.js
+// ../../node_modules/.pnpm/body-parser@2.3.0/node_modules/body-parser/lib/types/urlencoded.js
 var require_urlencoded = __commonJS({
-  "../../node_modules/.pnpm/body-parser@2.2.2/node_modules/body-parser/lib/types/urlencoded.js"(exports, module) {
+  "../../node_modules/.pnpm/body-parser@2.3.0/node_modules/body-parser/lib/types/urlencoded.js"(exports, module) {
     "use strict";
     var createError = require_http_errors();
     var debug = require_src()("body-parser:urlencoded");
@@ -18427,10 +18341,7 @@ var require_urlencoded = __commonJS({
       if (normalizedOptions.defaultCharset !== "utf-8" && normalizedOptions.defaultCharset !== "iso-8859-1") {
         throw new TypeError("option defaultCharset must be either utf-8 or iso-8859-1");
       }
-      var queryparse = createQueryParser(options);
-      function parse4(body, encoding) {
-        return body.length ? queryparse(body, encoding) : {};
-      }
+      const parse4 = createQueryParser(options);
       const readOptions = {
         ...normalizedOptions,
         // assert charset
@@ -18441,11 +18352,11 @@ var require_urlencoded = __commonJS({
       };
     }
     function createQueryParser(options) {
-      var extended = Boolean(options?.extended);
-      var parameterLimit = options?.parameterLimit !== void 0 ? options?.parameterLimit : 1e3;
-      var charsetSentinel = options?.charsetSentinel;
-      var interpretNumericEntities = options?.interpretNumericEntities;
-      var depth = extended ? options?.depth !== void 0 ? options?.depth : 32 : 0;
+      const extended = Boolean(options?.extended);
+      let parameterLimit = options?.parameterLimit !== void 0 ? options?.parameterLimit : 1e3;
+      const charsetSentinel = options?.charsetSentinel;
+      const interpretNumericEntities = options?.interpretNumericEntities;
+      const depth = extended ? options?.depth !== void 0 ? options?.depth : 32 : 0;
       if (isNaN(parameterLimit) || parameterLimit < 1) {
         throw new TypeError("option parameterLimit must be a positive number");
       }
@@ -18455,15 +18366,16 @@ var require_urlencoded = __commonJS({
       if (isFinite(parameterLimit)) {
         parameterLimit = parameterLimit | 0;
       }
-      return function queryparse(body, encoding) {
-        var paramCount = parameterCount(body, parameterLimit);
+      return function parse4(body, encoding) {
+        if (!body.length) return {};
+        const paramCount = parameterCount(body, parameterLimit);
         if (paramCount === void 0) {
           debug("too many parameters");
           throw createError(413, "too many parameters", {
             type: "parameters.too.many"
           });
         }
-        var arrayLimit = extended ? Math.max(100, paramCount) : paramCount;
+        const arrayLimit = extended ? Math.max(100, paramCount) : paramCount;
         debug("parse " + (extended ? "extended " : "") + "urlencoding");
         try {
           return qs.parse(body, {
@@ -18500,31 +18412,15 @@ var require_urlencoded = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/body-parser@2.2.2/node_modules/body-parser/index.js
+// ../../node_modules/.pnpm/body-parser@2.3.0/node_modules/body-parser/index.js
 var require_body_parser = __commonJS({
-  "../../node_modules/.pnpm/body-parser@2.2.2/node_modules/body-parser/index.js"(exports, module) {
+  "../../node_modules/.pnpm/body-parser@2.3.0/node_modules/body-parser/index.js"(exports, module) {
     "use strict";
     exports = module.exports = bodyParser;
-    Object.defineProperty(exports, "json", {
-      configurable: true,
-      enumerable: true,
-      get: () => require_json()
-    });
-    Object.defineProperty(exports, "raw", {
-      configurable: true,
-      enumerable: true,
-      get: () => require_raw()
-    });
-    Object.defineProperty(exports, "text", {
-      configurable: true,
-      enumerable: true,
-      get: () => require_text()
-    });
-    Object.defineProperty(exports, "urlencoded", {
-      configurable: true,
-      enumerable: true,
-      get: () => require_urlencoded()
-    });
+    exports.json = require_json();
+    exports.raw = require_raw();
+    exports.text = require_text();
+    exports.urlencoded = require_urlencoded();
     function bodyParser() {
       throw new Error("The bodyParser() generic has been split into individual middleware to use instead.");
     }
@@ -18917,6 +18813,110 @@ var require_view = __commonJS({
       } catch (e) {
         return void 0;
       }
+    }
+  }
+});
+
+// ../../node_modules/.pnpm/content-type@1.0.5/node_modules/content-type/index.js
+var require_content_type = __commonJS({
+  "../../node_modules/.pnpm/content-type@1.0.5/node_modules/content-type/index.js"(exports) {
+    "use strict";
+    var PARAM_REGEXP = /; *([!#$%&'*+.^_`|~0-9A-Za-z-]+) *= *("(?:[\u000b\u0020\u0021\u0023-\u005b\u005d-\u007e\u0080-\u00ff]|\\[\u000b\u0020-\u00ff])*"|[!#$%&'*+.^_`|~0-9A-Za-z-]+) */g;
+    var TEXT_REGEXP = /^[\u000b\u0020-\u007e\u0080-\u00ff]+$/;
+    var TOKEN_REGEXP = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
+    var QESC_REGEXP = /\\([\u000b\u0020-\u00ff])/g;
+    var QUOTE_REGEXP = /([\\"])/g;
+    var TYPE_REGEXP = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+\/[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
+    exports.format = format;
+    exports.parse = parse4;
+    function format(obj) {
+      if (!obj || typeof obj !== "object") {
+        throw new TypeError("argument obj is required");
+      }
+      var parameters = obj.parameters;
+      var type = obj.type;
+      if (!type || !TYPE_REGEXP.test(type)) {
+        throw new TypeError("invalid type");
+      }
+      var string4 = type;
+      if (parameters && typeof parameters === "object") {
+        var param;
+        var params = Object.keys(parameters).sort();
+        for (var i = 0; i < params.length; i++) {
+          param = params[i];
+          if (!TOKEN_REGEXP.test(param)) {
+            throw new TypeError("invalid parameter name");
+          }
+          string4 += "; " + param + "=" + qstring(parameters[param]);
+        }
+      }
+      return string4;
+    }
+    function parse4(string4) {
+      if (!string4) {
+        throw new TypeError("argument string is required");
+      }
+      var header = typeof string4 === "object" ? getcontenttype(string4) : string4;
+      if (typeof header !== "string") {
+        throw new TypeError("argument string is required to be a string");
+      }
+      var index = header.indexOf(";");
+      var type = index !== -1 ? header.slice(0, index).trim() : header.trim();
+      if (!TYPE_REGEXP.test(type)) {
+        throw new TypeError("invalid media type");
+      }
+      var obj = new ContentType(type.toLowerCase());
+      if (index !== -1) {
+        var key;
+        var match2;
+        var value;
+        PARAM_REGEXP.lastIndex = index;
+        while (match2 = PARAM_REGEXP.exec(header)) {
+          if (match2.index !== index) {
+            throw new TypeError("invalid parameter format");
+          }
+          index += match2[0].length;
+          key = match2[1].toLowerCase();
+          value = match2[2];
+          if (value.charCodeAt(0) === 34) {
+            value = value.slice(1, -1);
+            if (value.indexOf("\\") !== -1) {
+              value = value.replace(QESC_REGEXP, "$1");
+            }
+          }
+          obj.parameters[key] = value;
+        }
+        if (index !== header.length) {
+          throw new TypeError("invalid parameter format");
+        }
+      }
+      return obj;
+    }
+    function getcontenttype(obj) {
+      var header;
+      if (typeof obj.getHeader === "function") {
+        header = obj.getHeader("content-type");
+      } else if (typeof obj.headers === "object") {
+        header = obj.headers && obj.headers["content-type"];
+      }
+      if (typeof header !== "string") {
+        throw new TypeError("content-type header is missing from object");
+      }
+      return header;
+    }
+    function qstring(val) {
+      var str = String(val);
+      if (TOKEN_REGEXP.test(str)) {
+        return str;
+      }
+      if (str.length > 0 && !TEXT_REGEXP.test(str)) {
+        throw new TypeError("invalid parameter value");
+      }
+      return '"' + str.replace(QUOTE_REGEXP, "\\$1") + '"';
+    }
+    function ContentType(type) {
+      this.parameters = /* @__PURE__ */ Object.create(null);
+      this.type = type;
     }
   }
 });
@@ -22661,7 +22661,7 @@ var require_send = __commonJS({
       res.setHeader("X-Content-Type-Options", "nosniff");
       res.end(doc);
     };
-    SendStream.prototype.hasTrailingSlash = function hasTrailingSlash2() {
+    SendStream.prototype.hasTrailingSlash = function hasTrailingSlash() {
       return this.path[this.path.length - 1] === "/";
     };
     SendStream.prototype.isConditionalGET = function isConditionalGET() {
@@ -24292,9 +24292,9 @@ var init_tslib_es6 = __esm({
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+functions-js@2.108.0/node_modules/@supabase/functions-js/dist/main/helper.js
+// ../../node_modules/.pnpm/@supabase+functions-js@2.108.2/node_modules/@supabase/functions-js/dist/main/helper.js
 var require_helper = __commonJS({
-  "../../node_modules/.pnpm/@supabase+functions-js@2.108.0/node_modules/@supabase/functions-js/dist/main/helper.js"(exports) {
+  "../../node_modules/.pnpm/@supabase+functions-js@2.108.2/node_modules/@supabase/functions-js/dist/main/helper.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.resolveFetch = void 0;
@@ -24308,9 +24308,9 @@ var require_helper = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+functions-js@2.108.0/node_modules/@supabase/functions-js/dist/main/types.js
+// ../../node_modules/.pnpm/@supabase+functions-js@2.108.2/node_modules/@supabase/functions-js/dist/main/types.js
 var require_types = __commonJS({
-  "../../node_modules/.pnpm/@supabase+functions-js@2.108.0/node_modules/@supabase/functions-js/dist/main/types.js"(exports) {
+  "../../node_modules/.pnpm/@supabase+functions-js@2.108.2/node_modules/@supabase/functions-js/dist/main/types.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.FunctionRegion = exports.FunctionsHttpError = exports.FunctionsRelayError = exports.FunctionsFetchError = exports.FunctionsError = void 0;
@@ -24368,9 +24368,9 @@ var require_types = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+functions-js@2.108.0/node_modules/@supabase/functions-js/dist/main/FunctionsClient.js
+// ../../node_modules/.pnpm/@supabase+functions-js@2.108.2/node_modules/@supabase/functions-js/dist/main/FunctionsClient.js
 var require_FunctionsClient = __commonJS({
-  "../../node_modules/.pnpm/@supabase+functions-js@2.108.0/node_modules/@supabase/functions-js/dist/main/FunctionsClient.js"(exports) {
+  "../../node_modules/.pnpm/@supabase+functions-js@2.108.2/node_modules/@supabase/functions-js/dist/main/FunctionsClient.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.FunctionsClient = void 0;
@@ -24646,9 +24646,9 @@ var require_FunctionsClient = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+functions-js@2.108.0/node_modules/@supabase/functions-js/dist/main/index.js
+// ../../node_modules/.pnpm/@supabase+functions-js@2.108.2/node_modules/@supabase/functions-js/dist/main/index.js
 var require_main = __commonJS({
-  "../../node_modules/.pnpm/@supabase+functions-js@2.108.0/node_modules/@supabase/functions-js/dist/main/index.js"(exports) {
+  "../../node_modules/.pnpm/@supabase+functions-js@2.108.2/node_modules/@supabase/functions-js/dist/main/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.FunctionRegion = exports.FunctionsRelayError = exports.FunctionsHttpError = exports.FunctionsFetchError = exports.FunctionsError = exports.FunctionsClient = void 0;
@@ -24675,7 +24675,7 @@ var require_main = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+postgrest-js@2.108.0/node_modules/@supabase/postgrest-js/dist/index.mjs
+// ../../node_modules/.pnpm/@supabase+postgrest-js@2.108.2/node_modules/@supabase/postgrest-js/dist/index.mjs
 function sleep(ms, signal) {
   return new Promise((resolve) => {
     if (signal === null || signal === void 0 ? void 0 : signal.aborted) {
@@ -24752,7 +24752,7 @@ function _objectSpread2(e) {
 }
 var DEFAULT_MAX_RETRIES, getRetryDelay, RETRYABLE_STATUS_CODES, RETRYABLE_METHODS, PostgrestError, PostgrestBuilder, PostgrestTransformBuilder, PostgrestReservedCharsRegexp, PostgrestFilterBuilder, PostgrestQueryBuilder, PostgrestClient;
 var init_dist = __esm({
-  "../../node_modules/.pnpm/@supabase+postgrest-js@2.108.0/node_modules/@supabase/postgrest-js/dist/index.mjs"() {
+  "../../node_modules/.pnpm/@supabase+postgrest-js@2.108.2/node_modules/@supabase/postgrest-js/dist/index.mjs"() {
     DEFAULT_MAX_RETRIES = 3;
     getRetryDelay = (attemptIndex) => Math.min(1e3 * 2 ** attemptIndex, 3e4);
     RETRYABLE_STATUS_CODES = [520, 503];
@@ -24841,6 +24841,7 @@ var init_dist = __esm({
       * {@link https://github.com/supabase/supabase-js/issues/92}
       *
       * @category Database
+      * @subcategory Using modifiers
       */
       throwOnError() {
         this.shouldThrowOnError = true;
@@ -24902,9 +24903,20 @@ var init_dist = __esm({
         return this;
       }
       /**
-      * Set an HTTP header for the request.
+      * Set an HTTP header on this single PostgREST request, overriding any header
+      * with the same name set on the client.
+      *
+      * This is an advanced escape hatch for one-off needs (passing a custom
+      * `Authorization` for a single query, attaching a tracing header, etc.).
+      * Most callers do not need it: configure client-wide headers via the
+      * `headers` option when constructing the client, and authentication via
+      * Supabase Auth.
+      *
+      * @param name - HTTP header name
+      * @param value - HTTP header value
       *
       * @category Database
+      * @subcategory Using modifiers
       */
       setHeader(name, value) {
         this.headers = new Headers(this.headers);
@@ -24913,6 +24925,7 @@ var init_dist = __esm({
       }
       /**
       * @category Database
+      * @subcategory Using modifiers
       *
       * Configure retry behavior for this request.
       *
@@ -25115,6 +25128,7 @@ ${cause.stack}`;
       * @deprecated Use overrideTypes<yourType, { merge: false }>() method at the end of your call chain instead
       *
       * @category Database
+      * @subcategory Using modifiers
       */
       returns() {
         return this;
@@ -25218,6 +25232,9 @@ ${cause.stack}`;
       }
     };
     PostgrestTransformBuilder = class extends PostgrestBuilder {
+      throwOnError() {
+        return super.throwOnError();
+      }
       /**
       * Perform a SELECT on the query result.
       *
@@ -25842,6 +25859,7 @@ ${cause.stack}`;
       * Return `data` as an object in [GeoJSON](https://geojson.org) format.
       *
       * @category Database
+      * @subcategory Using modifiers
       */
       geojson() {
         this.headers.set("Accept", "application/geo+json");
@@ -25958,11 +25976,33 @@ ${cause.stack}`;
         else return this;
       }
       /**
-      * Rollback the query.
+      * Dry-run this request: execute the query but discard the changes.
       *
-      * `data` will still be returned, but the query is not committed.
+      * Server-side, PostgREST runs the query inside a transaction and rolls it back
+      * instead of committing. The response still contains the data that *would* have
+      * been returned — `RETURNING` clauses execute and RLS, triggers, and constraints
+      * are all evaluated — but no row is actually inserted, updated, or deleted.
+      *
+      * This affects only the single request it is chained to. The JS caller has no
+      * handle on the transaction: supabase-js does not group multiple queries into
+      * one transaction. For multi-statement transactional logic, use a database
+      * function (`supabase.rpc(...)`).
+      *
+      * Sets the `Prefer: tx=rollback` header. See PostgREST's docs on transaction
+      * preferences for the underlying mechanism.
       *
       * @category Database
+      * @subcategory Using modifiers
+      *
+      * @example Validate an insert without persisting
+      * ```ts
+      * const { data, error } = await supabase
+      *   .from('countries')
+      *   .insert({ name: 'France' })
+      *   .select()
+      *   .rollback()
+      * // `data` shows what would have been inserted; nothing is saved.
+      * ```
       */
       rollback() {
         this.headers.append("Prefer", "tx=rollback");
@@ -26017,6 +26057,7 @@ ${cause.stack}`;
       * @param rows - The maximum number of rows that can be affected
       *
       * @category Database
+      * @subcategory Using modifiers
       */
       maxAffected(rows) {
         this.headers.append("Prefer", "handling=strict");
@@ -26026,6 +26067,9 @@ ${cause.stack}`;
     };
     PostgrestReservedCharsRegexp = /* @__PURE__ */ new RegExp("[,()]");
     PostgrestFilterBuilder = class extends PostgrestTransformBuilder {
+      throwOnError() {
+        return super.throwOnError();
+      }
       /**
       * Match only rows where `column` is equal to `value`.
       *
@@ -29694,9 +29738,9 @@ ${cause.stack}`;
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+realtime-js@2.108.0/node_modules/@supabase/realtime-js/dist/main/lib/websocket-factory.js
+// ../../node_modules/.pnpm/@supabase+realtime-js@2.108.2/node_modules/@supabase/realtime-js/dist/main/lib/websocket-factory.js
 var require_websocket_factory = __commonJS({
-  "../../node_modules/.pnpm/@supabase+realtime-js@2.108.0/node_modules/@supabase/realtime-js/dist/main/lib/websocket-factory.js"(exports) {
+  "../../node_modules/.pnpm/@supabase+realtime-js@2.108.2/node_modules/@supabase/realtime-js/dist/main/lib/websocket-factory.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.WebSocketFactory = void 0;
@@ -29817,19 +29861,19 @@ Suggested solution: ${env.workaround}`;
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+realtime-js@2.108.0/node_modules/@supabase/realtime-js/dist/main/lib/version.js
+// ../../node_modules/.pnpm/@supabase+realtime-js@2.108.2/node_modules/@supabase/realtime-js/dist/main/lib/version.js
 var require_version = __commonJS({
-  "../../node_modules/.pnpm/@supabase+realtime-js@2.108.0/node_modules/@supabase/realtime-js/dist/main/lib/version.js"(exports) {
+  "../../node_modules/.pnpm/@supabase+realtime-js@2.108.2/node_modules/@supabase/realtime-js/dist/main/lib/version.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.version = void 0;
-    exports.version = "2.108.0";
+    exports.version = "2.108.2";
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+realtime-js@2.108.0/node_modules/@supabase/realtime-js/dist/main/lib/constants.js
+// ../../node_modules/.pnpm/@supabase+realtime-js@2.108.2/node_modules/@supabase/realtime-js/dist/main/lib/constants.js
 var require_constants = __commonJS({
-  "../../node_modules/.pnpm/@supabase+realtime-js@2.108.0/node_modules/@supabase/realtime-js/dist/main/lib/constants.js"(exports) {
+  "../../node_modules/.pnpm/@supabase+realtime-js@2.108.2/node_modules/@supabase/realtime-js/dist/main/lib/constants.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.CONNECTION_STATE = exports.TRANSPORTS = exports.CHANNEL_EVENTS = exports.CHANNEL_STATES = exports.SOCKET_STATES = exports.MAX_PUSH_BUFFER_SIZE = exports.WS_CLOSE_NORMAL = exports.DEFAULT_TIMEOUT = exports.VERSION = exports.DEFAULT_VSN = exports.VSN_2_0_0 = exports.VSN_1_0_0 = exports.DEFAULT_VERSION = void 0;
@@ -29875,9 +29919,9 @@ var require_constants = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+realtime-js@2.108.0/node_modules/@supabase/realtime-js/dist/main/lib/serializer.js
+// ../../node_modules/.pnpm/@supabase+realtime-js@2.108.2/node_modules/@supabase/realtime-js/dist/main/lib/serializer.js
 var require_serializer = __commonJS({
-  "../../node_modules/.pnpm/@supabase+realtime-js@2.108.0/node_modules/@supabase/realtime-js/dist/main/lib/serializer.js"(exports) {
+  "../../node_modules/.pnpm/@supabase+realtime-js@2.108.2/node_modules/@supabase/realtime-js/dist/main/lib/serializer.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Serializer = class {
@@ -30022,9 +30066,9 @@ var require_serializer = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+realtime-js@2.108.0/node_modules/@supabase/realtime-js/dist/main/lib/transformers.js
+// ../../node_modules/.pnpm/@supabase+realtime-js@2.108.2/node_modules/@supabase/realtime-js/dist/main/lib/transformers.js
 var require_transformers = __commonJS({
-  "../../node_modules/.pnpm/@supabase+realtime-js@2.108.0/node_modules/@supabase/realtime-js/dist/main/lib/transformers.js"(exports) {
+  "../../node_modules/.pnpm/@supabase+realtime-js@2.108.2/node_modules/@supabase/realtime-js/dist/main/lib/transformers.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.httpEndpointURL = exports.toTimestampString = exports.toArray = exports.toJson = exports.toNumber = exports.toBoolean = exports.convertCell = exports.convertColumn = exports.convertChangeData = exports.PostgresTypes = void 0;
@@ -30201,9 +30245,9 @@ var require_transformers = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+phoenix@0.4.2/node_modules/@supabase/phoenix/priv/static/phoenix.cjs.js
+// ../../node_modules/.pnpm/@supabase+phoenix@0.4.4/node_modules/@supabase/phoenix/priv/static/phoenix.cjs.js
 var require_phoenix_cjs = __commonJS({
-  "../../node_modules/.pnpm/@supabase+phoenix@0.4.2/node_modules/@supabase/phoenix/priv/static/phoenix.cjs.js"(exports, module) {
+  "../../node_modules/.pnpm/@supabase+phoenix@0.4.4/node_modules/@supabase/phoenix/priv/static/phoenix.cjs.js"(exports, module) {
     "use strict";
     var __defProp3 = Object.defineProperty;
     var __getOwnPropDesc3 = Object.getOwnPropertyDescriptor;
@@ -32009,9 +32053,9 @@ var require_phoenix_cjs = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+realtime-js@2.108.0/node_modules/@supabase/realtime-js/dist/main/phoenix/presenceAdapter.js
+// ../../node_modules/.pnpm/@supabase+realtime-js@2.108.2/node_modules/@supabase/realtime-js/dist/main/phoenix/presenceAdapter.js
 var require_presenceAdapter = __commonJS({
-  "../../node_modules/.pnpm/@supabase+realtime-js@2.108.0/node_modules/@supabase/realtime-js/dist/main/phoenix/presenceAdapter.js"(exports) {
+  "../../node_modules/.pnpm/@supabase+realtime-js@2.108.2/node_modules/@supabase/realtime-js/dist/main/phoenix/presenceAdapter.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var phoenix_1 = require_phoenix_cjs();
@@ -32107,9 +32151,9 @@ var require_presenceAdapter = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+realtime-js@2.108.0/node_modules/@supabase/realtime-js/dist/main/RealtimePresence.js
+// ../../node_modules/.pnpm/@supabase+realtime-js@2.108.2/node_modules/@supabase/realtime-js/dist/main/RealtimePresence.js
 var require_RealtimePresence = __commonJS({
-  "../../node_modules/.pnpm/@supabase+realtime-js@2.108.0/node_modules/@supabase/realtime-js/dist/main/RealtimePresence.js"(exports) {
+  "../../node_modules/.pnpm/@supabase+realtime-js@2.108.2/node_modules/@supabase/realtime-js/dist/main/RealtimePresence.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.REALTIME_PRESENCE_LISTEN_EVENTS = void 0;
@@ -32151,9 +32195,9 @@ var require_RealtimePresence = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+realtime-js@2.108.0/node_modules/@supabase/realtime-js/dist/main/lib/normalizeChannelError.js
+// ../../node_modules/.pnpm/@supabase+realtime-js@2.108.2/node_modules/@supabase/realtime-js/dist/main/lib/normalizeChannelError.js
 var require_normalizeChannelError = __commonJS({
-  "../../node_modules/.pnpm/@supabase+realtime-js@2.108.0/node_modules/@supabase/realtime-js/dist/main/lib/normalizeChannelError.js"(exports) {
+  "../../node_modules/.pnpm/@supabase+realtime-js@2.108.2/node_modules/@supabase/realtime-js/dist/main/lib/normalizeChannelError.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.normalizeChannelError = normalizeChannelError;
@@ -32177,9 +32221,9 @@ var require_normalizeChannelError = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+realtime-js@2.108.0/node_modules/@supabase/realtime-js/dist/main/phoenix/channelAdapter.js
+// ../../node_modules/.pnpm/@supabase+realtime-js@2.108.2/node_modules/@supabase/realtime-js/dist/main/phoenix/channelAdapter.js
 var require_channelAdapter = __commonJS({
-  "../../node_modules/.pnpm/@supabase+realtime-js@2.108.0/node_modules/@supabase/realtime-js/dist/main/phoenix/channelAdapter.js"(exports) {
+  "../../node_modules/.pnpm/@supabase+realtime-js@2.108.2/node_modules/@supabase/realtime-js/dist/main/phoenix/channelAdapter.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var constants_1 = require_constants();
@@ -32284,9 +32328,9 @@ var require_channelAdapter = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+realtime-js@2.108.0/node_modules/@supabase/realtime-js/dist/main/RealtimeChannel.js
+// ../../node_modules/.pnpm/@supabase+realtime-js@2.108.2/node_modules/@supabase/realtime-js/dist/main/RealtimeChannel.js
 var require_RealtimeChannel = __commonJS({
-  "../../node_modules/.pnpm/@supabase+realtime-js@2.108.0/node_modules/@supabase/realtime-js/dist/main/RealtimeChannel.js"(exports) {
+  "../../node_modules/.pnpm/@supabase+realtime-js@2.108.2/node_modules/@supabase/realtime-js/dist/main/RealtimeChannel.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.REALTIME_CHANNEL_STATES = exports.REALTIME_SUBSCRIBE_STATES = exports.REALTIME_LISTEN_TYPES = exports.REALTIME_POSTGRES_CHANGES_LISTEN_EVENT = void 0;
@@ -32723,6 +32767,9 @@ var require_RealtimeChannel = __commonJS({
         if (response.status === 202) {
           return { success: true };
         }
+        if (response.status === 404) {
+          return Promise.reject(new Error("httpSend() requires Realtime server v2.97.0 or newer; the endpoint returned 404. Update your Supabase CLI to a recent version, or upgrade the Realtime server in your self-hosted setup. See https://github.com/supabase/supabase-js/blob/master/packages/core/realtime-js/migrations/httpsend-server-version.md"));
+        }
         let errorMessage = response.statusText;
         try {
           const errorBody = await response.json();
@@ -32995,9 +33042,9 @@ var require_RealtimeChannel = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+realtime-js@2.108.0/node_modules/@supabase/realtime-js/dist/main/phoenix/socketAdapter.js
+// ../../node_modules/.pnpm/@supabase+realtime-js@2.108.2/node_modules/@supabase/realtime-js/dist/main/phoenix/socketAdapter.js
 var require_socketAdapter = __commonJS({
-  "../../node_modules/.pnpm/@supabase+realtime-js@2.108.0/node_modules/@supabase/realtime-js/dist/main/phoenix/socketAdapter.js"(exports) {
+  "../../node_modules/.pnpm/@supabase+realtime-js@2.108.2/node_modules/@supabase/realtime-js/dist/main/phoenix/socketAdapter.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var phoenix_1 = require_phoenix_cjs();
@@ -33113,9 +33160,9 @@ var require_socketAdapter = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+realtime-js@2.108.0/node_modules/@supabase/realtime-js/dist/main/RealtimeClient.js
+// ../../node_modules/.pnpm/@supabase+realtime-js@2.108.2/node_modules/@supabase/realtime-js/dist/main/RealtimeClient.js
 var require_RealtimeClient = __commonJS({
-  "../../node_modules/.pnpm/@supabase+realtime-js@2.108.0/node_modules/@supabase/realtime-js/dist/main/RealtimeClient.js"(exports) {
+  "../../node_modules/.pnpm/@supabase+realtime-js@2.108.2/node_modules/@supabase/realtime-js/dist/main/RealtimeClient.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
@@ -33782,9 +33829,9 @@ Option 2: Install and provide the "ws" package:
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+realtime-js@2.108.0/node_modules/@supabase/realtime-js/dist/main/index.js
+// ../../node_modules/.pnpm/@supabase+realtime-js@2.108.2/node_modules/@supabase/realtime-js/dist/main/index.js
 var require_main2 = __commonJS({
-  "../../node_modules/.pnpm/@supabase+realtime-js@2.108.0/node_modules/@supabase/realtime-js/dist/main/index.js"(exports) {
+  "../../node_modules/.pnpm/@supabase+realtime-js@2.108.2/node_modules/@supabase/realtime-js/dist/main/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.WebSocketFactory = exports.REALTIME_CHANNEL_STATES = exports.REALTIME_SUBSCRIBE_STATES = exports.REALTIME_PRESENCE_LISTEN_EVENTS = exports.REALTIME_POSTGRES_CHANGES_LISTEN_EVENT = exports.REALTIME_LISTEN_TYPES = exports.RealtimeClient = exports.RealtimeChannel = exports.RealtimePresence = void 0;
@@ -34353,7 +34400,7 @@ var init_dist2 = __esm({
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+storage-js@2.108.0/node_modules/@supabase/storage-js/dist/index.mjs
+// ../../node_modules/.pnpm/@supabase+storage-js@2.108.2/node_modules/@supabase/storage-js/dist/index.mjs
 function _typeof2(o) {
   "@babel/helpers - typeof";
   return _typeof2 = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(o$1) {
@@ -34455,7 +34502,7 @@ function createFetchApi(namespace = "storage") {
 }
 var StorageError, StorageApiError, StorageUnknownError, resolveFetch, isPlainObject, recursiveToCamel, isValidBucketName, _getErrorMessage, handleError, _getRequestParams, defaultApi, get, post, put, head, remove, vectorsApi, BaseApiClient, _Symbol$toStringTag$1, StreamDownloadBuilder, _Symbol$toStringTag, BlobDownloadBuilder, DEFAULT_SEARCH_OPTIONS, DEFAULT_FILE_OPTIONS, StorageFileApi, version, DEFAULT_HEADERS, StorageBucketApi, StorageAnalyticsClient, VectorIndexApi, VectorDataApi, VectorBucketApi, StorageVectorsClient, VectorBucketScope, VectorIndexScope, StorageClient;
 var init_dist3 = __esm({
-  "../../node_modules/.pnpm/@supabase+storage-js@2.108.0/node_modules/@supabase/storage-js/dist/index.mjs"() {
+  "../../node_modules/.pnpm/@supabase+storage-js@2.108.2/node_modules/@supabase/storage-js/dist/index.mjs"() {
     init_dist2();
     StorageError = class extends Error {
       constructor(message, namespace = "storage", status, statusCode) {
@@ -35691,7 +35738,7 @@ var init_dist3 = __esm({
         return query;
       }
     };
-    version = "2.108.0";
+    version = "2.108.2";
     DEFAULT_HEADERS = { "X-Client-Info": `storage-js/${version}` };
     StorageBucketApi = class extends BaseApiClient {
       constructor(url2, headers = {}, fetch$1, opts) {
@@ -37049,26 +37096,27 @@ var init_dist3 = __esm({
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+auth-js@2.108.0/node_modules/@supabase/auth-js/dist/main/lib/version.js
+// ../../node_modules/.pnpm/@supabase+auth-js@2.108.2/node_modules/@supabase/auth-js/dist/main/lib/version.js
 var require_version2 = __commonJS({
-  "../../node_modules/.pnpm/@supabase+auth-js@2.108.0/node_modules/@supabase/auth-js/dist/main/lib/version.js"(exports) {
+  "../../node_modules/.pnpm/@supabase+auth-js@2.108.2/node_modules/@supabase/auth-js/dist/main/lib/version.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.version = void 0;
-    exports.version = "2.108.0";
+    exports.version = "2.108.2";
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+auth-js@2.108.0/node_modules/@supabase/auth-js/dist/main/lib/constants.js
+// ../../node_modules/.pnpm/@supabase+auth-js@2.108.2/node_modules/@supabase/auth-js/dist/main/lib/constants.js
 var require_constants2 = __commonJS({
-  "../../node_modules/.pnpm/@supabase+auth-js@2.108.0/node_modules/@supabase/auth-js/dist/main/lib/constants.js"(exports) {
+  "../../node_modules/.pnpm/@supabase+auth-js@2.108.2/node_modules/@supabase/auth-js/dist/main/lib/constants.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.JWKS_TTL = exports.BASE64URL_REGEX = exports.API_VERSIONS = exports.API_VERSION_HEADER_NAME = exports.NETWORK_FAILURE = exports.DEFAULT_HEADERS = exports.AUDIENCE = exports.STORAGE_KEY = exports.GOTRUE_URL = exports.EXPIRY_MARGIN_MS = exports.AUTO_REFRESH_TICK_THRESHOLD = exports.AUTO_REFRESH_TICK_DURATION_MS = void 0;
+    exports.JWKS_TTL = exports.BASE64URL_REGEX = exports.API_VERSIONS = exports.API_VERSION_HEADER_NAME = exports.NETWORK_FAILURE = exports.DEFAULT_HEADERS = exports.AUDIENCE = exports.STORAGE_KEY = exports.GOTRUE_URL = exports.REFRESH_FAILURE_COOLDOWN_MS = exports.EXPIRY_MARGIN_MS = exports.AUTO_REFRESH_TICK_THRESHOLD = exports.AUTO_REFRESH_TICK_DURATION_MS = void 0;
     var version_1 = require_version2();
     exports.AUTO_REFRESH_TICK_DURATION_MS = 30 * 1e3;
     exports.AUTO_REFRESH_TICK_THRESHOLD = 3;
     exports.EXPIRY_MARGIN_MS = exports.AUTO_REFRESH_TICK_THRESHOLD * exports.AUTO_REFRESH_TICK_DURATION_MS;
+    exports.REFRESH_FAILURE_COOLDOWN_MS = 2 * exports.AUTO_REFRESH_TICK_DURATION_MS;
     exports.GOTRUE_URL = "http://localhost:9999";
     exports.STORAGE_KEY = "supabase.auth.token";
     exports.AUDIENCE = "";
@@ -37090,9 +37138,9 @@ var require_constants2 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+auth-js@2.108.0/node_modules/@supabase/auth-js/dist/main/lib/errors.js
+// ../../node_modules/.pnpm/@supabase+auth-js@2.108.2/node_modules/@supabase/auth-js/dist/main/lib/errors.js
 var require_errors = __commonJS({
-  "../../node_modules/.pnpm/@supabase+auth-js@2.108.0/node_modules/@supabase/auth-js/dist/main/lib/errors.js"(exports) {
+  "../../node_modules/.pnpm/@supabase+auth-js@2.108.2/node_modules/@supabase/auth-js/dist/main/lib/errors.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.AuthInvalidJwtError = exports.AuthWeakPasswordError = exports.AuthRefreshDiscardedError = exports.AuthRetryableFetchError = exports.AuthPKCECodeVerifierMissingError = exports.AuthPKCEGrantCodeExchangeError = exports.AuthImplicitGrantRedirectError = exports.AuthInvalidCredentialsError = exports.AuthInvalidTokenResponseError = exports.AuthSessionMissingError = exports.CustomAuthError = exports.AuthUnknownError = exports.AuthApiError = exports.AuthError = void 0;
@@ -37248,9 +37296,9 @@ var require_errors = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+auth-js@2.108.0/node_modules/@supabase/auth-js/dist/main/lib/base64url.js
+// ../../node_modules/.pnpm/@supabase+auth-js@2.108.2/node_modules/@supabase/auth-js/dist/main/lib/base64url.js
 var require_base64url = __commonJS({
-  "../../node_modules/.pnpm/@supabase+auth-js@2.108.0/node_modules/@supabase/auth-js/dist/main/lib/base64url.js"(exports) {
+  "../../node_modules/.pnpm/@supabase+auth-js@2.108.2/node_modules/@supabase/auth-js/dist/main/lib/base64url.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.byteToBase64URL = byteToBase64URL;
@@ -37438,9 +37486,9 @@ var require_base64url = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+auth-js@2.108.0/node_modules/@supabase/auth-js/dist/main/lib/helpers.js
+// ../../node_modules/.pnpm/@supabase+auth-js@2.108.2/node_modules/@supabase/auth-js/dist/main/lib/helpers.js
 var require_helpers = __commonJS({
-  "../../node_modules/.pnpm/@supabase+auth-js@2.108.0/node_modules/@supabase/auth-js/dist/main/lib/helpers.js"(exports) {
+  "../../node_modules/.pnpm/@supabase+auth-js@2.108.2/node_modules/@supabase/auth-js/dist/main/lib/helpers.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Deferred = exports.removeItemAsync = exports.getItemAsync = exports.setItemAsync = exports.looksLikeFetchResponse = exports.resolveFetch = exports.supportsLocalStorage = exports.isBrowser = void 0;
@@ -37760,9 +37808,9 @@ var require_helpers = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+auth-js@2.108.0/node_modules/@supabase/auth-js/dist/main/lib/fetch.js
+// ../../node_modules/.pnpm/@supabase+auth-js@2.108.2/node_modules/@supabase/auth-js/dist/main/lib/fetch.js
 var require_fetch = __commonJS({
-  "../../node_modules/.pnpm/@supabase+auth-js@2.108.0/node_modules/@supabase/auth-js/dist/main/lib/fetch.js"(exports) {
+  "../../node_modules/.pnpm/@supabase+auth-js@2.108.2/node_modules/@supabase/auth-js/dist/main/lib/fetch.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.handleError = handleError2;
@@ -37791,7 +37839,24 @@ var require_fetch = __commonJS({
       }
       return JSON.stringify(err);
     };
-    var NETWORK_ERROR_CODES = [502, 503, 504, 520, 521, 522, 523, 524, 530];
+    var NETWORK_ERROR_CODES = [
+      500,
+      501,
+      502,
+      503,
+      504,
+      520,
+      521,
+      522,
+      523,
+      524,
+      525,
+      526,
+      527,
+      528,
+      529,
+      530
+    ];
     async function handleError2(error40) {
       var _a;
       if (!(0, helpers_1.looksLikeFetchResponse)(error40)) {
@@ -37928,9 +37993,9 @@ var require_fetch = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+auth-js@2.108.0/node_modules/@supabase/auth-js/dist/main/lib/types.js
+// ../../node_modules/.pnpm/@supabase+auth-js@2.108.2/node_modules/@supabase/auth-js/dist/main/lib/types.js
 var require_types2 = __commonJS({
-  "../../node_modules/.pnpm/@supabase+auth-js@2.108.0/node_modules/@supabase/auth-js/dist/main/lib/types.js"(exports) {
+  "../../node_modules/.pnpm/@supabase+auth-js@2.108.2/node_modules/@supabase/auth-js/dist/main/lib/types.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.SIGN_OUT_SCOPES = void 0;
@@ -37938,9 +38003,9 @@ var require_types2 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+auth-js@2.108.0/node_modules/@supabase/auth-js/dist/main/GoTrueAdminApi.js
+// ../../node_modules/.pnpm/@supabase+auth-js@2.108.2/node_modules/@supabase/auth-js/dist/main/GoTrueAdminApi.js
 var require_GoTrueAdminApi = __commonJS({
-  "../../node_modules/.pnpm/@supabase+auth-js@2.108.0/node_modules/@supabase/auth-js/dist/main/GoTrueAdminApi.js"(exports) {
+  "../../node_modules/.pnpm/@supabase+auth-js@2.108.2/node_modules/@supabase/auth-js/dist/main/GoTrueAdminApi.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
@@ -39027,9 +39092,9 @@ var require_GoTrueAdminApi = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+auth-js@2.108.0/node_modules/@supabase/auth-js/dist/main/lib/local-storage.js
+// ../../node_modules/.pnpm/@supabase+auth-js@2.108.2/node_modules/@supabase/auth-js/dist/main/lib/local-storage.js
 var require_local_storage = __commonJS({
-  "../../node_modules/.pnpm/@supabase+auth-js@2.108.0/node_modules/@supabase/auth-js/dist/main/lib/local-storage.js"(exports) {
+  "../../node_modules/.pnpm/@supabase+auth-js@2.108.2/node_modules/@supabase/auth-js/dist/main/lib/local-storage.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.memoryLocalStorageAdapter = memoryLocalStorageAdapter;
@@ -39049,9 +39114,9 @@ var require_local_storage = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+auth-js@2.108.0/node_modules/@supabase/auth-js/dist/main/lib/locks.js
+// ../../node_modules/.pnpm/@supabase+auth-js@2.108.2/node_modules/@supabase/auth-js/dist/main/lib/locks.js
 var require_locks = __commonJS({
-  "../../node_modules/.pnpm/@supabase+auth-js@2.108.0/node_modules/@supabase/auth-js/dist/main/lib/locks.js"(exports) {
+  "../../node_modules/.pnpm/@supabase+auth-js@2.108.2/node_modules/@supabase/auth-js/dist/main/lib/locks.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.ProcessLockAcquireTimeoutError = exports.NavigatorLockAcquireTimeoutError = exports.LockAcquireTimeoutError = exports.internals = void 0;
@@ -39227,9 +39292,9 @@ var require_locks = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+auth-js@2.108.0/node_modules/@supabase/auth-js/dist/main/lib/polyfills.js
+// ../../node_modules/.pnpm/@supabase+auth-js@2.108.2/node_modules/@supabase/auth-js/dist/main/lib/polyfills.js
 var require_polyfills = __commonJS({
-  "../../node_modules/.pnpm/@supabase+auth-js@2.108.0/node_modules/@supabase/auth-js/dist/main/lib/polyfills.js"(exports) {
+  "../../node_modules/.pnpm/@supabase+auth-js@2.108.2/node_modules/@supabase/auth-js/dist/main/lib/polyfills.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.polyfillGlobalThis = polyfillGlobalThis;
@@ -39254,9 +39319,9 @@ var require_polyfills = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+auth-js@2.108.0/node_modules/@supabase/auth-js/dist/main/lib/web3/ethereum.js
+// ../../node_modules/.pnpm/@supabase+auth-js@2.108.2/node_modules/@supabase/auth-js/dist/main/lib/web3/ethereum.js
 var require_ethereum = __commonJS({
-  "../../node_modules/.pnpm/@supabase+auth-js@2.108.0/node_modules/@supabase/auth-js/dist/main/lib/web3/ethereum.js"(exports) {
+  "../../node_modules/.pnpm/@supabase+auth-js@2.108.2/node_modules/@supabase/auth-js/dist/main/lib/web3/ethereum.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.getAddress = getAddress;
@@ -39332,9 +39397,9 @@ ${suffix}`;
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+auth-js@2.108.0/node_modules/@supabase/auth-js/dist/main/lib/webauthn.errors.js
+// ../../node_modules/.pnpm/@supabase+auth-js@2.108.2/node_modules/@supabase/auth-js/dist/main/lib/webauthn.errors.js
 var require_webauthn_errors = __commonJS({
-  "../../node_modules/.pnpm/@supabase+auth-js@2.108.0/node_modules/@supabase/auth-js/dist/main/lib/webauthn.errors.js"(exports) {
+  "../../node_modules/.pnpm/@supabase+auth-js@2.108.2/node_modules/@supabase/auth-js/dist/main/lib/webauthn.errors.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.WebAuthnUnknownError = exports.WebAuthnError = void 0;
@@ -39523,9 +39588,9 @@ var require_webauthn_errors = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+auth-js@2.108.0/node_modules/@supabase/auth-js/dist/main/lib/webauthn.js
+// ../../node_modules/.pnpm/@supabase+auth-js@2.108.2/node_modules/@supabase/auth-js/dist/main/lib/webauthn.js
 var require_webauthn = __commonJS({
-  "../../node_modules/.pnpm/@supabase+auth-js@2.108.0/node_modules/@supabase/auth-js/dist/main/lib/webauthn.js"(exports) {
+  "../../node_modules/.pnpm/@supabase+auth-js@2.108.2/node_modules/@supabase/auth-js/dist/main/lib/webauthn.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.WebAuthnApi = exports.DEFAULT_REQUEST_OPTIONS = exports.DEFAULT_CREATION_OPTIONS = exports.webAuthnAbortService = exports.WebAuthnAbortService = exports.identifyAuthenticationError = exports.identifyRegistrationError = exports.isWebAuthnError = exports.WebAuthnError = void 0;
@@ -40082,9 +40147,9 @@ var require_webauthn = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+auth-js@2.108.0/node_modules/@supabase/auth-js/dist/main/GoTrueClient.js
+// ../../node_modules/.pnpm/@supabase+auth-js@2.108.2/node_modules/@supabase/auth-js/dist/main/GoTrueClient.js
 var require_GoTrueClient = __commonJS({
-  "../../node_modules/.pnpm/@supabase+auth-js@2.108.0/node_modules/@supabase/auth-js/dist/main/GoTrueClient.js"(exports) {
+  "../../node_modules/.pnpm/@supabase+auth-js@2.108.2/node_modules/@supabase/auth-js/dist/main/GoTrueClient.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
@@ -40167,6 +40232,7 @@ var require_GoTrueClient = __commonJS({
         this.autoRefreshTickTimeout = null;
         this.visibilityChangedCallback = null;
         this.refreshingDeferred = null;
+        this.lastRefreshFailure = null;
         this._sessionRemovalEpoch = 0;
         this.initializePromise = null;
         this.detectSessionInUrl = true;
@@ -40268,6 +40334,9 @@ var require_GoTrueClient = __commonJS({
           }
           (_c = this.broadcastChannel) === null || _c === void 0 ? void 0 : _c.addEventListener("message", async (event) => {
             this._debug("received broadcast notification from other tab or client", event);
+            if (event.data.event === "TOKEN_REFRESHED" || event.data.event === "SIGNED_IN") {
+              this.lastRefreshFailure = null;
+            }
             try {
               await this._notifyAllSubscribers(event.data.event, event.data.session, false);
             } catch (error40) {
@@ -40308,9 +40377,20 @@ var require_GoTrueClient = __commonJS({
         return this;
       }
       /**
-       * Initializes the client session either from the url or from storage.
-       * This method is automatically called when instantiating the client, but should also be called
-       * manually when checking for an error from an auth redirect (oauth, magiclink, password recovery, etc).
+       * Initialize the auth client by loading the session from storage or
+       * detecting it from the URL after an OAuth, magic-link, or password-recovery
+       * redirect.
+       *
+       * **Most callers do not need to invoke this directly.** The client calls it
+       * automatically during construction, and to react to sign-in events (including
+       * post-redirect events) you should subscribe to `onAuthStateChange` rather
+       * than awaiting `initialize()`.
+       *
+       * You only need to call it manually when you have opted out of the automatic
+       * call by passing `skipAutoInitialize: true` — for example, in an SSR context
+       * where you need to control initialization timing. In that case, awaiting
+       * `initialize()` returns the resolved session result (or any error encountered
+       * while detecting it from the URL).
        *
        * @category Auth
        */
@@ -42364,6 +42444,13 @@ var require_GoTrueClient = __commonJS({
           }
           const { data: session, error: error40 } = await this._callRefreshToken(currentSession.refresh_token);
           if (error40) {
+            const accessTokenStillValid = !!(currentSession.expires_at && currentSession.expires_at * 1e3 > Date.now());
+            if (accessTokenStillValid) {
+              const stillStored = await (0, helpers_1.getItemAsync)(this.storage, this.storageKey);
+              if (stillStored && stillStored.refresh_token === currentSession.refresh_token) {
+                return this._returnResult({ data: { session: currentSession }, error: null });
+              }
+            }
             return this._returnResult({ data: { session: null }, error: error40 });
           }
           return this._returnResult({ data: { session }, error: null });
@@ -43812,10 +43899,6 @@ var require_GoTrueClient = __commonJS({
                   this._debug(debugName, "refresh discarded by commit guard", error40);
                 } else {
                   this._debug(debugName, "refresh failed", error40);
-                  if (!(0, errors_1.isAuthRetryableFetchError)(error40)) {
-                    this._debug(debugName, "refresh failed with a non-retryable error, removing the session", error40);
-                    await this._removeSession();
-                  }
                 }
               }
             }
@@ -43851,6 +43934,10 @@ var require_GoTrueClient = __commonJS({
         }
         if (this.refreshingDeferred) {
           return this.refreshingDeferred.promise;
+        }
+        if (this.lastRefreshFailure && this.lastRefreshFailure.refreshToken === refreshToken && Date.now() < this.lastRefreshFailure.expiresAt) {
+          this._debug("#_callRefreshToken()", "returning cached failure (cooldown active)");
+          return this.lastRefreshFailure.result;
         }
         const debugName = `#_callRefreshToken()`;
         this._debug(debugName, "begin");
@@ -43895,6 +43982,7 @@ var require_GoTrueClient = __commonJS({
           }
           await this._notifyAllSubscribers("TOKEN_REFRESHED", data.session);
           const result = { data: data.session, error: null };
+          this.lastRefreshFailure = null;
           this.refreshingDeferred.resolve(result);
           return result;
         } catch (error40) {
@@ -43902,8 +43990,19 @@ var require_GoTrueClient = __commonJS({
           if ((0, errors_1.isAuthError)(error40)) {
             const result = { data: null, error: error40 };
             if (!(0, errors_1.isAuthRetryableFetchError)(error40)) {
-              await this._removeSession();
+              const storedNow = await (0, helpers_1.getItemAsync)(this.storage, this.storageKey);
+              const accessTokenStillValid = !!((storedNow === null || storedNow === void 0 ? void 0 : storedNow.expires_at) && storedNow.expires_at * 1e3 > Date.now());
+              if (accessTokenStillValid) {
+                this._debug(debugName, "proactive refresh failed, access token still valid \u2014 preserving session");
+              } else {
+                await this._removeSession();
+              }
             }
+            this.lastRefreshFailure = {
+              refreshToken,
+              result,
+              expiresAt: Date.now() + constants_1.REFRESH_FAILURE_COOLDOWN_MS
+            };
             (_a = this.refreshingDeferred) === null || _a === void 0 ? void 0 : _a.resolve(result);
             return result;
           }
@@ -43969,6 +44068,7 @@ var require_GoTrueClient = __commonJS({
       async _removeSession() {
         this._sessionRemovalEpoch += 1;
         this._debug("#_removeSession()");
+        this.lastRefreshFailure = null;
         this.suppressGetSessionWarning = false;
         await (0, helpers_1.removeItemAsync)(this.storage, this.storageKey);
         await (0, helpers_1.removeItemAsync)(this.storage, this.storageKey + "-code-verifier");
@@ -45165,9 +45265,9 @@ var require_GoTrueClient = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+auth-js@2.108.0/node_modules/@supabase/auth-js/dist/main/AuthAdminApi.js
+// ../../node_modules/.pnpm/@supabase+auth-js@2.108.2/node_modules/@supabase/auth-js/dist/main/AuthAdminApi.js
 var require_AuthAdminApi = __commonJS({
-  "../../node_modules/.pnpm/@supabase+auth-js@2.108.0/node_modules/@supabase/auth-js/dist/main/AuthAdminApi.js"(exports) {
+  "../../node_modules/.pnpm/@supabase+auth-js@2.108.2/node_modules/@supabase/auth-js/dist/main/AuthAdminApi.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
@@ -45177,9 +45277,9 @@ var require_AuthAdminApi = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+auth-js@2.108.0/node_modules/@supabase/auth-js/dist/main/AuthClient.js
+// ../../node_modules/.pnpm/@supabase+auth-js@2.108.2/node_modules/@supabase/auth-js/dist/main/AuthClient.js
 var require_AuthClient = __commonJS({
-  "../../node_modules/.pnpm/@supabase+auth-js@2.108.0/node_modules/@supabase/auth-js/dist/main/AuthClient.js"(exports) {
+  "../../node_modules/.pnpm/@supabase+auth-js@2.108.2/node_modules/@supabase/auth-js/dist/main/AuthClient.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
@@ -45189,9 +45289,9 @@ var require_AuthClient = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+auth-js@2.108.0/node_modules/@supabase/auth-js/dist/main/index.js
+// ../../node_modules/.pnpm/@supabase+auth-js@2.108.2/node_modules/@supabase/auth-js/dist/main/index.js
 var require_main3 = __commonJS({
-  "../../node_modules/.pnpm/@supabase+auth-js@2.108.0/node_modules/@supabase/auth-js/dist/main/index.js"(exports) {
+  "../../node_modules/.pnpm/@supabase+auth-js@2.108.2/node_modules/@supabase/auth-js/dist/main/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.processLock = exports.lockInternals = exports.NavigatorLockAcquireTimeoutError = exports.navigatorLock = exports.AuthClient = exports.AuthAdminApi = exports.GoTrueClient = exports.GoTrueAdminApi = void 0;
@@ -45222,7 +45322,7 @@ var require_main3 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/@supabase+supabase-js@2.108.0/node_modules/@supabase/supabase-js/dist/index.mjs
+// ../../node_modules/.pnpm/@supabase+supabase-js@2.108.2/node_modules/@supabase/supabase-js/dist/index.mjs
 var dist_exports = {};
 __export(dist_exports, {
   FunctionRegion: () => import_functions_js.FunctionRegion,
@@ -45461,7 +45561,7 @@ function shouldShowDeprecationWarning() {
 }
 var import_functions_js, import_realtime_js, import_auth_js, version2, JS_ENV, JS_RUNTIME_VERSION, _Deno$version, _process$version, _runtimeMeta, DEFAULT_HEADERS2, DEFAULT_GLOBAL_OPTIONS, DEFAULT_DB_OPTIONS, DEFAULT_AUTH_OPTIONS, DEFAULT_REALTIME_OPTIONS, DEFAULT_TRACE_PROPAGATION_OPTIONS, otelModulePromise, OTEL_PKG, resolveFetch2, resolveHeadersConstructor, fetchWithAuth, SupabaseAuthClient, SupabaseClient, createClient;
 var init_dist4 = __esm({
-  "../../node_modules/.pnpm/@supabase+supabase-js@2.108.0/node_modules/@supabase/supabase-js/dist/index.mjs"() {
+  "../../node_modules/.pnpm/@supabase+supabase-js@2.108.2/node_modules/@supabase/supabase-js/dist/index.mjs"() {
     import_functions_js = __toESM(require_main(), 1);
     init_dist();
     import_realtime_js = __toESM(require_main2(), 1);
@@ -45469,7 +45569,7 @@ var init_dist4 = __esm({
     import_auth_js = __toESM(require_main3(), 1);
     __reExport(dist_exports, __toESM(require_main2(), 1));
     __reExport(dist_exports, __toESM(require_main3(), 1));
-    version2 = "2.108.0";
+    version2 = "2.108.2";
     JS_ENV = "";
     if (typeof Deno !== "undefined") {
       JS_ENV = "deno";
@@ -52162,12 +52262,12 @@ var require_http_proxy3 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/errors.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/errors.js
 var require_errors2 = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/errors.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/errors.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.ERRORS = void 0;
+    exports.HttpProxyMiddlewareError = exports.ERRORS = void 0;
     var ERRORS;
     (function(ERRORS2) {
       ERRORS2["ERR_CONFIG_FACTORY_TARGET_MISSING"] = '[HPM] Missing "target" option. Example: {target: "http://www.example.org"}';
@@ -52175,12 +52275,23 @@ var require_errors2 = __commonJS({
       ERRORS2["ERR_CONTEXT_MATCHER_INVALID_ARRAY"] = '[HPM] Invalid pathFilter. Plain paths (e.g. "/api") can not be mixed with globs (e.g. "/api/**"). Expecting something like: ["/api", "/ajax"] or ["/api/**", "!**.html"].';
       ERRORS2["ERR_PATH_REWRITER_CONFIG"] = "[HPM] Invalid pathRewrite config. Expecting object with pathRewrite config or a rewrite function";
     })(ERRORS || (exports.ERRORS = ERRORS = {}));
+    var HttpProxyMiddlewareError = class extends Error {
+      constructor(message, code) {
+        super(message);
+        this.code = code;
+        this.name = this.constructor.name;
+        if (Error.captureStackTrace) {
+          Error.captureStackTrace(this, this.constructor);
+        }
+      }
+    };
+    exports.HttpProxyMiddlewareError = HttpProxyMiddlewareError;
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/configuration.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/configuration.js
 var require_configuration = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/configuration.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/configuration.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.verifyConfig = verifyConfig;
@@ -52193,9 +52304,9 @@ var require_configuration = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/debug.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/debug.js
 var require_debug2 = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/debug.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/debug.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Debug = void 0;
@@ -52204,9 +52315,9 @@ var require_debug2 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/plugins/default/debug-proxy-errors-plugin.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/plugins/default/debug-proxy-errors-plugin.js
 var require_debug_proxy_errors_plugin = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/plugins/default/debug-proxy-errors-plugin.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/plugins/default/debug-proxy-errors-plugin.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.debugProxyErrorsPlugin = void 0;
@@ -52254,9 +52365,9 @@ var require_debug_proxy_errors_plugin = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/status-code.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/status-code.js
 var require_status_code = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/status-code.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/status-code.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.getStatusCode = getStatusCode;
@@ -52264,27 +52375,31 @@ var require_status_code = __commonJS({
       let statusCode;
       if (/HPE_INVALID/.test(errorCode)) {
         statusCode = 502;
-      } else {
-        switch (errorCode) {
-          case "ECONNRESET":
-          case "ENOTFOUND":
-          case "ECONNREFUSED":
-          case "ETIMEDOUT":
-            statusCode = 504;
-            break;
-          default:
-            statusCode = 500;
-            break;
-        }
+        return statusCode;
+      }
+      if (/HPM_ERR_INVALID_MULTIPART_/.test(errorCode)) {
+        statusCode = 400;
+        return statusCode;
+      }
+      switch (errorCode) {
+        case "ECONNRESET":
+        case "ENOTFOUND":
+        case "ECONNREFUSED":
+        case "ETIMEDOUT":
+          statusCode = 504;
+          break;
+        default:
+          statusCode = 500;
+          break;
       }
       return statusCode;
     }
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/utils/sanitize.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/utils/sanitize.js
 var require_sanitize = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/utils/sanitize.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/utils/sanitize.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.sanitize = sanitize;
@@ -52294,9 +52409,9 @@ var require_sanitize = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/plugins/default/error-response-plugin.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/plugins/default/error-response-plugin.js
 var require_error_response_plugin = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/plugins/default/error-response-plugin.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/plugins/default/error-response-plugin.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.errorResponsePlugin = void 0;
@@ -52329,9 +52444,9 @@ var require_error_response_plugin = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/logger.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/logger.js
 var require_logger2 = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/logger.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/logger.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.getLogger = getLogger;
@@ -52349,9 +52464,9 @@ var require_logger2 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/utils/logger-plugin.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/utils/logger-plugin.js
 var require_logger_plugin = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/utils/logger-plugin.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/utils/logger-plugin.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.getPort = getPort;
@@ -52361,9 +52476,9 @@ var require_logger_plugin = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/plugins/default/logger-plugin.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/plugins/default/logger-plugin.js
 var require_logger_plugin2 = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/plugins/default/logger-plugin.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/plugins/default/logger-plugin.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.loggerPlugin = void 0;
@@ -52413,9 +52528,9 @@ var require_logger_plugin2 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/utils/function.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/utils/function.js
 var require_function = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/utils/function.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/utils/function.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.getFunctionName = getFunctionName;
@@ -52425,9 +52540,9 @@ var require_function = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/plugins/default/proxy-events.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/plugins/default/proxy-events.js
 var require_proxy_events = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/plugins/default/proxy-events.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/plugins/default/proxy-events.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.proxyEventsPlugin = void 0;
@@ -52444,9 +52559,9 @@ var require_proxy_events = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/plugins/default/index.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/plugins/default/index.js
 var require_default = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/plugins/default/index.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/plugins/default/index.js"(exports) {
     "use strict";
     var __createBinding2 = exports && exports.__createBinding || (Object.create ? (function(o, m, k, k2) {
       if (k2 === void 0) k2 = k;
@@ -52472,9 +52587,9 @@ var require_default = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/get-plugins.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/get-plugins.js
 var require_get_plugins = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/get-plugins.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/get-plugins.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.getPlugins = getPlugins;
@@ -55622,9 +55737,9 @@ var require_micromatch = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/path-filter.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/path-filter.js
 var require_path_filter = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/path-filter.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/path-filter.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.matchPathFilter = matchPathFilter;
@@ -55712,9 +55827,9 @@ var require_is_plain_object = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/path-rewriter.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/path-rewriter.js
 var require_path_rewriter = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/path-rewriter.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/path-rewriter.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.createPathRewriter = createPathRewriter;
@@ -55773,9 +55888,9 @@ var require_path_rewriter = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/router.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/router.js
 var require_router2 = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/router.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/router.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.getTarget = getTarget;
@@ -55835,9 +55950,9 @@ var require_router2 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/http-proxy-middleware.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/http-proxy-middleware.js
 var require_http_proxy_middleware = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/http-proxy-middleware.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/http-proxy-middleware.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.HttpProxyMiddleware = void 0;
@@ -55960,9 +56075,9 @@ var require_http_proxy_middleware = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/factory.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/factory.js
 var require_factory = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/factory.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/factory.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.createProxyMiddleware = createProxyMiddleware2;
@@ -55974,9 +56089,9 @@ var require_factory = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/handlers/response-interceptor.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/handlers/response-interceptor.js
 var require_response_interceptor = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/handlers/response-interceptor.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/handlers/response-interceptor.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.responseInterceptor = responseInterceptor;
@@ -56051,13 +56166,61 @@ var require_response_interceptor = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/handlers/fix-request-body.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/handlers/fix-request-body-utils/stringify-form-data.js
+var require_stringify_form_data = __commonJS({
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/handlers/fix-request-body-utils/stringify-form-data.js"(exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.stringifyFormData = stringifyFormData;
+    var errors_1 = require_errors2();
+    var CR_OR_LF = /[\r\n]/;
+    var ERROR_CODE_PREFIX = "HPM_ERR_INVALID_MULTIPART";
+    function stringifyFormData(contentType, data) {
+      const boundary = getMultipartBoundary(contentType);
+      let str = "";
+      for (const [key, value] of Object.entries(data)) {
+        const normalizedKey = String(key);
+        const normalizedValue = String(value);
+        validateMultipartField(normalizedKey, normalizedValue, boundary);
+        str += `--${boundary}\r
+Content-Disposition: form-data; name="${escapeMultipartFieldName(normalizedKey)}"\r
+\r
+${normalizedValue}\r
+`;
+      }
+      return str;
+    }
+    function getMultipartBoundary(contentType) {
+      const boundaryMatch = /(?:^|;)\s*boundary=(?:"([^"]+)"|([^;]+))/i.exec(contentType);
+      const boundary = (boundaryMatch?.[1] ?? boundaryMatch?.[2] ?? contentType).trim();
+      if (!boundary || CR_OR_LF.test(boundary)) {
+        throw new errors_1.HttpProxyMiddlewareError("[HPM] invalid multipart boundary detected.", `${ERROR_CODE_PREFIX}_BOUNDARY`);
+      }
+      return boundary;
+    }
+    function validateMultipartField(fieldName, fieldValue, boundary) {
+      const boundaryDelimiter = `--${boundary}`;
+      if (CR_OR_LF.test(fieldName)) {
+        throw new errors_1.HttpProxyMiddlewareError(`[HPM] invalid multipart field name "${fieldName}" detected.`, `${ERROR_CODE_PREFIX}_FIELD_NAME`);
+      }
+      if (CR_OR_LF.test(fieldValue) || fieldValue.includes(boundaryDelimiter)) {
+        throw new errors_1.HttpProxyMiddlewareError(`[HPM] invalid multipart field value for "${fieldName}" detected.`, `${ERROR_CODE_PREFIX}_FIELD_VALUE`);
+      }
+    }
+    function escapeMultipartFieldName(fieldName) {
+      return fieldName.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+    }
+  }
+});
+
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/handlers/fix-request-body.js
 var require_fix_request_body = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/handlers/fix-request-body.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/handlers/fix-request-body.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.fixRequestBody = fixRequestBody;
     var querystring = __require("node:querystring");
+    var stringify_form_data_1 = require_stringify_form_data();
     function fixRequestBody(proxyReq, req) {
       if (req.readableLength !== 0) {
         return;
@@ -56074,34 +56237,29 @@ var require_fix_request_body = __commonJS({
         proxyReq.setHeader("Content-Length", Buffer.byteLength(bodyData));
         proxyReq.write(bodyData);
       };
-      if (contentType.includes("application/json") || contentType.includes("+json")) {
-        writeBody(JSON.stringify(requestBody));
-      } else if (contentType.includes("application/x-www-form-urlencoded")) {
-        writeBody(querystring.stringify(requestBody));
-      } else if (contentType.includes("multipart/form-data")) {
-        writeBody(handlerFormDataBodyData(contentType, requestBody));
-      } else if (contentType.includes("text/plain")) {
-        writeBody(requestBody);
+      try {
+        if (contentType.includes("application/json") || contentType.includes("+json")) {
+          writeBody(JSON.stringify(requestBody));
+        } else if (contentType.includes("application/x-www-form-urlencoded")) {
+          writeBody(querystring.stringify(requestBody));
+        } else if (contentType.includes("multipart/form-data")) {
+          writeBody((0, stringify_form_data_1.stringifyFormData)(contentType, requestBody));
+        } else if (contentType.includes("text/plain")) {
+          writeBody(requestBody);
+        }
+      } catch (error40) {
+        proxyReq.destroy(toError(error40));
       }
     }
-    function handlerFormDataBodyData(contentType, data) {
-      const boundary = contentType.replace(/^.*boundary=(.*)$/, "$1");
-      let str = "";
-      for (const [key, value] of Object.entries(data)) {
-        str += `--${boundary}\r
-Content-Disposition: form-data; name="${key}"\r
-\r
-${value}\r
-`;
-      }
-      return str;
+    function toError(error40) {
+      return error40 instanceof Error ? error40 : new Error(String(error40));
     }
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/handlers/public.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/handlers/public.js
 var require_public = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/handlers/public.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/handlers/public.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.fixRequestBody = exports.responseInterceptor = void 0;
@@ -56116,9 +56274,9 @@ var require_public = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/handlers/index.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/handlers/index.js
 var require_handlers = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/handlers/index.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/handlers/index.js"(exports) {
     "use strict";
     var __createBinding2 = exports && exports.__createBinding || (Object.create ? (function(o, m, k, k2) {
       if (k2 === void 0) k2 = k;
@@ -56141,9 +56299,9 @@ var require_handlers = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/legacy/options-adapter.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/legacy/options-adapter.js
 var require_options_adapter = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/legacy/options-adapter.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/legacy/options-adapter.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.legacyOptionsAdapter = legacyOptionsAdapter;
@@ -56231,9 +56389,9 @@ var require_options_adapter = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/legacy/create-proxy-middleware.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/legacy/create-proxy-middleware.js
 var require_create_proxy_middleware = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/legacy/create-proxy-middleware.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/legacy/create-proxy-middleware.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.legacyCreateProxyMiddleware = legacyCreateProxyMiddleware;
@@ -56252,9 +56410,9 @@ var require_create_proxy_middleware = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/legacy/public.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/legacy/public.js
 var require_public2 = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/legacy/public.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/legacy/public.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.legacyCreateProxyMiddleware = void 0;
@@ -56265,9 +56423,9 @@ var require_public2 = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/legacy/index.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/legacy/index.js
 var require_legacy = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/legacy/index.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/legacy/index.js"(exports) {
     "use strict";
     var __createBinding2 = exports && exports.__createBinding || (Object.create ? (function(o, m, k, k2) {
       if (k2 === void 0) k2 = k;
@@ -56290,9 +56448,9 @@ var require_legacy = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/index.js
+// ../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/index.js
 var require_dist4 = __commonJS({
-  "../../node_modules/.pnpm/http-proxy-middleware@3.0.6/node_modules/http-proxy-middleware/dist/index.js"(exports) {
+  "../../node_modules/.pnpm/http-proxy-middleware@3.0.7/node_modules/http-proxy-middleware/dist/index.js"(exports) {
     "use strict";
     var __createBinding2 = exports && exports.__createBinding || (Object.create ? (function(o, m, k, k2) {
       if (k2 === void 0) k2 = k;
@@ -61414,7 +61572,7 @@ var import_express = __toESM(require_express2(), 1);
 var import_cors = __toESM(require_lib3(), 1);
 var import_pino_http = __toESM(require_logger(), 1);
 
-// ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/_chunks/underscore-CPJSkOtE.mjs
+// ../../node_modules/.pnpm/@clerk+shared@4.18.0_react-_c937ac090f5f0c8cb34a6684a4f9cdd3/node_modules/@clerk/shared/dist/underscore.mjs
 function snakeToCamel(str) {
   return str ? str.replace(/([-_][a-z])/g, (match2) => match2.toUpperCase().replace(/-|_/, "")) : "";
 }
@@ -61457,10 +61615,13 @@ function isTruthy(value) {
   return false;
 }
 
-// ../../node_modules/.pnpm/@clerk+express@2.1.23_express@5.2.1/node_modules/@clerk/express/dist/chunk-2VERGOLI.mjs
+// ../../node_modules/.pnpm/@clerk+express@2.1.27_express@5.2.1/node_modules/@clerk/express/dist/utils-D-7LMKkq.mjs
 import { Readable } from "stream";
+var clerkAuthBrand = /* @__PURE__ */ Symbol.for("@clerk/express.auth");
+var brandRequestAuth = (authHandler) => Object.assign(authHandler, { [clerkAuthBrand]: true });
 var requestHasAuthObject = (req) => {
-  return "auth" in req;
+  const auth = req.auth;
+  return typeof auth === "function" && auth[clerkAuthBrand] === true;
 };
 var loadClientEnv = () => {
   return {
@@ -61485,7 +61646,7 @@ var loadApiEnv = () => {
     jwtKey: process.env.CLERK_JWT_KEY || "",
     sdkMetadata: {
       name: "@clerk/express",
-      version: "2.1.23",
+      version: "2.1.27",
       environment: process.env.NODE_ENV
     },
     telemetry: {
@@ -61506,24 +61667,25 @@ var incomingMessageToRequest = (req) => {
 var requestToProxyRequest = (req) => {
   const headers = new Headers();
   Object.entries(req.headers).forEach(([key, value]) => {
-    if (value) {
-      headers.set(key, Array.isArray(value) ? value.join(", ") : value);
-    }
+    if (value) headers.set(key, Array.isArray(value) ? value.join(", ") : value);
   });
   const protocol = req.protocol || (req.secure ? "https" : "http");
   const host = req.get("host") || "localhost";
   const url2 = new URL(req.originalUrl || req.url, `${protocol}://${host}`);
-  const hasBody = ["POST", "PUT", "PATCH"].includes(req.method);
+  const hasBody = [
+    "POST",
+    "PUT",
+    "PATCH"
+  ].includes(req.method);
   return new Request(url2.toString(), {
     method: req.method,
     headers,
     body: hasBody ? Readable.toWeb(req) : void 0,
-    // @ts-expect-error - duplex required for streaming bodies but not in all TS definitions
     duplex: hasBody ? "half" : void 0
   });
 };
 
-// ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/_chunks/runtimeEnvironment-DHuMF-tN.mjs
+// ../../node_modules/.pnpm/@clerk+shared@4.18.0_react-_c937ac090f5f0c8cb34a6684a4f9cdd3/node_modules/@clerk/shared/dist/_chunks/runtimeEnvironment-CTVGzENl.mjs
 var automatedEnvironmentVariables = [
   "CI",
   "CONTINUOUS_INTEGRATION",
@@ -61557,7 +61719,7 @@ var isProductionEnvironment = () => {
   return false;
 };
 
-// ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/_chunks/deprecated-D89ptCyg.mjs
+// ../../node_modules/.pnpm/@clerk+shared@4.18.0_react-_c937ac090f5f0c8cb34a6684a4f9cdd3/node_modules/@clerk/shared/dist/deprecated.mjs
 var displayedWarnings = /* @__PURE__ */ new Set();
 var deprecated = (fnName, warning, key) => {
   const hideWarning = isTestEnvironment() || isProductionEnvironment();
@@ -61568,7 +61730,7 @@ var deprecated = (fnName, warning, key) => {
 ${warning}`);
 };
 
-// ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/_chunks/constants-BVchI2jn.mjs
+// ../../node_modules/.pnpm/@clerk+shared@4.18.0_react-_c937ac090f5f0c8cb34a6684a4f9cdd3/node_modules/@clerk/shared/dist/constants.mjs
 var LEGACY_DEV_INSTANCE_SUFFIXES = [
   ".lcl.dev",
   ".lclstage.dev",
@@ -61602,21 +61764,21 @@ var STAGING_FAPI_URL = "https://frontend-api.clerkstage.dev";
 var PROD_FAPI_URL = "https://frontend-api.clerk.dev";
 var DEFAULT_PROXY_PATH = "/__clerk";
 
-// ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/_chunks/isomorphicAtob-C1KQ5FtS.mjs
+// ../../node_modules/.pnpm/@clerk+shared@4.18.0_react-_c937ac090f5f0c8cb34a6684a4f9cdd3/node_modules/@clerk/shared/dist/isomorphicAtob.mjs
 var isomorphicAtob = (data) => {
   if (typeof atob !== "undefined" && typeof atob === "function") return atob(data);
   else if (typeof globalThis.Buffer !== "undefined") return globalThis.Buffer.from(data, "base64").toString();
   return data;
 };
 
-// ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/_chunks/isomorphicBtoa-BBBfp_jr.mjs
+// ../../node_modules/.pnpm/@clerk+shared@4.18.0_react-_c937ac090f5f0c8cb34a6684a4f9cdd3/node_modules/@clerk/shared/dist/isomorphicBtoa.mjs
 var isomorphicBtoa = (data) => {
   if (typeof btoa !== "undefined" && typeof btoa === "function") return btoa(data);
   else if (typeof globalThis.Buffer !== "undefined") return globalThis.Buffer.from(data).toString("base64");
   return data;
 };
 
-// ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/_chunks/keys-jlv3GIE3.mjs
+// ../../node_modules/.pnpm/@clerk+shared@4.18.0_react-_c937ac090f5f0c8cb34a6684a4f9cdd3/node_modules/@clerk/shared/dist/keys.mjs
 var PUBLISHABLE_KEY_LIVE_PREFIX = "pk_live_";
 var PUBLISHABLE_KEY_TEST_PREFIX = "pk_test_";
 function isValidDecodedPublishableKey(decoded) {
@@ -61666,16 +61828,24 @@ function isPublishableKey(key = "") {
 }
 function createDevOrStagingUrlCache() {
   const devOrStagingUrlCache = /* @__PURE__ */ new Map();
-  return { isDevOrStagingUrl: (url2) => {
-    if (!url2) return false;
-    const hostname2 = typeof url2 === "string" ? url2 : url2.hostname;
-    let res = devOrStagingUrlCache.get(hostname2);
-    if (res === void 0) {
-      res = DEV_OR_STAGING_SUFFIXES.some((s2) => hostname2.endsWith(s2));
-      devOrStagingUrlCache.set(hostname2, res);
+  return {
+    /**
+    * Checks if a URL is a development or staging environment.
+    *
+    * @param url - The URL to check (string or URL object).
+    * @returns `true` if the URL is a development or staging environment, `false` otherwise.
+    */
+    isDevOrStagingUrl: (url2) => {
+      if (!url2) return false;
+      const hostname2 = typeof url2 === "string" ? url2 : url2.hostname;
+      let res = devOrStagingUrlCache.get(hostname2);
+      if (res === void 0) {
+        res = DEV_OR_STAGING_SUFFIXES.some((s2) => hostname2.endsWith(s2));
+        devOrStagingUrlCache.set(hostname2, res);
+      }
+      return res;
     }
-    return res;
-  } };
+  };
 }
 function isProductionFromPublishableKey(apiKey) {
   return apiKey.startsWith("live_") || apiKey.startsWith("pk_live_");
@@ -61692,7 +61862,7 @@ var getSuffixedCookieName = (cookieName, cookieSuffix) => {
   return `${cookieName}_${cookieSuffix}`;
 };
 
-// ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/_chunks/retry-NrE3SkPj.mjs
+// ../../node_modules/.pnpm/@clerk+shared@4.18.0_react-_c937ac090f5f0c8cb34a6684a4f9cdd3/node_modules/@clerk/shared/dist/retry.mjs
 var defaultOptions = {
   initialDelay: 125,
   maxDelayBetweenRetries: 0,
@@ -61743,7 +61913,7 @@ var retry = async (callback, options = {}) => {
   }
 };
 
-// ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/_chunks/url-BwZwnCsF.mjs
+// ../../node_modules/.pnpm/@clerk+shared@4.18.0_react-_c937ac090f5f0c8cb34a6684a4f9cdd3/node_modules/@clerk/shared/dist/url.mjs
 function isLegacyDevAccountPortalOrigin(host) {
   return LEGACY_DEV_INSTANCE_SUFFIXES.some((legacyDevSuffix) => {
     return host.startsWith("accounts.") && host.endsWith(legacyDevSuffix);
@@ -61755,7 +61925,7 @@ function isCurrentDevAccountPortalOrigin(host) {
   });
 }
 
-// ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/_chunks/clerkRuntimeError-EpUpwIcY.mjs
+// ../../node_modules/.pnpm/@clerk+shared@4.18.0_react-_c937ac090f5f0c8cb34a6684a4f9cdd3/node_modules/@clerk/shared/dist/_chunks/clerkRuntimeError-DlesLWqO.mjs
 function createErrorTypeGuard(ErrorClass) {
   function typeGuard(error40) {
     const target = error40 ?? this;
@@ -61820,7 +61990,7 @@ var ClerkRuntimeError = class ClerkRuntimeError2 extends ClerkError {
 };
 var isClerkRuntimeError = createErrorTypeGuard(ClerkRuntimeError);
 
-// ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/_chunks/error-DAG0ASPV.mjs
+// ../../node_modules/.pnpm/@clerk+shared@4.18.0_react-_c937ac090f5f0c8cb34a6684a4f9cdd3/node_modules/@clerk/shared/dist/_chunks/error-uYOdvTDm.mjs
 var ClerkAPIError = class {
   static kind = "ClerkAPIError";
   code;
@@ -61839,7 +62009,9 @@ var ClerkAPIError = class {
         identifiers: json4.meta?.identifiers,
         zxcvbn: json4.meta?.zxcvbn,
         plan: json4.meta?.plan,
-        isPlanUpgradePossible: json4.meta?.is_plan_upgrade_possible
+        isPlanUpgradePossible: json4.meta?.is_plan_upgrade_possible,
+        seatsQuantityToAdd: json4.meta?.seats_quantity_to_add,
+        seatsQuantity: json4.meta?.seats_quantity
       }
     };
     this.code = parsedError.code;
@@ -61909,12 +62081,12 @@ function buildErrorThrower({ packageName, customMessages }) {
     ...customMessages
   };
   return {
-    setPackageName({ packageName: packageName$1 }) {
-      if (typeof packageName$1 === "string") pkg = packageName$1;
+    setPackageName({ packageName: packageName2 }) {
+      if (typeof packageName2 === "string") pkg = packageName2;
       return this;
     },
-    setMessages({ customMessages: customMessages$1 }) {
-      Object.assign(messages, customMessages$1 || {});
+    setMessages({ customMessages: customMessages2 }) {
+      Object.assign(messages, customMessages2 || {});
       return this;
     },
     throwInvalidPublishableKeyError(params) {
@@ -61938,11 +62110,11 @@ function buildErrorThrower({ packageName, customMessages }) {
   };
 }
 
-// ../../node_modules/.pnpm/@clerk+backend@3.5.0/node_modules/@clerk/backend/dist/chunk-YBVFDYDR.mjs
+// ../../node_modules/.pnpm/@clerk+backend@3.7.1/node_modules/@clerk/backend/dist/chunk-YBVFDYDR.mjs
 var errorThrower = buildErrorThrower({ packageName: "@clerk/backend" });
 var { isDevOrStagingUrl } = createDevOrStagingUrlCache();
 
-// ../../node_modules/.pnpm/@clerk+backend@3.5.0/node_modules/@clerk/backend/dist/chunk-RZ7A7F6X.mjs
+// ../../node_modules/.pnpm/@clerk+backend@3.7.1/node_modules/@clerk/backend/dist/chunk-RZ7A7F6X.mjs
 var TokenVerificationErrorCode = {
   InvalidSecretKey: "clerk_key_invalid"
 };
@@ -62015,10 +62187,10 @@ var _MachineTokenVerificationError = class _MachineTokenVerificationError2 exten
 _MachineTokenVerificationError.kind = "MachineTokenVerificationError";
 var MachineTokenVerificationError = _MachineTokenVerificationError;
 
-// ../../node_modules/.pnpm/@clerk+backend@3.5.0/node_modules/@clerk/backend/dist/runtime/node/crypto.mjs
+// ../../node_modules/.pnpm/@clerk+backend@3.7.1/node_modules/@clerk/backend/dist/runtime/node/crypto.mjs
 import { webcrypto } from "node:crypto";
 
-// ../../node_modules/.pnpm/@clerk+backend@3.5.0/node_modules/@clerk/backend/dist/chunk-J2CDX2WG.mjs
+// ../../node_modules/.pnpm/@clerk+backend@3.7.1/node_modules/@clerk/backend/dist/chunk-7E7A3JZN.mjs
 var globalFetch = fetch.bind(globalThis);
 var runtime = {
   crypto: webcrypto,
@@ -62293,7 +62465,12 @@ async function hasValidSignature(jwt2, key) {
   const algorithm = getCryptoAlgorithm(header.alg);
   try {
     const cryptoKey = await importKey(key, algorithm, "verify");
-    const verified = await runtime.crypto.subtle.verify(algorithm.name, cryptoKey, signature, data);
+    const verified = await runtime.crypto.subtle.verify(
+      algorithm.name,
+      cryptoKey,
+      signature,
+      data
+    );
     return { data: verified };
   } catch (error40) {
     return {
@@ -62387,7 +62564,7 @@ async function verifyJwt(token, options) {
   return { data: payload };
 }
 
-// ../../node_modules/.pnpm/@clerk+backend@3.5.0/node_modules/@clerk/backend/dist/chunk-TOROEX6P.mjs
+// ../../node_modules/.pnpm/@clerk+backend@3.7.1/node_modules/@clerk/backend/dist/chunk-TOROEX6P.mjs
 var __create2 = Object.create;
 var __defProp2 = Object.defineProperty;
 var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -62422,15 +62599,19 @@ var __privateAdd = (obj, member, value) => member.has(obj) ? __typeError("Cannot
 var __privateSet = (obj, member, value, setter) => (__accessCheck(obj, member, "write to private field"), setter ? setter.call(obj, value) : member.set(obj, value), value);
 var __privateMethod = (obj, member, method) => (__accessCheck(obj, member, "access private method"), method);
 
-// ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/buildAccountsBaseUrl.mjs
+// ../../node_modules/.pnpm/@clerk+shared@4.18.0_react-_c937ac090f5f0c8cb34a6684a4f9cdd3/node_modules/@clerk/shared/dist/buildAccountsBaseUrl.mjs
 function buildAccountsBaseUrl(frontendApi) {
   if (!frontendApi) return "";
   return `https://${frontendApi.replace(/clerk\.accountsstage\./, "accountsstage.").replace(/clerk\.accounts\.|clerk\./, "accounts.")}`;
 }
 
-// ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/_chunks/logger-C6joC6-q.mjs
+// ../../node_modules/.pnpm/@clerk+shared@4.18.0_react-_c937ac090f5f0c8cb34a6684a4f9cdd3/node_modules/@clerk/shared/dist/logger.mjs
 var loggedMessages = /* @__PURE__ */ new Set();
 var logger = {
+  /**
+  * A custom logger that ensures messages are logged only once.
+  * Reduces noise and duplicated messages when logs are in a hot codepath.
+  */
   warnOnce: (msg) => {
     if (loggedMessages.has(msg)) return;
     loggedMessages.add(msg);
@@ -62443,7 +62624,7 @@ var logger = {
   }
 };
 
-// ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/_chunks/proxy-6sFESt4u.mjs
+// ../../node_modules/.pnpm/@clerk+shared@4.18.0_react-_c937ac090f5f0c8cb34a6684a4f9cdd3/node_modules/@clerk/shared/dist/proxy.mjs
 function isValidProxyUrl(key) {
   if (!key) return true;
   return isHttpOrHttps(key) || isProxyUrlRelative(key);
@@ -62478,7 +62659,7 @@ function getAutoProxyUrlFromEnvironment({ publishableKey, hasDomain = false, has
   return AUTO_PROXY_PATH;
 }
 
-// ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/_chunks/authorization-D10DwNv6.mjs
+// ../../node_modules/.pnpm/@clerk+shared@4.18.0_react-_c937ac090f5f0c8cb34a6684a4f9cdd3/node_modules/@clerk/shared/dist/authorization.mjs
 var TYPES_TO_OBJECTS = {
   strict_mfa: {
     afterMinutes: 10,
@@ -62603,9 +62784,9 @@ var splitByScope = (fea) => {
 };
 var validateReverificationConfig = (config2) => {
   if (!config2) return false;
-  const convertConfigToObject = (config$1) => {
-    if (typeof config$1 === "string") return TYPES_TO_OBJECTS[config$1];
-    return config$1;
+  const convertConfigToObject = (config3) => {
+    if (typeof config3 === "string") return TYPES_TO_OBJECTS[config3];
+    return config3;
   };
   const isValidStringValue = typeof config2 === "string" && isValidVerificationType(config2);
   const isValidObjectValue = typeof config2 === "object" && isValidLevel(config2.level) && isValidMaxAge(config2.afterMinutes);
@@ -62648,7 +62829,7 @@ var createCheckAuthorization = (options) => {
   };
 };
 
-// ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/jwtPayloadParser.mjs
+// ../../node_modules/.pnpm/@clerk+shared@4.18.0_react-_c937ac090f5f0c8cb34a6684a4f9cdd3/node_modules/@clerk/shared/dist/jwtPayloadParser.mjs
 var parsePermissions = ({ per, fpm }) => {
   if (!per || !fpm) return {
     permissions: [],
@@ -62718,7 +62899,7 @@ var __experimental_JWTPayloadToAuthObjectProperties = (claims) => {
   };
 };
 
-// ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/_chunks/pathToRegexp-CNkSDpje.mjs
+// ../../node_modules/.pnpm/@clerk+shared@4.18.0_react-_c937ac090f5f0c8cb34a6684a4f9cdd3/node_modules/@clerk/shared/dist/_chunks/pathToRegexp-C-7qTA7_.mjs
 function _(r) {
   for (var n = [], e = 0; e < r.length; ) {
     var a = r[e];
@@ -62955,7 +63136,7 @@ ${e.message}`);
   }
 }
 
-// ../../node_modules/.pnpm/@clerk+backend@3.5.0/node_modules/@clerk/backend/dist/chunk-H3NCOZAT.mjs
+// ../../node_modules/.pnpm/@clerk+backend@3.7.1/node_modules/@clerk/backend/dist/chunk-IHBNHARS.mjs
 var require_dist3 = __commonJS2({
   "../../node_modules/.pnpm/cookie@1.1.1/node_modules/cookie/dist/index.js"(exports) {
     "use strict";
@@ -63205,9 +63386,9 @@ var require_dist3 = __commonJS2({
 });
 var API_URL = "https://api.clerk.com";
 var API_VERSION = "v1";
-var USER_AGENT = `${"@clerk/backend"}@${"3.5.0"}`;
+var USER_AGENT = `${"@clerk/backend"}@${"3.7.1"}`;
 var MAX_CACHE_LAST_UPDATED_AT_SECONDS = 5 * 60;
-var SUPPORTED_BAPI_VERSION = "2025-11-10";
+var SUPPORTED_BAPI_VERSION = "2026-05-12";
 var Attributes = {
   AuthToken: "__clerkAuthToken",
   AuthSignature: "__clerkAuthSignature",
@@ -63336,7 +63517,7 @@ var AuthenticateContext = class {
     }
   }
   /**
-   * Retrieves the session token from either the cookie or the header.
+   * Gets the session token from either the cookie or the header.
    *
    * @returns {string | undefined} The session token if available, otherwise undefined.
    */
@@ -64129,9 +64310,12 @@ var IdPOAuthAccessToken = class _IdPOAuthAccessToken {
       false,
       null,
       payload.exp * 1e3 <= Date.now() - clockSkewInMs,
-      payload.exp,
-      payload.iat,
-      payload.iat
+      payload.exp * 1e3,
+      // milliseconds: expiration, converted from JWT exp claim
+      payload.iat * 1e3,
+      // milliseconds: createdAt, converted from JWT iat claim
+      payload.iat * 1e3
+      // milliseconds: updatedAt, no JWT equivalent, defaults to iat
     );
   }
 };
@@ -64626,10 +64810,33 @@ var OrganizationAPI = class extends AbstractAPI {
   }
   async updateOrganization(organizationId, params) {
     this.requireId(organizationId);
+    const { publicMetadata, privateMetadata, ...rest } = params;
+    const hasMetadata = publicMetadata !== void 0 || privateMetadata !== void 0;
+    const hasRest = Object.keys(rest).length > 0;
+    if (hasMetadata) {
+      deprecated(
+        "updateOrganization(organizationId, { publicMetadata | privateMetadata })",
+        "Use updateOrganizationMetadata for partial updates (merge) or replaceOrganizationMetadata for full replacement."
+      );
+    }
+    if (!hasMetadata) {
+      return this.request({
+        method: "PATCH",
+        path: joinPaths(basePath19, organizationId),
+        bodyParams: rest
+      });
+    }
+    if (hasRest) {
+      await this.request({
+        method: "PATCH",
+        path: joinPaths(basePath19, organizationId),
+        bodyParams: rest
+      });
+    }
     return this.request({
-      method: "PATCH",
-      path: joinPaths(basePath19, organizationId),
-      bodyParams: params
+      method: "PUT",
+      path: joinPaths(basePath19, organizationId, "metadata"),
+      bodyParams: { publicMetadata, privateMetadata }
     });
   }
   async updateOrganizationLogo(organizationId, params) {
@@ -64656,6 +64863,19 @@ var OrganizationAPI = class extends AbstractAPI {
     this.requireId(organizationId);
     return this.request({
       method: "PATCH",
+      path: joinPaths(basePath19, organizationId, "metadata"),
+      bodyParams: params
+    });
+  }
+  /**
+   * Replace an organization's metadata. Supplied fields are overwritten in full;
+   * fields omitted from `params` are left unchanged. Prefer
+   * `updateOrganizationMetadata` for partial updates with deep-merge semantics.
+   */
+  async replaceOrganizationMetadata(organizationId, params) {
+    this.requireId(organizationId);
+    return this.request({
+      method: "PUT",
       path: joinPaths(basePath19, organizationId, "metadata"),
       bodyParams: params
     });
@@ -64801,12 +65021,110 @@ var OrganizationAPI = class extends AbstractAPI {
     });
   }
 };
-var basePath20 = "/oauth_applications";
+var basePath20 = "/organization_permissions";
+var OrganizationPermissionAPI = class extends AbstractAPI {
+  async getOrganizationPermissionList(params = {}) {
+    return this.request({
+      method: "GET",
+      path: basePath20,
+      queryParams: params
+    });
+  }
+  async getOrganizationPermission(permissionId) {
+    this.requireId(permissionId);
+    return this.request({
+      method: "GET",
+      path: joinPaths(basePath20, permissionId)
+    });
+  }
+  async createOrganizationPermission(params) {
+    return this.request({
+      method: "POST",
+      path: basePath20,
+      bodyParams: params
+    });
+  }
+  async updateOrganizationPermission(params) {
+    const { permissionId, ...bodyParams } = params;
+    this.requireId(permissionId);
+    return this.request({
+      method: "PATCH",
+      path: joinPaths(basePath20, permissionId),
+      bodyParams
+    });
+  }
+  async deleteOrganizationPermission(permissionId) {
+    this.requireId(permissionId);
+    return this.request({
+      method: "DELETE",
+      path: joinPaths(basePath20, permissionId)
+    });
+  }
+};
+var basePath21 = "/organization_roles";
+var OrganizationRoleAPI = class extends AbstractAPI {
+  async getOrganizationRoleList(params = {}) {
+    return this.request({
+      method: "GET",
+      path: basePath21,
+      queryParams: params
+    });
+  }
+  async getOrganizationRole(organizationRoleId) {
+    this.requireId(organizationRoleId);
+    return this.request({
+      method: "GET",
+      path: joinPaths(basePath21, organizationRoleId)
+    });
+  }
+  async createOrganizationRole(params) {
+    return this.request({
+      method: "POST",
+      path: basePath21,
+      bodyParams: params
+    });
+  }
+  async updateOrganizationRole(params) {
+    const { organizationRoleId, ...bodyParams } = params;
+    this.requireId(organizationRoleId);
+    return this.request({
+      method: "PATCH",
+      path: joinPaths(basePath21, organizationRoleId),
+      bodyParams
+    });
+  }
+  async deleteOrganizationRole(organizationRoleId) {
+    this.requireId(organizationRoleId);
+    return this.request({
+      method: "DELETE",
+      path: joinPaths(basePath21, organizationRoleId)
+    });
+  }
+  async assignPermissionToOrganizationRole(params) {
+    const { organizationRoleId, permissionId } = params;
+    this.requireId(organizationRoleId);
+    this.requireId(permissionId);
+    return this.request({
+      method: "POST",
+      path: joinPaths(basePath21, organizationRoleId, "permissions", permissionId)
+    });
+  }
+  async removePermissionFromOrganizationRole(params) {
+    const { organizationRoleId, permissionId } = params;
+    this.requireId(organizationRoleId);
+    this.requireId(permissionId);
+    return this.request({
+      method: "DELETE",
+      path: joinPaths(basePath21, organizationRoleId, "permissions", permissionId)
+    });
+  }
+};
+var basePath22 = "/oauth_applications";
 var OAuthApplicationsApi = class extends AbstractAPI {
   async list(params = {}) {
     return this.request({
       method: "GET",
-      path: basePath20,
+      path: basePath22,
       queryParams: params
     });
   }
@@ -64814,13 +65132,13 @@ var OAuthApplicationsApi = class extends AbstractAPI {
     this.requireId(oauthApplicationId);
     return this.request({
       method: "GET",
-      path: joinPaths(basePath20, oauthApplicationId)
+      path: joinPaths(basePath22, oauthApplicationId)
     });
   }
   async create(params) {
     return this.request({
       method: "POST",
-      path: basePath20,
+      path: basePath22,
       bodyParams: params
     });
   }
@@ -64829,7 +65147,7 @@ var OAuthApplicationsApi = class extends AbstractAPI {
     this.requireId(oauthApplicationId);
     return this.request({
       method: "PATCH",
-      path: joinPaths(basePath20, oauthApplicationId),
+      path: joinPaths(basePath22, oauthApplicationId),
       bodyParams
     });
   }
@@ -64837,30 +65155,30 @@ var OAuthApplicationsApi = class extends AbstractAPI {
     this.requireId(oauthApplicationId);
     return this.request({
       method: "DELETE",
-      path: joinPaths(basePath20, oauthApplicationId)
+      path: joinPaths(basePath22, oauthApplicationId)
     });
   }
   async rotateSecret(oauthApplicationId) {
     this.requireId(oauthApplicationId);
     return this.request({
       method: "POST",
-      path: joinPaths(basePath20, oauthApplicationId, "rotate_secret")
+      path: joinPaths(basePath22, oauthApplicationId, "rotate_secret")
     });
   }
 };
-var basePath21 = "/phone_numbers";
+var basePath23 = "/phone_numbers";
 var PhoneNumberAPI = class extends AbstractAPI {
   async getPhoneNumber(phoneNumberId) {
     this.requireId(phoneNumberId);
     return this.request({
       method: "GET",
-      path: joinPaths(basePath21, phoneNumberId)
+      path: joinPaths(basePath23, phoneNumberId)
     });
   }
   async createPhoneNumber(params) {
     return this.request({
       method: "POST",
-      path: basePath21,
+      path: basePath23,
       bodyParams: params
     });
   }
@@ -64868,7 +65186,7 @@ var PhoneNumberAPI = class extends AbstractAPI {
     this.requireId(phoneNumberId);
     return this.request({
       method: "PATCH",
-      path: joinPaths(basePath21, phoneNumberId),
+      path: joinPaths(basePath23, phoneNumberId),
       bodyParams: params
     });
   }
@@ -64876,26 +65194,26 @@ var PhoneNumberAPI = class extends AbstractAPI {
     this.requireId(phoneNumberId);
     return this.request({
       method: "DELETE",
-      path: joinPaths(basePath21, phoneNumberId)
+      path: joinPaths(basePath23, phoneNumberId)
     });
   }
 };
-var basePath22 = "/proxy_checks";
+var basePath24 = "/proxy_checks";
 var ProxyCheckAPI = class extends AbstractAPI {
   async verify(params) {
     return this.request({
       method: "POST",
-      path: basePath22,
+      path: basePath24,
       bodyParams: params
     });
   }
 };
-var basePath23 = "/redirect_urls";
+var basePath25 = "/redirect_urls";
 var RedirectUrlAPI = class extends AbstractAPI {
   async getRedirectUrlList() {
     return this.request({
       method: "GET",
-      path: basePath23,
+      path: basePath25,
       queryParams: { paginated: true }
     });
   }
@@ -64903,13 +65221,13 @@ var RedirectUrlAPI = class extends AbstractAPI {
     this.requireId(redirectUrlId);
     return this.request({
       method: "GET",
-      path: joinPaths(basePath23, redirectUrlId)
+      path: joinPaths(basePath25, redirectUrlId)
     });
   }
   async createRedirectUrl(params) {
     return this.request({
       method: "POST",
-      path: basePath23,
+      path: basePath25,
       bodyParams: params
     });
   }
@@ -64917,23 +65235,83 @@ var RedirectUrlAPI = class extends AbstractAPI {
     this.requireId(redirectUrlId);
     return this.request({
       method: "DELETE",
-      path: joinPaths(basePath23, redirectUrlId)
+      path: joinPaths(basePath25, redirectUrlId)
     });
   }
 };
-var basePath24 = "/saml_connections";
+var basePath26 = "/role_sets";
+var RoleSetAPI = class extends AbstractAPI {
+  async getRoleSetList(params = {}) {
+    return this.request({
+      method: "GET",
+      path: basePath26,
+      queryParams: params
+    });
+  }
+  async getRoleSet(roleSetKeyOrId) {
+    this.requireId(roleSetKeyOrId);
+    return this.request({
+      method: "GET",
+      path: joinPaths(basePath26, roleSetKeyOrId)
+    });
+  }
+  async createRoleSet(params) {
+    return this.request({
+      method: "POST",
+      path: basePath26,
+      bodyParams: params
+    });
+  }
+  async updateRoleSet(params) {
+    const { roleSetKeyOrId, ...bodyParams } = params;
+    this.requireId(roleSetKeyOrId);
+    return this.request({
+      method: "PATCH",
+      path: joinPaths(basePath26, roleSetKeyOrId),
+      bodyParams
+    });
+  }
+  async addRolesToRoleSet(params) {
+    const { roleSetKeyOrId, ...bodyParams } = params;
+    this.requireId(roleSetKeyOrId);
+    return this.request({
+      method: "POST",
+      path: joinPaths(basePath26, roleSetKeyOrId, "roles"),
+      bodyParams
+    });
+  }
+  async replaceRoleInRoleSet(params) {
+    const { roleSetKeyOrId, ...bodyParams } = params;
+    this.requireId(roleSetKeyOrId);
+    return this.request({
+      method: "POST",
+      path: joinPaths(basePath26, roleSetKeyOrId, "roles", "replace"),
+      bodyParams
+    });
+  }
+  async replaceRoleSet(params) {
+    const { roleSetKeyOrId, ...bodyParams } = params;
+    this.requireId(roleSetKeyOrId);
+    return this.request({
+      method: "POST",
+      path: joinPaths(basePath26, roleSetKeyOrId, "replace"),
+      bodyParams
+    });
+  }
+};
+var basePath27 = "/saml_connections";
 var SamlConnectionAPI = class extends AbstractAPI {
   async getSamlConnectionList(params = {}) {
     return this.request({
       method: "GET",
-      path: basePath24,
+      path: basePath27,
       queryParams: params
     });
   }
   async createSamlConnection(params) {
     return this.request({
       method: "POST",
-      path: basePath24,
+      path: basePath27,
       bodyParams: params,
       options: {
         deepSnakecaseBodyParamKeys: true
@@ -64944,14 +65322,14 @@ var SamlConnectionAPI = class extends AbstractAPI {
     this.requireId(samlConnectionId);
     return this.request({
       method: "GET",
-      path: joinPaths(basePath24, samlConnectionId)
+      path: joinPaths(basePath27, samlConnectionId)
     });
   }
   async updateSamlConnection(samlConnectionId, params = {}) {
     this.requireId(samlConnectionId);
     return this.request({
       method: "PATCH",
-      path: joinPaths(basePath24, samlConnectionId),
+      path: joinPaths(basePath27, samlConnectionId),
       bodyParams: params,
       options: {
         deepSnakecaseBodyParamKeys: true
@@ -64962,16 +65340,16 @@ var SamlConnectionAPI = class extends AbstractAPI {
     this.requireId(samlConnectionId);
     return this.request({
       method: "DELETE",
-      path: joinPaths(basePath24, samlConnectionId)
+      path: joinPaths(basePath27, samlConnectionId)
     });
   }
 };
-var basePath25 = "/sessions";
+var basePath28 = "/sessions";
 var SessionAPI = class extends AbstractAPI {
   async getSessionList(params = {}) {
     return this.request({
       method: "GET",
-      path: basePath25,
+      path: basePath28,
       queryParams: { ...params, paginated: true }
     });
   }
@@ -64979,13 +65357,13 @@ var SessionAPI = class extends AbstractAPI {
     this.requireId(sessionId);
     return this.request({
       method: "GET",
-      path: joinPaths(basePath25, sessionId)
+      path: joinPaths(basePath28, sessionId)
     });
   }
   async createSession(params) {
     return this.request({
       method: "POST",
-      path: basePath25,
+      path: basePath28,
       bodyParams: params
     });
   }
@@ -64993,23 +65371,23 @@ var SessionAPI = class extends AbstractAPI {
     this.requireId(sessionId);
     return this.request({
       method: "POST",
-      path: joinPaths(basePath25, sessionId, "revoke")
+      path: joinPaths(basePath28, sessionId, "revoke")
     });
   }
   async verifySession(sessionId, token) {
     this.requireId(sessionId);
     return this.request({
       method: "POST",
-      path: joinPaths(basePath25, sessionId, "verify"),
+      path: joinPaths(basePath28, sessionId, "verify"),
       bodyParams: { token }
     });
   }
   /**
-   * Retrieves a session token or generates a JWT using a specified template.
+   * Gets a session token or generates a JWT using a specified template.
    *
    * @param sessionId - The ID of the session for which to generate the token
-   * @param template - Optional name of the JWT template configured in the Clerk Dashboard.
-   * @param expiresInSeconds - Optional expiration time for the token in seconds.
+   * @param template - The name of the JWT template configured in the Clerk Dashboard.
+   * @param expiresInSeconds - The expiration time for the token in seconds.
    *   If not provided, uses the default expiration.
    *
    * @returns A promise that resolves to the generated token
@@ -65018,7 +65396,7 @@ var SessionAPI = class extends AbstractAPI {
    */
   async getToken(sessionId, template, expiresInSeconds) {
     this.requireId(sessionId);
-    const path = template ? joinPaths(basePath25, sessionId, "tokens", template) : joinPaths(basePath25, sessionId, "tokens");
+    const path = template ? joinPaths(basePath28, sessionId, "tokens", template) : joinPaths(basePath28, sessionId, "tokens");
     const requestOptions = {
       method: "POST",
       path
@@ -65033,18 +65411,18 @@ var SessionAPI = class extends AbstractAPI {
     const { suffixed_cookies, ...restParams } = params;
     return this.request({
       method: "POST",
-      path: joinPaths(basePath25, sessionId, "refresh"),
+      path: joinPaths(basePath28, sessionId, "refresh"),
       bodyParams: restParams,
       queryParams: { suffixed_cookies }
     });
   }
 };
-var basePath26 = "/sign_in_tokens";
+var basePath29 = "/sign_in_tokens";
 var SignInTokenAPI = class extends AbstractAPI {
   async createSignInToken(params) {
     return this.request({
       method: "POST",
-      path: basePath26,
+      path: basePath29,
       bodyParams: params
     });
   }
@@ -65052,45 +65430,45 @@ var SignInTokenAPI = class extends AbstractAPI {
     this.requireId(signInTokenId);
     return this.request({
       method: "POST",
-      path: joinPaths(basePath26, signInTokenId, "revoke")
+      path: joinPaths(basePath29, signInTokenId, "revoke")
     });
   }
 };
-var basePath27 = "/sign_ups";
+var basePath30 = "/sign_ups";
 var SignUpAPI = class extends AbstractAPI {
   async get(signUpAttemptId) {
     this.requireId(signUpAttemptId);
     return this.request({
       method: "GET",
-      path: joinPaths(basePath27, signUpAttemptId)
+      path: joinPaths(basePath30, signUpAttemptId)
     });
   }
   async update(params) {
     const { signUpAttemptId, ...bodyParams } = params;
     return this.request({
       method: "PATCH",
-      path: joinPaths(basePath27, signUpAttemptId),
+      path: joinPaths(basePath30, signUpAttemptId),
       bodyParams
     });
   }
 };
-var basePath28 = "/testing_tokens";
+var basePath31 = "/testing_tokens";
 var TestingTokenAPI = class extends AbstractAPI {
   async createTestingToken() {
     return this.request({
       method: "POST",
-      path: basePath28
+      path: basePath31
     });
   }
 };
-var basePath29 = "/users";
+var basePath32 = "/users";
 var UserAPI = class extends AbstractAPI {
   async getUserList(params = {}) {
     const { limit, offset, orderBy, ...userCountParams } = params;
     const [data, totalCount] = await Promise.all([
       this.request({
         method: "GET",
-        path: basePath29,
+        path: basePath32,
         queryParams: params
       }),
       this.getCount(userCountParams)
@@ -65101,29 +65479,52 @@ var UserAPI = class extends AbstractAPI {
     this.requireId(userId);
     return this.request({
       method: "GET",
-      path: joinPaths(basePath29, userId)
+      path: joinPaths(basePath32, userId)
     });
   }
   async createUser(params) {
     return this.request({
       method: "POST",
-      path: basePath29,
+      path: basePath32,
       bodyParams: params
     });
   }
   async updateUser(userId, params = {}) {
     this.requireId(userId);
+    const { publicMetadata, privateMetadata, unsafeMetadata, ...rest } = params;
+    const hasMetadata = publicMetadata !== void 0 || privateMetadata !== void 0 || unsafeMetadata !== void 0;
+    const hasRest = Object.keys(rest).length > 0;
+    if (hasMetadata) {
+      deprecated(
+        "updateUser(userId, { publicMetadata | privateMetadata | unsafeMetadata })",
+        "Use updateUserMetadata for partial updates (merge) or replaceUserMetadata for full replacement."
+      );
+    }
+    if (!hasMetadata) {
+      return this.request({
+        method: "PATCH",
+        path: joinPaths(basePath32, userId),
+        bodyParams: rest
+      });
+    }
+    if (hasRest) {
+      await this.request({
+        method: "PATCH",
+        path: joinPaths(basePath32, userId),
+        bodyParams: rest
+      });
+    }
     return this.request({
-      method: "PATCH",
-      path: joinPaths(basePath29, userId),
-      bodyParams: params
+      method: "PUT",
+      path: joinPaths(basePath32, userId, "metadata"),
+      bodyParams: { publicMetadata, privateMetadata, unsafeMetadata }
     });
   }
   async replaceUserEmailAddress(userId, params) {
     this.requireId(userId);
     return this.request({
       method: "PUT",
-      path: joinPaths(basePath29, userId, "email_address"),
+      path: joinPaths(basePath32, userId, "email_address"),
       bodyParams: params
     });
   }
@@ -65131,7 +65532,7 @@ var UserAPI = class extends AbstractAPI {
     this.requireId(userId);
     return this.request({
       method: "PUT",
-      path: joinPaths(basePath29, userId, "phone_number"),
+      path: joinPaths(basePath32, userId, "phone_number"),
       bodyParams: params
     });
   }
@@ -65141,7 +65542,7 @@ var UserAPI = class extends AbstractAPI {
     formData.append("file", params?.file);
     return this.request({
       method: "POST",
-      path: joinPaths(basePath29, userId, "profile_image"),
+      path: joinPaths(basePath32, userId, "profile_image"),
       formData
     });
   }
@@ -65149,7 +65550,20 @@ var UserAPI = class extends AbstractAPI {
     this.requireId(userId);
     return this.request({
       method: "PATCH",
-      path: joinPaths(basePath29, userId, "metadata"),
+      path: joinPaths(basePath32, userId, "metadata"),
+      bodyParams: params
+    });
+  }
+  /**
+   * Replace a user's metadata. Supplied fields are overwritten in full; fields
+   * omitted from `params` are left unchanged. Prefer `updateUserMetadata` for
+   * partial updates with deep-merge semantics.
+   */
+  async replaceUserMetadata(userId, params) {
+    this.requireId(userId);
+    return this.request({
+      method: "PUT",
+      path: joinPaths(basePath32, userId, "metadata"),
       bodyParams: params
     });
   }
@@ -65157,13 +65571,13 @@ var UserAPI = class extends AbstractAPI {
     this.requireId(userId);
     return this.request({
       method: "DELETE",
-      path: joinPaths(basePath29, userId)
+      path: joinPaths(basePath32, userId)
     });
   }
   async getCount(params = {}) {
     return this.request({
       method: "GET",
-      path: joinPaths(basePath29, "count"),
+      path: joinPaths(basePath32, "count"),
       queryParams: params
     });
   }
@@ -65179,7 +65593,7 @@ var UserAPI = class extends AbstractAPI {
     }
     return this.request({
       method: "GET",
-      path: joinPaths(basePath29, userId, "oauth_access_tokens", _provider),
+      path: joinPaths(basePath32, userId, "oauth_access_tokens", _provider),
       queryParams: { paginated: true }
     });
   }
@@ -65187,7 +65601,7 @@ var UserAPI = class extends AbstractAPI {
     this.requireId(userId);
     return this.request({
       method: "DELETE",
-      path: joinPaths(basePath29, userId, "mfa")
+      path: joinPaths(basePath32, userId, "mfa")
     });
   }
   async getOrganizationMembershipList(params) {
@@ -65195,7 +65609,7 @@ var UserAPI = class extends AbstractAPI {
     this.requireId(userId);
     return this.request({
       method: "GET",
-      path: joinPaths(basePath29, userId, "organization_memberships"),
+      path: joinPaths(basePath32, userId, "organization_memberships"),
       queryParams: { limit, offset }
     });
   }
@@ -65204,7 +65618,7 @@ var UserAPI = class extends AbstractAPI {
     this.requireId(userId);
     return this.request({
       method: "GET",
-      path: joinPaths(basePath29, userId, "organization_invitations"),
+      path: joinPaths(basePath32, userId, "organization_invitations"),
       queryParams
     });
   }
@@ -65213,7 +65627,7 @@ var UserAPI = class extends AbstractAPI {
     this.requireId(userId);
     return this.request({
       method: "POST",
-      path: joinPaths(basePath29, userId, "verify_password"),
+      path: joinPaths(basePath32, userId, "verify_password"),
       bodyParams: { password }
     });
   }
@@ -65222,7 +65636,7 @@ var UserAPI = class extends AbstractAPI {
     this.requireId(userId);
     return this.request({
       method: "POST",
-      path: joinPaths(basePath29, userId, "verify_totp"),
+      path: joinPaths(basePath32, userId, "verify_totp"),
       bodyParams: { code }
     });
   }
@@ -65230,35 +65644,35 @@ var UserAPI = class extends AbstractAPI {
     this.requireId(userId);
     return this.request({
       method: "POST",
-      path: joinPaths(basePath29, userId, "ban")
+      path: joinPaths(basePath32, userId, "ban")
     });
   }
   async unbanUser(userId) {
     this.requireId(userId);
     return this.request({
       method: "POST",
-      path: joinPaths(basePath29, userId, "unban")
+      path: joinPaths(basePath32, userId, "unban")
     });
   }
   async lockUser(userId) {
     this.requireId(userId);
     return this.request({
       method: "POST",
-      path: joinPaths(basePath29, userId, "lock")
+      path: joinPaths(basePath32, userId, "lock")
     });
   }
   async unlockUser(userId) {
     this.requireId(userId);
     return this.request({
       method: "POST",
-      path: joinPaths(basePath29, userId, "unlock")
+      path: joinPaths(basePath32, userId, "unlock")
     });
   }
   async deleteUserProfileImage(userId) {
     this.requireId(userId);
     return this.request({
       method: "DELETE",
-      path: joinPaths(basePath29, userId, "profile_image")
+      path: joinPaths(basePath32, userId, "profile_image")
     });
   }
   async deleteUserPasskey(params) {
@@ -65266,7 +65680,7 @@ var UserAPI = class extends AbstractAPI {
     this.requireId(params.passkeyIdentificationId);
     return this.request({
       method: "DELETE",
-      path: joinPaths(basePath29, params.userId, "passkeys", params.passkeyIdentificationId)
+      path: joinPaths(basePath32, params.userId, "passkeys", params.passkeyIdentificationId)
     });
   }
   async deleteUserWeb3Wallet(params) {
@@ -65274,7 +65688,7 @@ var UserAPI = class extends AbstractAPI {
     this.requireId(params.web3WalletIdentificationId);
     return this.request({
       method: "DELETE",
-      path: joinPaths(basePath29, params.userId, "web3_wallets", params.web3WalletIdentificationId)
+      path: joinPaths(basePath32, params.userId, "web3_wallets", params.web3WalletIdentificationId)
     });
   }
   async deleteUserExternalAccount(params) {
@@ -65282,21 +65696,21 @@ var UserAPI = class extends AbstractAPI {
     this.requireId(params.externalAccountId);
     return this.request({
       method: "DELETE",
-      path: joinPaths(basePath29, params.userId, "external_accounts", params.externalAccountId)
+      path: joinPaths(basePath32, params.userId, "external_accounts", params.externalAccountId)
     });
   }
   async deleteUserBackupCodes(userId) {
     this.requireId(userId);
     return this.request({
       method: "DELETE",
-      path: joinPaths(basePath29, userId, "backup_code")
+      path: joinPaths(basePath32, userId, "backup_code")
     });
   }
   async deleteUserTOTP(userId) {
     this.requireId(userId);
     return this.request({
       method: "DELETE",
-      path: joinPaths(basePath29, userId, "totp")
+      path: joinPaths(basePath32, userId, "totp")
     });
   }
   async setPasswordCompromised(userId, params = {
@@ -65305,7 +65719,7 @@ var UserAPI = class extends AbstractAPI {
     this.requireId(userId);
     return this.request({
       method: "POST",
-      path: joinPaths(basePath29, userId, "password", "set_compromised"),
+      path: joinPaths(basePath32, userId, "password", "set_compromised"),
       bodyParams: params
     });
   }
@@ -65313,11 +65727,11 @@ var UserAPI = class extends AbstractAPI {
     this.requireId(userId);
     return this.request({
       method: "POST",
-      path: joinPaths(basePath29, userId, "password", "unset_compromised")
+      path: joinPaths(basePath32, userId, "password", "unset_compromised")
     });
   }
 };
-var basePath30 = "/waitlist_entries";
+var basePath33 = "/waitlist_entries";
 var WaitlistEntryAPI = class extends AbstractAPI {
   /**
    * List waitlist entries.
@@ -65326,7 +65740,7 @@ var WaitlistEntryAPI = class extends AbstractAPI {
   async list(params = {}) {
     return this.request({
       method: "GET",
-      path: basePath30,
+      path: basePath33,
       queryParams: params
     });
   }
@@ -65337,7 +65751,7 @@ var WaitlistEntryAPI = class extends AbstractAPI {
   async create(params) {
     return this.request({
       method: "POST",
-      path: basePath30,
+      path: basePath33,
       bodyParams: params
     });
   }
@@ -65348,7 +65762,7 @@ var WaitlistEntryAPI = class extends AbstractAPI {
   async createBulk(params) {
     return this.request({
       method: "POST",
-      path: joinPaths(basePath30, "bulk"),
+      path: joinPaths(basePath33, "bulk"),
       bodyParams: params
     });
   }
@@ -65361,7 +65775,7 @@ var WaitlistEntryAPI = class extends AbstractAPI {
     this.requireId(id);
     return this.request({
       method: "POST",
-      path: joinPaths(basePath30, id, "invite"),
+      path: joinPaths(basePath33, id, "invite"),
       bodyParams: params
     });
   }
@@ -65373,7 +65787,7 @@ var WaitlistEntryAPI = class extends AbstractAPI {
     this.requireId(id);
     return this.request({
       method: "POST",
-      path: joinPaths(basePath30, id, "reject")
+      path: joinPaths(basePath33, id, "reject")
     });
   }
   /**
@@ -65384,32 +65798,32 @@ var WaitlistEntryAPI = class extends AbstractAPI {
     this.requireId(id);
     return this.request({
       method: "DELETE",
-      path: joinPaths(basePath30, id)
+      path: joinPaths(basePath33, id)
     });
   }
 };
-var basePath31 = "/webhooks";
+var basePath34 = "/webhooks";
 var WebhookAPI = class extends AbstractAPI {
   async createSvixApp() {
     return this.request({
       method: "POST",
-      path: joinPaths(basePath31, "svix")
+      path: joinPaths(basePath34, "svix")
     });
   }
   async generateSvixAuthURL() {
     return this.request({
       method: "POST",
-      path: joinPaths(basePath31, "svix_url")
+      path: joinPaths(basePath34, "svix_url")
     });
   }
   async deleteSvixApp() {
     return this.request({
       method: "DELETE",
-      path: joinPaths(basePath31, "svix")
+      path: joinPaths(basePath34, "svix")
     });
   }
 };
-var basePath32 = "/billing";
+var basePath35 = "/billing";
 var organizationBasePath = "/organizations";
 var userBasePath = "/users";
 var BillingAPI = class extends AbstractAPI {
@@ -65419,7 +65833,7 @@ var BillingAPI = class extends AbstractAPI {
   async getPlanList(params) {
     return this.request({
       method: "GET",
-      path: joinPaths(basePath32, "plans"),
+      path: joinPaths(basePath35, "plans"),
       queryParams: params
     });
   }
@@ -65430,7 +65844,7 @@ var BillingAPI = class extends AbstractAPI {
     this.requireId(subscriptionItemId);
     return this.request({
       method: "DELETE",
-      path: joinPaths(basePath32, "subscription_items", subscriptionItemId),
+      path: joinPaths(basePath35, "subscription_items", subscriptionItemId),
       queryParams: params
     });
   }
@@ -66759,6 +67173,19 @@ var OrganizationSettings = class _OrganizationSettings {
     );
   }
 };
+var Permission = class _Permission {
+  constructor(id, name, key, description, createdAt, updatedAt) {
+    this.id = id;
+    this.name = name;
+    this.key = key;
+    this.description = description;
+    this.createdAt = createdAt;
+    this.updatedAt = updatedAt;
+  }
+  static fromJSON(data) {
+    return new _Permission(data.id, data.name, data.key, data.description, data.created_at, data.updated_at);
+  }
+};
 var PhoneNumber = class _PhoneNumber {
   constructor(id, phoneNumber, reservedForSecondFactor, defaultSecondFactor, verification, linkedTo) {
     this.id = id;
@@ -66810,6 +67237,118 @@ var RedirectUrl = class _RedirectUrl {
   }
   static fromJSON(data) {
     return new _RedirectUrl(data.id, data.url, data.created_at, data.updated_at);
+  }
+};
+var Role = class _Role {
+  constructor(id, name, key, description, permissions, isCreatorEligible, createdAt, updatedAt) {
+    this.id = id;
+    this.name = name;
+    this.key = key;
+    this.description = description;
+    this.permissions = permissions;
+    this.isCreatorEligible = isCreatorEligible;
+    this.createdAt = createdAt;
+    this.updatedAt = updatedAt;
+  }
+  static fromJSON(data) {
+    return new _Role(
+      data.id,
+      data.name,
+      data.key,
+      data.description,
+      (data.permissions ?? []).map((permission) => Permission.fromJSON(permission)),
+      data.is_creator_eligible,
+      data.created_at,
+      data.updated_at
+    );
+  }
+};
+var RoleSetItem = class _RoleSetItem {
+  constructor(id, name, key, description, createdAt, updatedAt, membersCount, hasMembers) {
+    this.id = id;
+    this.name = name;
+    this.key = key;
+    this.description = description;
+    this.createdAt = createdAt;
+    this.updatedAt = updatedAt;
+    this.membersCount = membersCount;
+    this.hasMembers = hasMembers;
+  }
+  static fromJSON(data) {
+    return new _RoleSetItem(
+      data.id,
+      data.name,
+      data.key,
+      data.description,
+      data.created_at,
+      data.updated_at,
+      data.members_count,
+      data.has_members
+    );
+  }
+};
+var RoleSetMigration = class _RoleSetMigration {
+  constructor(id, organizationId, instanceId, sourceRoleSetId, destRoleSetId, triggerType, status, migratedMembers, mappings, createdAt, updatedAt, startedAt, completedAt) {
+    this.id = id;
+    this.organizationId = organizationId;
+    this.instanceId = instanceId;
+    this.sourceRoleSetId = sourceRoleSetId;
+    this.destRoleSetId = destRoleSetId;
+    this.triggerType = triggerType;
+    this.status = status;
+    this.migratedMembers = migratedMembers;
+    this.mappings = mappings;
+    this.createdAt = createdAt;
+    this.updatedAt = updatedAt;
+    this.startedAt = startedAt;
+    this.completedAt = completedAt;
+  }
+  static fromJSON(data) {
+    return new _RoleSetMigration(
+      data.id,
+      data.organization_id,
+      data.instance_id,
+      data.source_role_set_id,
+      data.dest_role_set_id,
+      data.trigger_type,
+      data.status,
+      data.migrated_members,
+      data.mappings,
+      data.created_at,
+      data.updated_at,
+      data.started_at,
+      data.completed_at
+    );
+  }
+};
+var RoleSet = class _RoleSet {
+  constructor(id, name, key, description, roles, defaultRole, creatorRole, type, roleSetMigration, createdAt, updatedAt) {
+    this.id = id;
+    this.name = name;
+    this.key = key;
+    this.description = description;
+    this.roles = roles;
+    this.defaultRole = defaultRole;
+    this.creatorRole = creatorRole;
+    this.type = type;
+    this.roleSetMigration = roleSetMigration;
+    this.createdAt = createdAt;
+    this.updatedAt = updatedAt;
+  }
+  static fromJSON(data) {
+    return new _RoleSet(
+      data.id,
+      data.name,
+      data.key,
+      data.description,
+      (data.roles ?? []).map((role) => RoleSetItem.fromJSON(role)),
+      data.default_role ? RoleSetItem.fromJSON(data.default_role) : null,
+      data.creator_role ? RoleSetItem.fromJSON(data.creator_role) : null,
+      data.type,
+      data.role_set_migration ? RoleSetMigration.fromJSON(data.role_set_migration) : null,
+      data.created_at,
+      data.updated_at
+    );
   }
 };
 var SamlConnection = class _SamlConnection {
@@ -67221,12 +67760,18 @@ function jsonToObject(item) {
       return OrganizationMembership.fromJSON(item);
     case ObjectType.OrganizationSettings:
       return OrganizationSettings.fromJSON(item);
+    case ObjectType.Permission:
+      return Permission.fromJSON(item);
     case ObjectType.PhoneNumber:
       return PhoneNumber.fromJSON(item);
     case ObjectType.ProxyCheck:
       return ProxyCheck.fromJSON(item);
     case ObjectType.RedirectUrl:
       return RedirectUrl.fromJSON(item);
+    case ObjectType.Role:
+      return Role.fromJSON(item);
+    case ObjectType.RoleSet:
+      return RoleSet.fromJSON(item);
     case ObjectType.EnterpriseConnection:
       return EnterpriseConnection.fromJSON(item);
     case ObjectType.SamlConnection:
@@ -67466,9 +68011,12 @@ function createBackendApiClient(options) {
     ),
     oauthApplications: new OAuthApplicationsApi(request),
     organizations: new OrganizationAPI(request),
+    organizationPermissions: new OrganizationPermissionAPI(request),
+    organizationRoles: new OrganizationRoleAPI(request),
     phoneNumbers: new PhoneNumberAPI(request),
     proxyChecks: new ProxyCheckAPI(request),
     redirectUrls: new RedirectUrlAPI(request),
+    roleSets: new RoleSetAPI(request),
     sessions: new SessionAPI(request),
     signInTokens: new SignInTokenAPI(request),
     signUps: new SignUpAPI(request),
@@ -67487,6 +68035,12 @@ var createDebug = (data) => {
     const res = { ...data };
     res.secretKey = (res.secretKey || "").substring(0, 7);
     res.jwtKey = (res.jwtKey || "").substring(0, 7);
+    res.sessionToken = (res.sessionToken || "").substring(0, 7);
+    res.tokenInHeader = (res.tokenInHeader || "").substring(0, 7);
+    res.sessionTokenInCookie = (res.sessionTokenInCookie || "").substring(0, 7);
+    res.refreshTokenInCookie = (res.refreshTokenInCookie || "").substring(0, 7);
+    res.devBrowserToken = (res.devBrowserToken || "").substring(0, 7);
+    res.handshakeToken = (res.handshakeToken || "").substring(0, 7);
     return { ...res };
   };
 };
@@ -68025,7 +68579,7 @@ async function verifyMachineAuthToken(token, options) {
         ]
       };
     }
-    if (decodedResult.payload.sub.startsWith(M2M_SUBJECT_PREFIX)) {
+    if (typeof decodedResult.payload.sub === "string" && decodedResult.payload.sub.startsWith(M2M_SUBJECT_PREFIX)) {
       return verifyM2MJwt(token, decodedResult, options);
     }
     if (OAUTH_ACCESS_TOKEN_TYPES.includes(decodedResult.header.typ)) {
@@ -69025,7 +69579,7 @@ function createAuthenticateRequest(params) {
   };
 }
 
-// ../../node_modules/.pnpm/@clerk+backend@3.5.0/node_modules/@clerk/backend/dist/chunk-P263NW7Z.mjs
+// ../../node_modules/.pnpm/@clerk+backend@3.7.1/node_modules/@clerk/backend/dist/chunk-P263NW7Z.mjs
 function withLegacyReturn(cb) {
   return async (...args) => {
     const { data, errors } = await cb(...args);
@@ -69036,7 +69590,7 @@ function withLegacyReturn(cb) {
   };
 }
 
-// ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/_chunks/telemetry-DmiY4LSf.mjs
+// ../../node_modules/.pnpm/@clerk+shared@4.18.0_react-_c937ac090f5f0c8cb34a6684a4f9cdd3/node_modules/@clerk/shared/dist/_chunks/telemetry-_APzqTkn.mjs
 var PROCESS_FLAG = /* @__PURE__ */ Symbol.for("@clerk/shared.telemetryNoticeShown");
 var NOTICE_LINES = [
   "Attention: Clerk collects telemetry data from its SDKs when connected to development instances.",
@@ -69201,7 +69755,8 @@ var TelemetryCollector = class {
     const parsedKey = parsePublishableKey(options.publishableKey);
     if (parsedKey) this.#metadata.instanceType = parsedKey.instanceType;
     if (options.secretKey) this.#metadata.secretKey = options.secretKey.substring(0, 16);
-    this.#eventThrottler = new TelemetryEventThrottler(LocalStorageThrottlerCache.isSupported() ? new LocalStorageThrottlerCache() : new InMemoryThrottlerCache());
+    const cache2 = LocalStorageThrottlerCache.isSupported() ? new LocalStorageThrottlerCache() : new InMemoryThrottlerCache();
+    this.#eventThrottler = new TelemetryEventThrottler(cache2);
     maybeShowTelemetryNotice({ skip: !this.isEnabled });
   }
   get isEnabled() {
@@ -69396,7 +69951,7 @@ var TelemetryCollector = class {
   }
 };
 
-// ../../node_modules/.pnpm/@clerk+backend@3.5.0/node_modules/@clerk/backend/dist/index.mjs
+// ../../node_modules/.pnpm/@clerk+backend@3.7.1/node_modules/@clerk/backend/dist/index.mjs
 var verifyToken2 = withLegacyReturn(verifyToken);
 function createClerkClient(options) {
   const opts = { ...options };
@@ -69416,7 +69971,10 @@ function createClerkClient(options) {
   };
 }
 
-// ../../node_modules/.pnpm/@clerk+backend@3.5.0/node_modules/@clerk/backend/dist/proxy.mjs
+// ../../node_modules/.pnpm/@clerk+express@2.1.27_express@5.2.1/node_modules/@clerk/express/dist/index.mjs
+import { Readable as Readable2 } from "stream";
+
+// ../../node_modules/.pnpm/@clerk+backend@3.7.1/node_modules/@clerk/backend/dist/proxy.mjs
 var HOP_BY_HOP_HEADERS = /* @__PURE__ */ new Set([
   "connection",
   "keep-alive",
@@ -69598,26 +70156,27 @@ async function clerkFrontendApiProxy(request, options) {
   }
 }
 
-// ../../node_modules/.pnpm/@clerk+shared@4.15.0_react-_36d10ce5b72938dbf290fb35f9f8552b/node_modules/@clerk/shared/dist/runtime/_chunks/handleValueOrFn-xqbU450o.mjs
+// ../../node_modules/.pnpm/@clerk+shared@4.18.0_react-_c937ac090f5f0c8cb34a6684a4f9cdd3/node_modules/@clerk/shared/dist/_chunks/handleValueOrFn-CKEDuW4I.mjs
 function handleValueOrFn(value, url2, defaultValue) {
   if (typeof value === "function") return value(url2);
   if (typeof value !== "undefined") return value;
   if (typeof defaultValue !== "undefined") return defaultValue;
 }
 
-// ../../node_modules/.pnpm/@clerk+express@2.1.23_express@5.2.1/node_modules/@clerk/express/dist/index.mjs
-import { Readable as Readable2 } from "stream";
+// ../../node_modules/.pnpm/@clerk+express@2.1.27_express@5.2.1/node_modules/@clerk/express/dist/index.mjs
 var clerkClientSingleton = {};
 var clerkClient = new Proxy(clerkClientSingleton, {
   get(_target, property) {
-    if (property in clerkClientSingleton) {
-      return clerkClientSingleton[property];
-    }
-    const env = { ...loadApiEnv(), ...loadClientEnv() };
-    const client = createClerkClient({ ...env, userAgent: `${"@clerk/express"}@${"2.1.23"}` });
-    if (env.secretKey) {
-      clerkClientSingleton = client;
-    }
+    if (property in clerkClientSingleton) return clerkClientSingleton[property];
+    const env = {
+      ...loadApiEnv(),
+      ...loadClientEnv()
+    };
+    const client = createClerkClient({
+      ...env,
+      userAgent: `@clerk/express@2.1.27`
+    });
+    if (env.secretKey) clerkClientSingleton = client;
     return client[property];
   },
   set() {
@@ -69646,37 +70205,21 @@ Invalid signInUrl. A satellite application requires a signInUrl for development 
 Check if signInUrl is missing from your configuration or if it is not an absolute URL.`;
 var authenticateRequest2 = (opts) => {
   const { clerkClient: clerkClient2, request, options } = opts;
-  const {
-    clerkClient: _clerkClient,
-    debug: _debug,
-    frontendApiProxy: _frontendApiProxy,
-    isSatellite: isSatelliteInput,
-    domain: domainInput,
-    signInUrl: signInUrlInput,
-    proxyUrl: proxyUrlInput,
-    secretKey: secretKeyInput,
-    machineSecretKey: machineSecretKeyInput,
-    publishableKey: publishableKeyInput,
-    ...restOptions
-  } = options || {};
+  const { clerkClient: _clerkClient, debug: _debug, frontendApiProxy: _frontendApiProxy, isSatellite: isSatelliteInput, domain: domainInput, signInUrl: signInUrlInput, proxyUrl: proxyUrlInput, secretKey: secretKeyInput, machineSecretKey: machineSecretKeyInput, publishableKey: publishableKeyInput, ...restOptions } = options || {};
   const clerkRequest = createClerkRequest(incomingMessageToRequest(request));
-  const env = { ...loadApiEnv(), ...loadClientEnv() };
+  const env = {
+    ...loadApiEnv(),
+    ...loadClientEnv()
+  };
   const secretKey = secretKeyInput || env.secretKey;
   const machineSecretKey = machineSecretKeyInput || env.machineSecretKey;
   const publishableKey = publishableKeyInput || env.publishableKey;
   const isSatellite = handleValueOrFn(isSatelliteInput, clerkRequest.clerkUrl, env.isSatellite);
   const domain2 = handleValueOrFn(domainInput, clerkRequest.clerkUrl) || env.domain;
   const signInUrl = signInUrlInput || env.signInUrl;
-  const proxyUrl = absoluteProxyUrl(
-    handleValueOrFn(proxyUrlInput, clerkRequest.clerkUrl, env.proxyUrl),
-    clerkRequest.clerkUrl.toString()
-  );
-  if (isSatellite && !proxyUrl && !domain2) {
-    throw new Error(satelliteAndMissingProxyUrlAndDomain);
-  }
-  if (isSatellite && !isHttpOrHttps(signInUrl) && isDevelopmentFromSecretKey(secretKey || "")) {
-    throw new Error(satelliteAndMissingSignInUrl);
-  }
+  const proxyUrl = absoluteProxyUrl(handleValueOrFn(proxyUrlInput, clerkRequest.clerkUrl, env.proxyUrl), clerkRequest.clerkUrl.toString());
+  if (isSatellite && !proxyUrl && !domain2) throw new Error(satelliteAndMissingProxyUrlAndDomain);
+  if (isSatellite && !isHttpOrHttps(signInUrl) && isDevelopmentFromSecretKey(secretKey || "")) throw new Error(satelliteAndMissingSignInUrl);
   return clerkClient2.authenticateRequest(clerkRequest, {
     ...restOptions,
     secretKey,
@@ -69689,38 +70232,28 @@ var authenticateRequest2 = (opts) => {
   });
 };
 var setResponseHeaders = (requestState, res) => {
-  if (requestState.headers) {
-    requestState.headers.forEach((value, key) => res.appendHeader(key, value));
-  }
+  if (requestState.headers) requestState.headers.forEach((value, key) => res.appendHeader(key, value));
   return setResponseForHandshake(requestState, res);
 };
 var setResponseForHandshake = (requestState, res) => {
-  const hasLocationHeader = requestState.headers.get("location");
-  if (hasLocationHeader) {
+  if (requestState.headers.get("location")) {
     res.status(307).end();
     return;
   }
-  if (requestState.status === AuthStatus.Handshake) {
-    return new Error("Clerk: unexpected handshake without redirect");
-  }
-  return;
+  if (requestState.status === AuthStatus.Handshake) return /* @__PURE__ */ new Error("Clerk: unexpected handshake without redirect");
 };
 var absoluteProxyUrl = (relativeOrAbsoluteUrl, baseUrl) => {
-  if (!relativeOrAbsoluteUrl || !isValidProxyUrl(relativeOrAbsoluteUrl) || !isProxyUrlRelative(relativeOrAbsoluteUrl)) {
-    return relativeOrAbsoluteUrl;
-  }
+  if (!relativeOrAbsoluteUrl || !isValidProxyUrl(relativeOrAbsoluteUrl) || !isProxyUrlRelative(relativeOrAbsoluteUrl)) return relativeOrAbsoluteUrl;
   return new URL(relativeOrAbsoluteUrl, baseUrl).toString();
 };
 var resolveDefaultClerkClient = (options) => {
-  if (!options.apiUrl && !options.apiVersion) {
-    return clerkClient;
-  }
-  const env = { ...loadApiEnv(), ...loadClientEnv() };
+  if (!options.apiUrl && !options.apiVersion) return clerkClient;
   return createClerkClient({
-    ...env,
+    ...loadApiEnv(),
+    ...loadClientEnv(),
     ...options.apiUrl ? { apiUrl: options.apiUrl } : {},
     ...options.apiVersion ? { apiVersion: options.apiVersion } : {},
-    userAgent: `${"@clerk/express"}@${"2.1.23"}`
+    userAgent: `@clerk/express@2.1.27`
   });
 };
 var authenticateAndDecorateRequest = (options = {}) => {
@@ -69728,18 +70261,18 @@ var authenticateAndDecorateRequest = (options = {}) => {
   const frontendApiProxy = options.frontendApiProxy;
   const proxyPath = stripTrailingSlashes(frontendApiProxy?.path ?? DEFAULT_PROXY_PATH) || DEFAULT_PROXY_PATH;
   const middleware = async (request, response, next) => {
-    if (request.auth) {
-      return next();
-    }
-    const env = { ...loadApiEnv(), ...loadClientEnv() };
+    if (requestHasAuthObject(request)) return next();
+    if ("auth" in request) logger.warnOnce("Clerk: another middleware has already set `req.auth` on this request. Clerk authentication will run anyway and overwrite it. To use another auth library alongside Clerk, configure it to store its state on a different request property.");
+    const env = {
+      ...loadApiEnv(),
+      ...loadClientEnv()
+    };
     const publishableKey = options.publishableKey || env.publishableKey;
     const secretKey = options.secretKey || env.secretKey;
     if (frontendApiProxy) {
       const requestUrl = new URL(request.originalUrl || request.url, `http://${request.headers.host}`);
-      const isEnabled = typeof frontendApiProxy.enabled === "function" ? frontendApiProxy.enabled(requestUrl) : frontendApiProxy.enabled;
-      if (isEnabled && (requestUrl.pathname === proxyPath || requestUrl.pathname.startsWith(proxyPath + "/"))) {
-        const proxyRequest = requestToProxyRequest(request);
-        const proxyResponse = await clerkFrontendApiProxy(proxyRequest, {
+      if ((typeof frontendApiProxy.enabled === "function" ? frontendApiProxy.enabled(requestUrl) : frontendApiProxy.enabled) && (requestUrl.pathname === proxyPath || requestUrl.pathname.startsWith(proxyPath + "/"))) {
+        const proxyResponse = await clerkFrontendApiProxy(requestToProxyRequest(request), {
           proxyPath,
           publishableKey,
           secretKey
@@ -69750,34 +70283,26 @@ var authenticateAndDecorateRequest = (options = {}) => {
         });
         if (proxyResponse.body) {
           const reader = proxyResponse.body.getReader();
-          const stream = new Readable2({
-            async read() {
-              try {
-                const { done, value } = await reader.read();
-                if (done) {
-                  this.push(null);
-                } else {
-                  this.push(Buffer.from(value));
-                }
-              } catch (error40) {
-                this.destroy(error40 instanceof Error ? error40 : new Error(String(error40)));
-              }
+          new Readable2({ async read() {
+            try {
+              const { done, value } = await reader.read();
+              if (done) this.push(null);
+              else this.push(Buffer.from(value));
+            } catch (error40) {
+              this.destroy(error40 instanceof Error ? error40 : new Error(String(error40)));
             }
-          });
-          stream.pipe(response);
-        } else {
-          response.end();
-        }
+          } }).pipe(response);
+        } else response.end();
         return;
       }
     }
     let resolvedOptions = options;
     if (frontendApiProxy && !options.proxyUrl) {
       const requestUrl = new URL(request.originalUrl || request.url, `http://${request.headers.host}`);
-      const isProxyEnabled = typeof frontendApiProxy.enabled === "function" ? frontendApiProxy.enabled(requestUrl) : frontendApiProxy.enabled;
-      if (isProxyEnabled) {
-        resolvedOptions = { ...options, proxyUrl: proxyPath };
-      }
+      if (typeof frontendApiProxy.enabled === "function" ? frontendApiProxy.enabled(requestUrl) : frontendApiProxy.enabled) resolvedOptions = {
+        ...options,
+        proxyUrl: proxyPath
+      };
     }
     try {
       const requestState = await authenticateRequest2({
@@ -69786,13 +70311,9 @@ var authenticateAndDecorateRequest = (options = {}) => {
         options: resolvedOptions
       });
       const err = setResponseHeaders(requestState, response);
-      if (err) {
-        return next(err);
-      }
-      if (response.writableEnded) {
-        return;
-      }
-      const auth = (opts) => requestState.toAuth(opts);
+      if (err) return next(err);
+      if (response.writableEnded) return;
+      const auth = brandRequestAuth((opts) => requestState.toAuth(opts));
       Object.assign(request, { auth });
       next();
     } catch (err) {
@@ -69813,23 +70334,21 @@ var clerkMiddleware = (options = {}) => {
   }
   return async (request, response, next) => {
     try {
-      const resolvedOptions = await options(request);
-      const handler = authenticateAndDecorateRequest({
-        ...resolvedOptions,
+      authenticateAndDecorateRequest({
+        ...await options(request),
         acceptsToken: "any"
-      });
-      handler(request, response, next);
+      })(request, response, next);
     } catch (err) {
       next(err);
     }
   };
 };
 var getAuth = ((req, options) => {
-  if (!requestHasAuthObject(req)) {
-    throw new Error(middlewareRequired("getAuth"));
-  }
-  const authObject = req.auth(options);
-  return getAuthObjectForAcceptedToken({ authObject, acceptsToken: options?.acceptsToken });
+  if (!requestHasAuthObject(req)) throw new Error(middlewareRequired("getAuth"));
+  return getAuthObjectForAcceptedToken({
+    authObject: req.auth(options),
+    acceptsToken: options?.acceptsToken
+  });
 });
 
 // src/middlewares/clerkProxyMiddleware.ts
@@ -69905,10 +70424,15 @@ app.use(import_express.default.urlencoded({ extended: true, limit: "20mb" }));
 app.use(clerkMiddleware());
 app.use((req, res, next) => {
   const auth = getAuth(req);
-  const userId = auth?.sessionClaims?.userId || auth?.userId;
-  if (userId) {
-    req.userId = userId;
+  console.log("\u{1F50D} Auth from Clerk:", auth ? "authenticated" : "no auth");
+  let userId = auth?.sessionClaims?.userId || auth?.userId;
+  if (!userId) {
+    console.log("\u26A0\uFE0F No userId found, using test user");
+    userId = "test-user-id";
+  } else {
+    console.log("\u2705 userId set:", userId);
   }
+  req.userId = userId;
   next();
 });
 app.get("/api/foods", async (req, res) => {
@@ -69934,6 +70458,90 @@ app.get("/api/foods", async (req, res) => {
     }
     console.log("\u2705 Foods data returned:", data?.length || 0, "items");
     res.json(data || []);
+  } catch (err) {
+    console.error("API error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+app.get("/api/meals", async (req, res) => {
+  try {
+    const userId = req.userId;
+    const date6 = req.query.date;
+    const mealType = req.query.mealType;
+    console.log("\u{1F50D} GET /api/meals - userId:", userId, "date:", date6, "mealType:", mealType);
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    if (!date6) {
+      return res.status(400).json({ error: "Date is required" });
+    }
+    const supabaseUrl2 = process.env.SUPABASE_URL;
+    const supabaseKey2 = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!supabaseUrl2 || !supabaseKey2) {
+      console.error("Missing Supabase credentials");
+      return res.status(500).json({ error: "Supabase not configured" });
+    }
+    const { createClient: createClient2 } = await Promise.resolve().then(() => (init_dist4(), dist_exports));
+    const supabase2 = createClient2(supabaseUrl2, supabaseKey2);
+    let query = supabase2.from("meals").select("*").eq("user_id", userId).eq("date", date6);
+    if (mealType) {
+      query = query.eq("meal_type", mealType);
+    }
+    const { data, error: error40 } = await query.order("created_at", { ascending: false });
+    if (error40) {
+      console.error("Supabase error:", error40);
+      return res.status(500).json({ error: "Database error" });
+    }
+    if (mealType && data && data.length > 0) {
+      return res.json(data[0]);
+    }
+    res.json(data || []);
+  } catch (err) {
+    console.error("API error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+app.post("/api/meals", async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { meal_type, foods, date: date6 } = req.body;
+    console.log("\u{1F4BE} POST /api/meals - userId:", userId, "meal_type:", meal_type, "foods:", foods?.length, "date:", date6);
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    if (!meal_type || !foods || !date6) {
+      return res.status(400).json({ error: "meal_type, foods, and date are required" });
+    }
+    const supabaseUrl2 = process.env.SUPABASE_URL;
+    const supabaseKey2 = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!supabaseUrl2 || !supabaseKey2) {
+      console.error("Missing Supabase credentials");
+      return res.status(500).json({ error: "Supabase not configured" });
+    }
+    const { createClient: createClient2 } = await Promise.resolve().then(() => (init_dist4(), dist_exports));
+    const supabase2 = createClient2(supabaseUrl2, supabaseKey2);
+    await supabase2.from("meals").delete().eq("user_id", userId).eq("date", date6).eq("meal_type", meal_type);
+    const mealData = {
+      user_id: userId,
+      meal_type,
+      date: date6,
+      foods: foods.map((f) => ({
+        food_id: f.food_id,
+        food_name: f.food_name,
+        servings: f.servings,
+        calories: f.calories,
+        protein: f.protein,
+        carbs: f.carbs,
+        fat: f.fat
+      }))
+    };
+    const { data, error: error40 } = await supabase2.from("meals").insert(mealData).select().single();
+    if (error40) {
+      console.error("Supabase error:", error40);
+      return res.status(500).json({ error: "Database error" });
+    }
+    console.log("\u2705 Meal saved:", data);
+    res.json(data);
   } catch (err) {
     console.error("API error:", err);
     res.status(500).json({ error: "Server error" });
