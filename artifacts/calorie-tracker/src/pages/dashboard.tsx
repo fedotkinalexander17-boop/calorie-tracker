@@ -26,10 +26,24 @@ export default function Dashboard() {
   const { t } = useT();
   const d = t.dashboard;
   const today = getToday();
-  const { data: summary, isLoading: summaryLoading } = useGetDailySummary({ date: today });
-  const { data: weeklyStats, isLoading: weeklyLoading } = useGetWeeklyStats({ date: today });
-  const { data: recentMeals, isLoading: recentLoading } = useGetRecentMeals({ limit: 5 });
-  const { data: breakdown, isLoading: breakdownLoading } = useGetMealTypeBreakdown({ date: today });
+  
+  console.log("🔄 Dashboard rendering, today:", today);
+  
+  const { data: summary, isLoading: summaryLoading, error: summaryError } = useGetDailySummary({ date: today });
+  console.log("📊 Daily summary data:", summary);
+  console.log("📊 Daily summary error:", summaryError);
+  
+  const { data: weeklyStats, isLoading: weeklyLoading, error: weeklyError } = useGetWeeklyStats({ date: today });
+  console.log("📊 Weekly stats data:", weeklyStats);
+  console.log("📊 Weekly stats error:", weeklyError);
+  
+  const { data: recentMeals, isLoading: recentLoading, error: recentError } = useGetRecentMeals({ limit: 5 });
+  console.log("📊 Recent meals data:", recentMeals);
+  console.log("📊 Recent meals error:", recentError);
+  
+  const { data: breakdown, isLoading: breakdownLoading, error: breakdownError } = useGetMealTypeBreakdown({ date: today });
+  console.log("📊 Meal breakdown data:", breakdown);
+  console.log("📊 Meal breakdown error:", breakdownError);
 
   const caloriePercent = summary ? Math.min((summary.totalCalories / summary.goalCalories) * 100, 100) : 0;
   const proteinPercent = summary ? Math.min((summary.totalProtein / summary.goalProtein) * 100, 100) : 0;
