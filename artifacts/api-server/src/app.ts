@@ -468,7 +468,7 @@ app.get('/api/meal-breakdown', async (req, res) => {
 });
 
 // ============================================
-// API WELLNESS
+// API WELLNESS (ОДИН РАЗ!)
 // ============================================
 
 app.get('/api/wellness', async (req, res) => {
@@ -573,7 +573,7 @@ app.post('/api/wellness', async (req, res) => {
 });
 
 // ============================================
-// API GOALS
+// API GOALS (ОДИН РАЗ!)
 // ============================================
 
 app.get('/api/goals', async (req, res) => {
