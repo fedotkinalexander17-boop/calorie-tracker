@@ -6,7 +6,7 @@ import {
   useGetWeeklyStats,
   useGetRecentMeals,
   useGetMealTypeBreakdown,
-} from "@workspace/api-client-react";
+} from "@workspace/api-client-react/custom-hooks";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from "recharts";
 import { Flame, Drumstick, Wheat, Droplets, TrendingUp, Clock } from "lucide-react";
 import { useT } from "@/lib/i18n";
@@ -53,11 +53,8 @@ export default function Dashboard() {
   const mealTypeLabel = (type: string) =>
     d.mealTypes[type as keyof typeof d.mealTypes] ?? type;
 
-  // Проверка, что weeklyStats - массив
   const weeklyStatsArray = Array.isArray(weeklyStats) ? weeklyStats : [];
-  // Проверка, что breakdown - массив
   const breakdownArray = Array.isArray(breakdown) ? breakdown : [];
-  // Проверка, что recentMeals - массив
   const recentMealsArray = Array.isArray(recentMeals) ? recentMeals : [];
 
   return (

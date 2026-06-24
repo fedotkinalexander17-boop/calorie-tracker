@@ -1236,8 +1236,8 @@ export const getGetDailySummaryUrl = (params: GetDailySummaryParams) => {
   const stringifiedParams = normalizedParams.toString();
 
   return stringifiedParams.length > 0
-    ? `/api/dashboard/daily-summary?${stringifiedParams}`
-    : `/api/dashboard/daily-summary`;
+    ? `/api/daily-summary?${stringifiedParams}`
+    : `/api/daily-summary`;
 };
 
 export const getDailySummary = async (
@@ -1251,7 +1251,7 @@ export const getDailySummary = async (
 };
 
 export const getGetDailySummaryQueryKey = (params?: GetDailySummaryParams) => {
-  return [`/api/dashboard/daily-summary`, ...(params ? [params] : [])] as const;
+  return [`/api/daily-summary`, ...(params ? [params] : [])] as const;
 };
 
 export const getGetDailySummaryQueryOptions = <
@@ -1330,8 +1330,8 @@ export const getGetWeeklyStatsUrl = (params: GetWeeklyStatsParams) => {
   const stringifiedParams = normalizedParams.toString();
 
   return stringifiedParams.length > 0
-    ? `/api/dashboard/weekly-stats?${stringifiedParams}`
-    : `/api/dashboard/weekly-stats`;
+    ? `/api/weekly-stats?${stringifiedParams}`
+    : `/api/weekly-stats`;
 };
 
 export const getWeeklyStats = async (
@@ -1345,7 +1345,7 @@ export const getWeeklyStats = async (
 };
 
 export const getGetWeeklyStatsQueryKey = (params?: GetWeeklyStatsParams) => {
-  return [`/api/dashboard/weekly-stats`, ...(params ? [params] : [])] as const;
+  return [`/api/weekly-stats`, ...(params ? [params] : [])] as const;
 };
 
 export const getGetWeeklyStatsQueryOptions = <
@@ -1424,8 +1424,8 @@ export const getGetRecentMealsUrl = (params?: GetRecentMealsParams) => {
   const stringifiedParams = normalizedParams.toString();
 
   return stringifiedParams.length > 0
-    ? `/api/dashboard/recent-meals?${stringifiedParams}`
-    : `/api/dashboard/recent-meals`;
+    ? `/api/recent-meals?${stringifiedParams}`
+    : `/api/recent-meals`;
 };
 
 export const getRecentMeals = async (
@@ -1439,7 +1439,7 @@ export const getRecentMeals = async (
 };
 
 export const getGetRecentMealsQueryKey = (params?: GetRecentMealsParams) => {
-  return [`/api/dashboard/recent-meals`, ...(params ? [params] : [])] as const;
+  return [`/api/recent-meals`, ...(params ? [params] : [])] as const;
 };
 
 export const getGetRecentMealsQueryOptions = <
@@ -1520,8 +1520,8 @@ export const getGetMealTypeBreakdownUrl = (
   const stringifiedParams = normalizedParams.toString();
 
   return stringifiedParams.length > 0
-    ? `/api/dashboard/meal-type-breakdown?${stringifiedParams}`
-    : `/api/dashboard/meal-type-breakdown`;
+    ? `/api/meal-breakdown?${stringifiedParams}`
+    : `/api/meal-breakdown`;
 };
 
 export const getMealTypeBreakdown = async (
@@ -1538,7 +1538,7 @@ export const getGetMealTypeBreakdownQueryKey = (
   params?: GetMealTypeBreakdownParams,
 ) => {
   return [
-    `/api/dashboard/meal-type-breakdown`,
+    `/api/meal-breakdown`,
     ...(params ? [params] : []),
   ] as const;
 };
