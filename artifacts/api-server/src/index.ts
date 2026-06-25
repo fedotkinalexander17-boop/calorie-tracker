@@ -76,7 +76,7 @@ app.get('/health', (req, res) => {
 // ============================================
 // WEBHOOK ДЛЯ CLERK (синхронизация пользователей)
 // ============================================
-app.post('/api/webhooks/clerk', express.raw({ type: 'application/json' }), async (req, res) => {
+app.post('/api/webhooks/clerk', async (req, res) => {
   try {
     const payload = req.body;
     const eventType = payload.type;

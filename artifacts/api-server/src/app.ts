@@ -1,3 +1,15 @@
+import dotenv from 'dotenv';
+import path from 'path';
+
+// Загружаем .env из корня проекта
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+
+// Проверяем, что переменные загрузились
+console.log('📋 Checking .env:');
+console.log('DATABASE_URL:', process.env.DATABASE_URL ? '✅ Found' : '❌ Missing');
+console.log('SUPABASE_URL:', process.env.SUPABASE_URL ? '✅ Found' : '❌ Missing');
+console.log('PORT:', process.env.PORT || '3000');
+// ========================================
 import express, { type Express } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
@@ -7,6 +19,7 @@ import { logger } from "./lib/logger";
 import "./types/express.d";
 
 const app: Express = express();
+const PORT = process.env.PORT || 3000;
 
 app.use(
   pinoHttp({
@@ -468,7 +481,7 @@ app.get('/api/meal-breakdown', async (req, res) => {
 });
 
 // ============================================
-// API WELLNESS (ОДИН РАЗ!)
+// API WELLNESS
 // ============================================
 
 app.get('/api/wellness', async (req, res) => {
@@ -541,17 +554,20 @@ app.post('/api/wellness', async (req, res) => {
     const { createClient } = await import('@supabase/supabase-js');
     const supabase = createClient(supabaseUrl, supabaseKey);
     
-    const wellnessData = {
+    // Подготовка данных с учетом структуры таблицы
+    const wellnessData: any = {
       user_id: userId,
       date,
-      mood,
-      energy,
-      sleep_hours,
-      stress_level,
-      symptoms,
-      notes,
       updated_at: new Date().toISOString(),
     };
+    
+    // Добавляем только те поля, которые переданы
+    if (mood !== undefined) wellnessData.mood = mood;
+    if (energy !== undefined) wellnessData.energy = energy;
+    if (sleep_hours !== undefined) wellnessData.sleep_hours = sleep_hours;
+    if (stress_level !== undefined) wellnessData.stress_level = stress_level;
+    if (symptoms !== undefined) wellnessData.symptoms = symptoms;
+    if (notes !== undefined) wellnessData.notes = notes;
     
     const { data, error } = await supabase
       .from('wellness')
@@ -573,7 +589,7 @@ app.post('/api/wellness', async (req, res) => {
 });
 
 // ============================================
-// API GOALS (ОДИН РАЗ!)
+// API GOALS
 // ============================================
 
 app.get('/api/goals', async (req, res) => {
@@ -677,5 +693,11 @@ app.post('/api/goals', async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
+
+// ============================================
+// START SERVER
+// ============================================
+
+
 
 export default app;
