@@ -15,6 +15,9 @@ if (API_URL) {
 
 const PUBLISHABLE_KEY = 'pk_test_cGxlYXNhbnQtc25ha2UtNjUuY2xlcmsuYWNjb3VudHMuZGV2JA';
 
+console.log('🔑 Clerk key loaded:', PUBLISHABLE_KEY ? '✅ Yes' : '❌ No');
+console.log('🔑 Clerk key value:', PUBLISHABLE_KEY);
+
 const rootElement = document.getElementById('root');
 
 if (rootElement) {

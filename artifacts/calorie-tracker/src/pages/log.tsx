@@ -60,11 +60,15 @@ export default function Log() {
   console.log("🔄 Log component rendering, searchQuery:", searchQuery);
 
   // Получение списка продуктов
+   // Получение списка продуктов
   const { data: foods, isLoading: foodsLoading, error: foodsError } = useQuery({
     queryKey: ["foods", searchQuery],
     queryFn: async () => {
       console.log("🔍 Fetching foods with search:", searchQuery);
-      const url = `https://calorie-tracker-3-2j7n.onrender.com/api/foods?search=${encodeURIComponent(searchQuery)}`;
+      // Если поиск пустой, запрашиваем без параметров, иначе с параметром search
+      const url = searchQuery.length > 0 
+        ? `https://calorie-tracker-3-2j7n.onrender.com/api/foods?search=${encodeURIComponent(searchQuery)}`
+        : `https://calorie-tracker-3-2j7n.onrender.com/api/foods`;
       console.log("📡 Request URL:", url);
       
       const res = await fetch(url, {
@@ -84,17 +88,14 @@ export default function Log() {
       
       const data = await res.json();
       console.log("✅ Foods data:", data);
-      console.log("📦 Type of data:", typeof data);
-      console.log("📦 Is array?", Array.isArray(data));
-      console.log("📦 Data length:", data?.length);
       
       // Гарантируем, что возвращаем массив
       return Array.isArray(data) ? data : [];
     },
-    enabled: searchQuery.length > 1,
+    // ТЕПЕРЬ ТУТ ТРУ, запрос идет ВСЕГДА (и при пустом поиске тоже)
+    enabled: true, 
   });
-
-  // Логируем результат useQuery
+// Логируем результат useQuery
   console.log("📊 useQuery result:", { 
     foods, 
     isLoading: foodsLoading, 
