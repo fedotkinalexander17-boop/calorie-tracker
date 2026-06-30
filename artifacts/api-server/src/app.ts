@@ -698,6 +698,146 @@ app.post('/api/goals', async (req, res) => {
 // START SERVER
 // ============================================
 
+// ============================================
+// API ADD FOOD (ручное добавление)
+// ============================================
 
+app.post('/api/foods', async (req, res) => {
+  try {
+    const userId = (req as any).userId;
+    const { name, calories, protein, carbs, fat, serving_size, default_servings, barcode } = req.body;
+    
+    console.log("📝 POST /api/foods - userId:", userId, "name:", name);
+    
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    
+    if (!name || calories === undefined) {
+      return res.status(400).json({ error: 'Name and calories are required' });
+    }
+    
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    
+    if (!supabaseUrl || !supabaseKey) {
+      return res.status(500).json({ error: 'Supabase not configured' });
+    }
+    
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    
+    const foodData = {
+      name,
+      calories: parseFloat(calories) || 0,
+      protein: parseFloat(protein) || 0,
+      carbs: parseFloat(carbs) || 0,
+      fat: parseFloat(fat) || 0,
+      serving_size: serving_size || '100 г',
+      default_servings: default_servings || 1,
+      barcode: barcode || null,
+      user_id: userId,
+      created_at: new Date().toISOString()
+    };
+    
+    const { data, error } = await supabase
+      .from('foods')
+      .insert(foodData)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Supabase error:', error);
+      return res.status(500).json({ error: 'Database error' });
+    }
+    
+    console.log("✅ Food added:", data);
+    res.status(201).json(data);
+  } catch (err) {
+    console.error('API error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ============================================
+// API GET FOOD BY BARCODE
+// ============================================
+
+app.get('/api/foods/barcode/:code', async (req, res) => {
+  try {
+    const { code } = req.params;
+    console.log("📷 GET /api/foods/barcode:", code);
+    
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    
+    if (!supabaseUrl || !supabaseKey) {
+      return res.status(500).json({ error: 'Supabase not configured' });
+    }
+    
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    
+    // Сначала ищем в своей базе
+    const { data: localData, error: localError } = await supabase
+      .from('foods')
+      .select('*')
+      .eq('barcode', code)
+      .maybeSingle();
+    
+    if (localData) {
+      console.log("✅ Found in local DB:", localData.name);
+      return res.json({ source: 'local', data: localData });
+    }
+    
+    // Если не нашли - ищем в OpenFoodFacts
+    try {
+      const response = await fetch(`https://world.openfoodfacts.org/api/v0/product/${code}.json`);
+      const data = await response.json();
+      
+      if (data.status === 1 && data.product) {
+        const product = data.product;
+        const nutriments = product.nutriments || {};
+        
+        const foodData = {
+          name: product.product_name || product.generic_name || 'Неизвестный продукт',
+          calories: nutriments.energy_kcal || 0,
+          protein: nutriments.proteins || 0,
+          carbs: nutriments.carbohydrates || 0,
+          fat: nutriments.fat || 0,
+          serving_size: product.serving_size || '100 г',
+          default_servings: 1,
+          barcode: code,
+          source: 'openfoodfacts'
+        };
+        
+        // Сохраняем в свою базу
+        const { data: savedData, error: saveError } = await supabase
+          .from('foods')
+          .insert({
+            ...foodData,
+            user_id: (req as any).userId || 'system'
+          })
+          .select()
+          .single();
+        
+        if (saveError) {
+          console.error('Error saving from OpenFoodFacts:', saveError);
+          return res.json({ source: 'openfoodfacts', data: foodData });
+        }
+        
+        console.log("✅ Saved from OpenFoodFacts:", savedData.name);
+        return res.json({ source: 'openfoodfacts', data: savedData });
+      }
+    } catch (offError) {
+      console.error('OpenFoodFacts error:', offError);
+    }
+    
+    res.status(404).json({ error: 'Product not found' });
+  } catch (err) {
+    console.error('API error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 
 export default app;
